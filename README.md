@@ -23,14 +23,12 @@ Kampus LMS merupakan aplikasi berbasis web yang dikembangkan untuk membantu peng
 
 | No | Langkah | Perintah / Keterangan |
 |----|---------|----------------------|
-| 1 | Clone repository | `git clone <url-repository>` |
-| 2 | Masuk ke folder project | `cd kampuslms-b-kelompok-03` |
-| 3 | Install dependency Laravel | `composer install` |
-| 4 | Membuat file environment | `cp .env.example .env` |
-| 5 | Generate application key | `php artisan key:generate` |
-| 6 | Konfigurasi database | Atur `DB_DATABASE`, `DB_USERNAME`, dan `DB_PASSWORD` pada file `.env` |
-| 7 | Menjalankan migration database | `php artisan migrate` |
-| 8 | Menjalankan aplikasi | `php artisan serve` |
+| 1 | Masuk ke folder project | `cd kampuslms` |
+| 2 | Install dependency Laravel | `composer install` |
+| 3 | Install laravel 12 | `composer create-project laravel/laravel:^12.0 kampuslms-b-kelompok-03` |
+| 4 | Konfigurasi database | Atur `DB_DATABASE`, `DB_USERNAME`, dan `DB_PASSWORD` pada file `.env` |
+| 5 | Menjalankan migration database | `php artisan migrate` |
+| 6 | Menjalankan aplikasi | `php artisan serve` |
 
 Aplikasi dapat diakses melalui:
 
