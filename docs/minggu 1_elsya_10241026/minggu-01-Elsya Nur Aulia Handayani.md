@@ -72,8 +72,8 @@
         });
 
     Kode tersebut berarti ketika saya membuka alamat utama / pada localhost:8000, Laravel akan menampilkan halaman welcome.
-    
-    [sebelum dirusak](image.png) 
+
+    ![sebelum dirusak](image.png) 
 
     ![setelah dirusak](image-1.png)
         resources/views/welcome.blade.php
