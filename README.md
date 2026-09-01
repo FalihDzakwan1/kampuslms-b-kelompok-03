@@ -11,7 +11,7 @@ Kampus LMS merupakan aplikasi berbasis web yang dikembangkan untuk membantu peng
 | No | Nama Anggota | NIM |
 |----|--------------|-----|
 | 1 | ..... | 123456789 |
-| 2 | Nama Anggota 2 | 123456789 |
+| 2 | Fatika Rizki Syahada | 10241030 |
 | 3 | Indriani Anwar | 10241036 |
 | 4 | Nama Anggota 4 | 123456789 |
 
@@ -49,8 +49,8 @@ Aplikasi dapat diakses melalui:
 
 | Teknologi | Versi |
 |-----------|-------|
-| Laravel | 12 |
-| PHP | 8.x |
-| MySQL | 8.x |
+| Laravel | 12.68.0|
+| PHP | 8.5.10 |
+| MySQL | 8.0.40 |
 | Composer | Latest |
 | Frontend | Blade Template, HTML, CSS, JavaScript |
