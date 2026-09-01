@@ -66,20 +66,21 @@
 
     ini digunakan untuk menangani kesalahan atau error yang terjadi pada aplikasi. Pada project saya, bagian ini juga belum memiliki pengaturan tambahan.
 
- 3. ![sebelum dirusak](image.png)
-    
-    Route::get('/', function () {
+
+3.  Route::get('/', function () {
             return view('welcome');
         });
 
     Kode tersebut berarti ketika saya membuka alamat utama / pada localhost:8000, Laravel akan menampilkan halaman welcome.
+    
+    [sebelum dirusak](image.png) 
 
     ![setelah dirusak](image-1.png)
         resources/views/welcome.blade.php
 
     Saya mengubah teks pada halaman tersebut menjadi “Selamat Datang”. Setelah file disimpan, saya melakukan refresh pada localhost:8000 dan tampilan berhasil berubah menjadi teks yang saya buat. Kesimpulan dari percobaan ini: perubahan pada file welcome.blade.php dapat langsung memengaruhi tampilan yang muncul di browser.
 
- 4. php artisan route:list 
+ 3. php artisan route:list 
 
     Perintah ini digunakan untuk melihat daftar route yang tersedia di aplikasi Laravel.
 
