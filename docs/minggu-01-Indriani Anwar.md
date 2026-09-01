@@ -52,7 +52,7 @@ Route::get('/', function () {
 ```
 
 Hasil dari perubahan : 
-<img src="gagal_web.png" width="500">
+<img src="image/gagal_web.png" width="500">
 
 Penjelasan : 
 Error terjadi karena Laravel tidak menemukan file view yang dipanggil pada fungsi `view()`. Pada awalnya, route menggunakan `return view('Welcome')`, sehingga Laravel mencari file `Welcome.blade.php` di dalam folder `resources/views` dan berhasil ditemukan. Namun, setelah diubah menjadi `return view('selamat datang')`, Laravel mencoba mencari file `selamat datang.blade.php`. Karena file tersebut belum tersedia di folder `resources/views`, Laravel menampilkan pesan error **"View [selamat datang] not found"**. Untuk memperbaikinya, dapat dibuat file view baru dengan nama `selamat datang.blade.php` atau menggunakan nama view yang sudah tersedia seperti `welcome.blade.php` lalu mengubah isi tampilannya sesuai kebutuhan.
@@ -60,7 +60,7 @@ Error terjadi karena Laravel tidak menemukan file view yang dipanggil pada fungs
 4. Jalankan php artisan route:list. Cocokkan keluarannya dengan isi routes/web.php.
 
 Hasil : 
-<img src="php_artisan.png" width="500">
+<img src="image/php_artisan.png" width="500">
 
 Penjelasan : 
 Berdasarkan hasil perintah `php artisan route:list`, route yang terdaftar pada Laravel sudah sesuai dengan isi file `routes/web.php`. Pada file `routes/web.php` terdapat route `Route::get('/', function () { return view('welcome'); });` yang berfungsi untuk membuat halaman utama dengan metode GET pada alamat `/`. Hasil dari `php artisan route:list` menampilkan `GET|HEAD /` dengan lokasi `routes/web.php:5`, yang menunjukkan bahwa Laravel berhasil membaca dan mendaftarkan route tersebut. Selain route utama tersebut, terdapat beberapa route lain seperti `storage/{path}` dan `up` yang merupakan route bawaan Laravel untuk pengelolaan file storage dan pengecekan kesehatan aplikasi. Dengan demikian, dapat disimpulkan bahwa konfigurasi route pada `routes/web.php` telah berjalan dengan benar dan sudah terhubung dengan sistem routing Laravel.
