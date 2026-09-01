@@ -1,4 +1,4 @@
-<<<<<<< Updated upstream
+
 # Kampus LMS
 
 **Kampus LMS (Learning Management System)**
@@ -11,10 +11,11 @@ Kampus LMS merupakan aplikasi berbasis web yang dikembangkan untuk membantu peng
 
 | No | Nama Anggota | NIM |
 |----|--------------|-----|
-| 1 | ..... | 123456789 |
-| 2 | Fatika Rizki Syahada | 10241030 |
-| 3 | Indriani Anwar | 10241036 |
-| 4 | Nama Anggota 4 | 123456789 |
+| 1 | Elsya Nur Aulia Handayani | 10241026 |
+| 2 | Falih Dzakwan | 10241028 |
+| 3 | Fatika Rizki Syahada | 10241030 |
+| 4 | Indriani Anwar | 10241036 |
+
 
 ---
 
@@ -23,7 +24,7 @@ Kampus LMS merupakan aplikasi berbasis web yang dikembangkan untuk membantu peng
 | No | Langkah | Perintah / Keterangan |
 |----|---------|----------------------|
 | 1 | Clone repository | `git clone <url-repository>` |
-| 2 | Masuk ke folder project | `cd kampuslms` |
+| 2 | Masuk ke folder project | `cd kampuslms-b-kelompok-03` |
 | 3 | Install dependency Laravel | `composer install` |
 | 4 | Membuat file environment | `cp .env.example .env` |
 | 5 | Generate application key | `php artisan key:generate` |
