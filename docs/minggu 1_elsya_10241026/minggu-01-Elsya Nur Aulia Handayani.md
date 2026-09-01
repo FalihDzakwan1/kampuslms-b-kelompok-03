@@ -86,7 +86,7 @@
 
     ![hasil setelah perintah di jalankan](image-2.png)
 
-    aravel menunjukkan terdapat 4 route.
+    laravel menunjukkan terdapat 4 route.
 
     Route yang berhubungan dengan halaman utama adalah:
 
