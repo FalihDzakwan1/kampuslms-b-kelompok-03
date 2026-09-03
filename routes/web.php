@@ -9,3 +9,7 @@ Route::get('/', function () {
 Route::get('/tentang', function () {
     return view('tentang');
 });
+
+use App\Http\Controllers\TentangController;
+
+Route::get('/tentang', [TentangController::class, 'index']);
