@@ -13,3 +13,8 @@ Route::get('/tentang', function () {
 use App\Http\Controllers\TentangController;
 
 Route::get('/tentang', [TentangController::class, 'index']);
+
+use App\Http\Controllers\CourseController;
+
+Route::get('/courses/{course}', [CourseController::class, 'show'])
+    ->name('courses.show');
