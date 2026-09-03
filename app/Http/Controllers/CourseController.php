@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Course;
+use Illuminate\Http\Request;
 
 class CourseController extends Controller
 {
@@ -28,13 +29,18 @@ class CourseController extends Controller
         return view('courses.create');
     }
 
-      public function store()
+      public function store(Request $request)
     {
-        Course::create([
-            'name' => request('name')
+        $validated = $request->validate([
+            'kode'  => 'required|string|max:20|unique:courses,kode',
+            'nama'  => 'required|string|max:255',
+            'sks'   => 'required|integer|min:1|max:6',
+            'dosen' => 'required|string|max:255',
         ]);
 
-        return redirect('/courses');
+        Course::create($validated);
+
+        return redirect()->route('courses.index');
     }
 
 }

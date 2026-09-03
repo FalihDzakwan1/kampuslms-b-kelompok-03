@@ -10,7 +10,9 @@
 <body>
 
     <nav>
-        <a href="/tentang">Tentang</a>
+        <a href="{{ route('dashboard') }}">Dashboard</a>
+        <a href="{{ route('courses.index') }}">Mata Kuliah</a>
+        <a href="{{ route('tentang') }}">Tentang</a>
     </nav>
 
     <main>
