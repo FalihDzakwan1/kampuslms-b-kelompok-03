@@ -21,9 +21,6 @@ Route::get('/courses/create', [CourseController::class, 'create'])
 Route::post('/courses', [CourseController::class, 'store'])
     ->name('courses.store');
 
-Route::get('/dashboard', [CourseController::class, 'show'])
-    ->name('dashboard');
-
 Route::get('/courses/{course}', [CourseController::class, 'show'])
     ->name('courses.show');
 
