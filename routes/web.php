@@ -23,6 +23,3 @@ Route::post('/courses', [CourseController::class, 'store'])
 
 Route::get('/courses/{course}', [CourseController::class, 'show'])
     ->name('courses.show');
-
-Route::post('/courses', [CourseController::class, 'store'])
-    ->name('courses.store');

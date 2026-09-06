@@ -21,8 +21,7 @@ class CourseController extends Controller
     {
         return view('courses.show', compact('course'));
     }
-
-
+    
     // Menampilkan form tambah mata kuliah
     public function create()
     {
