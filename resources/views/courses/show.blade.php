@@ -19,8 +19,8 @@
             {{ $course['description'] }}
         </p>
 
-        <a href="{{ route('courses.index') }}">
-            ← Kembali ke Daftar Mata Kuliah
+        <a class="btn-secondary" href="{{ route('courses.index') }}">
+             ← Kembali
         </a>
     </div>
 

@@ -9,9 +9,26 @@
 <body>
 
     <nav>
-        <a href="{{ route('dashboard') }}">Dashboard</a>
-        <a href="{{ route('courses.index') }}">Mata Kuliah</a>
-        <a href="{{ route('tentang') }}">Tentang</a>
+
+        <div class="text-2xl font-bold mr-auto">
+             KampusLMS
+        </div>
+
+
+        <a href="{{ route('dashboard') }}">
+            Dashboard
+        </a>
+
+
+        <a href="{{ route('courses.index') }}">
+            Mata Kuliah
+        </a>
+
+
+        <a href="{{ route('tentang') }}">
+            Tentang
+     </a>
+
     </nav>
 
     <main>

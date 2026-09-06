@@ -6,7 +6,220 @@
 @source "../**/*.js";
 @source "../**/*.vue";
 
+
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+}
+
+
+/* ==================================
+   GLOBAL BACKGROUND
+================================== */
+
+body {
+    @apply min-h-screen text-gray-800 font-sans;
+    background: linear-gradient(
+        135deg,
+        #a9c5d8,
+        #d8e6f0
+    );
+}
+
+
+/* ==================================
+   NAVBAR NAVY ESTETIK
+================================== */
+
+nav {
+    background: linear-gradient(
+        90deg,
+        #0b1f3a,
+        #102f54
+    );
+
+    @apply px-10 py-5 shadow-xl flex items-center gap-8;
+}
+
+
+nav a {
+    @apply text-blue-100 font-medium transition duration-300;
+}
+
+
+nav a:hover {
+    @apply text-white;
+    transform: translateY(-2px);
+}
+
+
+/* Logo KampusLMS */
+
+nav div {
+    color: white;
+    letter-spacing: 1px;
+}
+
+
+/* ==================================
+   MAIN AREA
+================================== */
+
+main {
+    @apply min-h-screen py-10;
+}
+
+
+/* ==================================
+   CARD CONTAINER
+================================== */
+
+.container {
+
+    background: rgba(255,255,255,0.85);
+
+    backdrop-filter: blur(10px);
+
+    @apply max-w-5xl mx-auto rounded-2xl shadow-xl p-10;
+
+}
+
+
+/* ==================================
+   TITLE
+================================== */
+
+h1 {
+
+    color: #102f54;
+
+    @apply text-3xl font-bold mb-8;
+
+}
+
+
+/* ==================================
+   TABLE MODERN
+================================== */
+
+table {
+
+    @apply w-full overflow-hidden rounded-xl shadow-lg;
+
+}
+
+
+thead {
+
+    background: #102f54;
+
+    color:white;
+
+}
+
+
+th {
+
+    @apply px-6 py-4 text-left font-semibold;
+
+}
+
+
+td {
+
+    @apply px-6 py-4 bg-white border-b border-gray-200;
+
+}
+
+
+tbody tr {
+
+    transition: .3s;
+
+}
+
+
+tbody tr:hover {
+
+    background:#e8f2fa;
+
+    transform:scale(1.01);
+
+}
+
+
+
+/* ==================================
+   BUTTON
+================================== */
+
+.btn {
+
+    background:#12355b;
+
+    color:white;
+
+    @apply px-5 py-2 rounded-xl shadow-md transition;
+
+}
+
+
+.btn:hover {
+
+    background:#1b4d80;
+
+}
+
+
+
+.btn-secondary {
+
+    background:#7897b5;
+
+    color:white;
+
+    @apply px-5 py-2 rounded-xl shadow-md;
+
+}
+
+
+.btn-secondary:hover {
+
+    background:#5d7c9a;
+
+}
+
+
+
+/* ==================================
+   DETAIL CARD
+================================== */
+
+.course-card {
+
+    background:white;
+
+    @apply rounded-2xl shadow-lg p-8;
+
+}
+
+
+.course-card p {
+
+    @apply mb-3 text-gray-700;
+
+}
+
+
+/* ==================================
+   EMPTY MESSAGE
+================================== */
+
+.alert {
+
+    background:#dceaf5;
+
+    color:#102f54;
+
+    @apply p-4 rounded-xl border;
+
 }
