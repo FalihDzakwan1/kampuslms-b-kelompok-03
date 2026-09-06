@@ -64,3 +64,67 @@ Hasil :
 
 Penjelasan : 
 Berdasarkan hasil perintah `php artisan route:list`, route yang terdaftar pada Laravel sudah sesuai dengan isi file `routes/web.php`. Pada file `routes/web.php` terdapat route `Route::get('/', function () { return view('welcome'); });` yang berfungsi untuk membuat halaman utama dengan metode GET pada alamat `/`. Hasil dari `php artisan route:list` menampilkan `GET|HEAD /` dengan lokasi `routes/web.php:5`, yang menunjukkan bahwa Laravel berhasil membaca dan mendaftarkan route tersebut. Selain route utama tersebut, terdapat beberapa route lain seperti `storage/{path}` dan `up` yang merupakan route bawaan Laravel untuk pengelolaan file storage dan pengecekan kesehatan aplikasi. Dengan demikian, dapat disimpulkan bahwa konfigurasi route pada `routes/web.php` telah berjalan dengan benar dan sudah terhubung dengan sistem routing Laravel.
+
+---
+BREAK — Rusak dengan sengaja (30 menit)
+---
+
+| No | Yang dirusak | Prediksi sebelum mencoba | Pesan error sebenarnya |
+|----|--------------|--------------------------|------------------------|
+| 1 | Mengganti nama `.env` menjadi `.env.bak` | Laravel tidak dapat membaca konfigurasi aplikasi karena file `.env` tidak ditemukan. | `No application encryption key has been specified.` |
+| 2 | Mengosongkan nilai `APP_KEY` pada `.env` | Laravel tidak dapat melakukan proses enkripsi karena application key tidak tersedia. | `No application encryption key has been specified.` |
+| 3 | Mengubah `DB_DATABASE` menjadi nama database yang tidak ada | Laravel gagal melakukan koneksi ke database karena database tujuan tidak ditemukan. | `SQLSTATE[HY000]: General error: 1 unable to open database file` |
+| 4 | Mengubah `APP_DEBUG=false`, kemudian mengulangi nomor 3 | Detail error tidak akan ditampilkan karena mode debug dimatikan. | Hanya muncul halaman `500 Server Error` tanpa informasi detail error. |
+
+### Perbedaan APP_DEBUG=true dan APP_DEBUG=false
+
+Ketika konfigurasi:
+
+```env
+APP_DEBUG=true
+```
+
+Laravel akan menampilkan informasi error secara lengkap, seperti jenis exception, lokasi file yang mengalami masalah, query database, dan stack trace. Hal ini membantu proses debugging saat pengembangan aplikasi.
+
+Sedangkan ketika konfigurasi:
+
+```env
+APP_DEBUG=false
+```
+
+Laravel menyembunyikan detail error dan hanya menampilkan halaman error umum seperti:
+
+```
+500 | Server Error
+```
+
+Pengaturan ini digunakan pada server produksi untuk menjaga keamanan aplikasi. Jika `APP_DEBUG=true` digunakan pada server publik, informasi sensitif seperti konfigurasi database, struktur aplikasi, dan detail sistem dapat terlihat oleh pengguna yang memicu error.
+
+---
+BUILD — Fondasi proyek kelompok (sisa waktu + tugas terstruktur)
+---
+Hasil readme.md
+<img src="image/readme.png" width="500">
+
+Pembuatan route tentang : 
+```php
+Route::get('/tentang', [TentangController::class, 'index'])
+    ->name('tentang');
+```
+dengan view : 
+```php
+<x-layout title="Tentang Kami">
+
+    <h1>Kelompok 03</h1>
+
+    <p>Anggota:</p>
+
+    <ul>
+        <li>Elsya Nur Aulia Handayani</li>
+        <li>Falih Dzakwan</li>
+        <li>Fatika Rizki Syahada</li>
+        <li>Indriani Anwar</li>
+    </ul>
+
+</x-layout>
+```
