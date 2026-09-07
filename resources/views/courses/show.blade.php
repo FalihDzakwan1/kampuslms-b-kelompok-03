@@ -14,11 +14,6 @@
             {{ $course['lecturer'] }}
         </p>
 
-        <p>
-            <strong>Deskripsi:</strong>
-            {{ $course['description'] }}
-        </p>
-
         <a class="btn-secondary" href="{{ route('courses.index') }}">
              ← Kembali
         </a>
