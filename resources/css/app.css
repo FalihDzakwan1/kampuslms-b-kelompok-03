@@ -203,6 +203,77 @@ tbody tr:hover {
 }
 
 
+/* ==================================
+   COURSE DETAIL
+================================== */
+
+.course-detail {
+    max-width: 900px;
+    padding: 3rem;
+}
+
+.course-detail__header {
+    border-bottom: 1px solid #d7e3ec;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+}
+
+.course-detail__eyebrow {
+    color: #7897b5;
+    font-size: .85rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    margin-bottom: .5rem;
+    text-transform: uppercase;
+}
+
+.course-detail h1 {
+    margin-bottom: 0;
+}
+
+.course-detail__info {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-bottom: 2.5rem;
+}
+
+.course-detail__info div {
+    background: #f5f9fc;
+    border: 1px solid #dbe7ef;
+    border-radius: .75rem;
+    display: flex;
+    flex-direction: column;
+    gap: .45rem;
+    padding: 1.15rem;
+}
+
+.course-detail__info span {
+    color: #6b7d8f;
+    font-size: .9rem;
+}
+
+.course-detail__info strong {
+    color: #102f54;
+    font-size: 1.05rem;
+}
+
+.course-detail__actions {
+    display: flex;
+    justify-content: flex-start;
+}
+
+@media (max-width: 640px) {
+    .course-detail {
+        padding: 1.5rem;
+    }
+
+    .course-detail__info {
+        grid-template-columns: 1fr;
+    }
+}
+
+
 .course-card p {
 
     @apply mb-3 text-gray-700;

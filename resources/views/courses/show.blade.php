@@ -1,22 +1,32 @@
 {{-- resources/views/courses/show.blade.php --}}
 <x-layout title="Detail Mata Kuliah">
 
-    <div class="container">
-        <h1>{{ $course['name'] }}</h1>
+    <div class="container course-detail">
+        <div class="course-detail__header">
+            <p class="course-detail__eyebrow">Detail mata kuliah</p>
+            <h1>{{ $course->nama }}</h1>
+        </div>
 
-        <p>
-            <strong>Kode Mata Kuliah:</strong>
-            {{ $course['code'] }}
-        </p>
+        <div class="course-detail__info">
+            <div>
+                <span>Kode Mata Kuliah</span>
+                <strong>{{ $course->kode }}</strong>
+            </div>
+            <div>
+                <span>SKS</span>
+                <strong>{{ $course->sks }}</strong>
+            </div>
+            <div>
+                <span>Dosen</span>
+                <strong>{{ $course->dosen }}</strong>
+            </div>
+        </div>
 
-        <p>
-            <strong>Dosen:</strong>
-            {{ $course['lecturer'] }}
-        </p>
-
-        <a class="btn-secondary" href="{{ route('courses.index') }}">
-             ← Kembali
-        </a>
+        <div class="course-detail__actions">
+            <a class="btn-secondary" href="{{ route('courses.index') }}">
+                <span aria-hidden="true">←</span> Kembali
+            </a>
+        </div>
     </div>
 
 </x-layout>
