@@ -109,23 +109,7 @@ Pada file layout.blade.php, isi halaman akan ditampilkan melalui: {{ $slot }}
 analisis sebelumnya karena URL /tentang memang diarahkan ke method index() pada TentangController. Ketika pengguna mengakses halaman /tentang, Laravel akan mencocokkan route tersebut, menjalankan TentangController@index, kemudian mengembalikan view yang ditampilkan kepada pengguna.
    
 ---
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+BREAK — Delapan kerusakan (40 menit)
 
 | No | Yang dirusak | Prediksi sebelum mencoba | Pesan error sebenarnya |
 |----|--------------|--------------------------|------------------------|
@@ -137,3 +121,8 @@ analisis sebelumnya karena URL /tentang memang diarahkan ke method index() pada 
 | 6 | Menghapus `@vite(...)` dari layout Blade | File CSS dan JavaScript tidak akan dimuat karena koneksi dengan Vite dihilangkan. | Tampilan halaman kehilangan styling|
 | 7 | Menghentikan proses `npm run dev`, kemudian memuat ulang halaman | Laravel tidak dapat mengambil asset dari Vite development server yang sedang berhenti. | Asset CSS/JavaScript gagal dimuat atau muncul pesan `Vite manifest not found at: C:\laragon\www\Pemroweb\kampuslms-b-kelompok-03\public\build/manifest.json |
 | 8 | Memanggil `route('courses.show')` tanpa memberikan parameter | Laravel membutuhkan nilai `{course}` untuk membentuk URL route tersebut. | Missing required parameter for [Route: courses.show] [URI: courses/{course}] [Missing parameter: course]. |
+
+kesimpulan dari: Kesimpulan
+Dari percobaan BREAK dapat diketahui bahwa setiap komponen Laravel memiliki keterkaitan satu sama lain. Kesalahan pada method HTTP, nama route, urutan route, view, asset, maupun parameter dapat menyebabkan aplikasi mengalami error. Percobaan ini membantu memahami bahwa pengembang tidak hanya perlu menulis kode, tetapi juga memahami bagaimana Laravel memproses setiap request dan response.
+
+
