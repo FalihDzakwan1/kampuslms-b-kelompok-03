@@ -27,6 +27,29 @@ Ambil route /tentang yang Anda buat minggu lalu. Tanpa AI, tulis di catatan Anda
 ---
 BREAK — Delapan kerusakan (40 menit)
 ---
+1. Baris mana di routes/web.php yang menangkapnya?
+
+    berikut baris yang menangkapnya
+```php
+Route::get('/tentang', function () {
+    return view('tentang');
+});
+```
+2. Kalau ditangani controller, berkas dan method mana?
+
+3. View mana yang dikembalikan? Di path apa persisnya?
+4. Layout apa yang membungkusnya?
+5. Jalankan `php artisan route:list --path=tentang`. Cocok dengan analisis Anda?
+
+
+
+
+
+
+
+
+
+
 
 | No | Yang dirusak | Prediksi sebelum mencoba | Pesan error sebenarnya |
 |----|--------------|--------------------------|------------------------|
