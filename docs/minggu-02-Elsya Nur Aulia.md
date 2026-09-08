@@ -123,6 +123,153 @@ BREAK — Delapan kerusakan (40 menit)
 | 8 | Memanggil `route('courses.show')` tanpa memberikan parameter | Laravel membutuhkan nilai `{course}` untuk membentuk URL route tersebut. | Missing required parameter for [Route: courses.show] [URI: courses/{course}] [Missing parameter: course]. |
 
 kesimpulan dari: Kesimpulan
-Dari percobaan BREAK dapat diketahui bahwa setiap komponen Laravel memiliki keterkaitan satu sama lain. Kesalahan pada method HTTP, nama route, urutan route, view, asset, maupun parameter dapat menyebabkan aplikasi mengalami error. Percobaan ini membantu memahami bahwa pengembang tidak hanya perlu menulis kode, tetapi juga memahami bagaimana Laravel memproses setiap request dan response.
+Dari delapan percobaan kerusakan yang dilakukan, dapat disimpulkan bahwa setiap komponen dalam Laravel memiliki peran yang saling berkaitan. Kesalahan pada route, controller, view, parameter, maupun konfigurasi Vite dapat menyebabkan aplikasi tidak berjalan dengan baik. Selain itu, penggunaan sintaks Blade yang tidak tepat dapat menimbulkan celah keamanan seperti XSS. Oleh karena itu, pengembang harus memahami fungsi setiap komponen dan memperhatikan konfigurasi aplikasi agar sistem dapat berjalan dengan benar, aman, dan mudah dipelihara.
+
+---
+BUILD — Kerangka KampusLMS (sisa waktu)
+---
+1. Layout x-layout dengan navbar berisi: Dashboard, Mata Kuliah, Tentang.
+```php
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ $title ?? 'KampusLMS' }}</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
+
+<body>
+
+    <nav>
+        <a href="{{ route('dashboard') }}">Dashboard</a>
+        <a href="{{ route('courses.index') }}">Mata Kuliah</a>
+        <a href="{{ route('tentang') }}">Tentang</a>
+    </nav>
+
+    <main>
+        {{ $slot }}
+    </main>
+
+</body>
+</html>
+```
+2. CourseController dengan index dan show.
+```php
+// Menampilkan daftar mata kuliah
+    public function index()
+    {
+        $courses = Course::all();
+
+        return view('courses.index', compact('courses'));
+    }
 
 
+    // Menampilkan detail satu mata kuliah
+    public function show(Course $course)
+    {
+        return view('courses.show', compact('course'));
+    }
+```
+3. courses/index.blade.php — tabel daftar mata kuliah (kode, nama, SKS, dosen).
+```php
+{{-- resources/views/courses/index.blade.php --}}
+<x-layout title="Daftar Mata Kuliah">
+
+    <h1>Daftar Mata Kuliah</h1>
+
+    <p>Jumlah course: {{ count($courses) }}</p>
+
+    @if (count($courses) === 0)
+        <p>Belum ada data mata kuliah.</p>
+    @else
+        <table border="1" cellpadding="8" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>Kode</th>
+                    <th>Nama</th>
+                    <th>SKS</th>
+                    <th>Dosen</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($courses as $course)
+                    <tr>
+                        <td>{{ $course->kode }}</td>
+                        <td>{{ $course->nama }}</td>
+                        <td>{{ $course->sks }}</td>
+                        <td>{{ $course->dosen }}</td>
+                        <td>
+                            <a href="{{ route('courses.show', $course) }}">
+                                Lihat Detail
+                            </a>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @endif
+
+</x-layout>
+```
+4. courses/show.blade.php — detail satu mata kuliah.
+```php
+{{-- resources/views/courses/show.blade.php --}}
+<x-layout title="Detail Mata Kuliah">
+
+    <div class="container">
+        <h1>{{ $course['name'] }}</h1>
+
+        <p>
+            <strong>Kode Mata Kuliah:</strong>
+            {{ $course['code'] }}
+        </p>
+
+        <p>
+            <strong>Dosen:</strong>
+            {{ $course['lecturer'] }}
+        </p>
+
+        <p>
+            <strong>Deskripsi:</strong>
+            {{ $course['description'] }}
+        </p>
+
+        <a href="{{ route('courses.index') }}">
+            ← Kembali ke Daftar Mata Kuliah
+        </a>
+    </div>
+
+</x-layout>
+```
+5. Semua tautan memakai route().
+```php
+Route::get('/courses', [CourseController::class, 'index'])
+    ->name('courses.index');
+
+Route::get('/courses/{course}', [CourseController::class, 'show'])
+    ->name('courses.show');
+```
+6. Halaman 404 kustom (resources/views/errors/404.blade.php).
+```php
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Halaman Tidak Ditemukan</title>
+</head>
+<body>
+    <div class="container">
+        <div class="illustration">🔍</div>
+        <div class="code">404</div>
+        <div class="title">Halaman Tidak Ditemukan</div>
+        <p class="desc">
+            Maaf, halaman yang Anda cari tidak tersedia atau mungkin sudah dipindahkan.
+        </p>
+        <a href="{{ url('/') }}" class="btn">Kembali ke Beranda</a>
+    </div>
+</body>
+</html>
+
+```
