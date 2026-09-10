@@ -12,12 +12,34 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('courses', function (Blueprint $table) {
+
             $table->id();
-            $table->string('kode')->nullable();
-            $table->string('nama')->nullable();
-            $table->integer('sks')->nullable();
-            $table->string('dosen')->nullable();
+
+            $table->string('code')->unique();
+
+            $table->string('name');
+
+            $table->text('description')->nullable();
+
+            $table->unsignedTinyInteger('sks');
+
+            $table->foreignId('lecturer_id')
+                  ->constrained('users')
+                  ->restrictOnDelete();
+
+            $table->enum('status', [
+                'draft',
+                'active',
+                'archived'
+            ])->default('draft');
+
             $table->timestamps();
+
+            $table->unique([
+                'course_id',
+                'user_id'
+            ]);
+
         });
     }
 
@@ -27,7 +49,5 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('courses');
-        Schema::table('courses', function (Blueprint $table) {
-        });
     }
 };

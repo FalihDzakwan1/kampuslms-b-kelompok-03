@@ -21,7 +21,7 @@ return new class extends Migration
                   ->cascadeOnDelete();
 
             $table->timestamps();
-
+            
             $table->unique([
                 'course_id',
                 'user_id'
