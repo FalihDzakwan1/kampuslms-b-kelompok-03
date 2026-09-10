@@ -27,9 +27,8 @@ class CourseFactory extends Factory
             'sks' => fake()->numberBetween(2, 4),
 
             'lecturer_id' => User::where('role', 'dosen')
-                                 ->inRandomOrder()
-                                 ->first()
-                                 ->id,
+                     ->inRandomOrder()
+                     ->first()?->id,
 
             'status' => 'active',
         ];
