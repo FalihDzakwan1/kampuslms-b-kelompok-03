@@ -25,7 +25,7 @@ return new class extends Migration
 
             $table->foreignId('lecturer_id')
                   ->constrained('users')
-                  ->cascadeOnDelete();
+                  ->restrictOnDelet();
 
             $table->enum('status', [
                 'draft',
