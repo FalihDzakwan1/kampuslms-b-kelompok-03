@@ -72,11 +72,6 @@ class UserController extends Controller
             ]);
 
 
-            // role diisi manual
-            $user->role = $validated['role'];
-            $user->save();
-
-
             return redirect()
                 ->route('users.show', $user);
 
