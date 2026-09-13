@@ -4,6 +4,9 @@
 ---
 BREAK — Lima kerusakan (45 menit)
 
+ERD 
+<img src="image/ERD.jpeg" width="500">
+
 1. Hapus unique(['course_id','user_id']) dari course_user, lalu daftarkan mahasiswa yang sama dua kali
 
 Ketika menghapus table unik dibawah ini : 
