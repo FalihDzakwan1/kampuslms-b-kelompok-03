@@ -1,5 +1,40 @@
 ### Nama : Indriani Anwar
 #### NIM : 10241036
+---
+READ — Baca skema sebelum menulisnya (30 menit)
+
+1. Untuk setiap foreign key, tentukan perilaku onDelete-nya dan tuliskan alasannya.
+
+| Foreign Key | Relasi | `onDelete` | Alasan |
+|---|---|---|---|
+| `courses.lecturer_id → users.id` | User (dosen) mengajar course | `restrict` / `no action` | Mata kuliah tidak boleh otomatis terhapus ketika dosen dihapus karena data akademik harus tetap tersedia. Penghapusan dosen harus dicek terlebih dahulu atau dialihkan ke dosen lain. |
+| `course_user.course_id → courses.id` | Course memiliki peserta | `cascade` | Data peserta hanya relevan jika mata kuliah masih ada. Jika mata kuliah dihapus, data pendaftaran peserta juga harus ikut dihapus agar tidak menjadi data yatim (orphan record). |
+| `course_user.user_id → users.id` | User terdaftar dalam course | `cascade` | Jika akun mahasiswa/dosen dihapus, data keikutsertaannya pada mata kuliah tidak diperlukan lagi sehingga dapat dihapus otomatis. |
+| `materials.course_id → courses.id` | Course memiliki materi | `cascade` | Materi tidak memiliki arti tanpa mata kuliah induknya. Jika course dihapus, semua materi terkait ikut dihapus. |
+| `materials.uploaded_by → users.id` | User mengunggah materi | `set null` | Riwayat materi sebaiknya tetap tersedia walaupun akun pengunggah dihapus. Kolom `uploaded_by` harus dibuat nullable agar dapat dikosongkan. |
+| `assignments.course_id → courses.id` | Course memiliki tugas | `cascade` | Tugas merupakan bagian dari mata kuliah. Jika mata kuliah dihapus, tugas juga harus dihapus. |
+| `assignments.created_by → users.id` | User membuat tugas | `set null` | Informasi tugas tetap penting untuk histori pembelajaran meskipun pembuat tugas sudah tidak aktif. |
+| `submissions.assignment_id → assignments.id` | Assignment memiliki submission | `cascade` | Submission hanya bermakna sebagai jawaban dari tugas tertentu. Jika tugas dihapus, pengumpulan mahasiswa juga tidak diperlukan. |
+| `submissions.user_id → users.id` | User mengumpulkan tugas | `restrict` / `set null` | Nilai dan histori pengumpulan mahasiswa perlu dipertahankan untuk kebutuhan akademik. Data tidak sebaiknya langsung hilang. |
+| `grades.submission_id → submissions.id` | Submission memiliki nilai | `cascade` | Nilai tidak dapat berdiri sendiri tanpa submission yang dinilai. Jika submission hilang, nilai terkait juga harus ikut hilang. |
+| `grades.graded_by → users.id` | User memberi nilai | `set null` | Riwayat nilai tetap tersimpan walaupun akun dosen pemberi nilai sudah dihapus. |
+| `notifications.notifiable_id → users.id` | User menerima notifikasi | `cascade` | Notifikasi merupakan data milik user tertentu sehingga dapat dihapus ketika user sudah tidak ada. |
+
+2. Jawab: kalau seorang dosen dihapus, apa yang terjadi pada mata kuliahnya? Kenapa dirancang begitu?
+
+Jika seorang dosen dihapus dari sistem, maka mata kuliah yang dimiliki oleh dosen tersebut **tidak ikut terhapus**. Relasi antara tabel `users` dan `courses` pada atribut `courses.lecturer_id` sebaiknya menggunakan perilaku `onDelete: restrict` atau `no action`. Hal ini bertujuan untuk menjaga integritas data akademik karena mata kuliah merupakan data penting yang memiliki keterkaitan dengan peserta, materi, tugas, submission, dan nilai mahasiswa.
+
+Penghapusan dosen secara otomatis menggunakan `cascade` dapat menyebabkan kehilangan banyak data yang masih dibutuhkan, seperti riwayat pembelajaran dan aktivitas mahasiswa. Oleh karena itu, sistem sebaiknya mencegah penghapusan dosen secara langsung atau menyediakan mekanisme pemindahan mata kuliah kepada dosen lain. Dengan rancangan ini, data akademik tetap tersimpan meskipun akun dosen sudah tidak aktif.
+
+---
+
+3. Jawab: kenapa grades.submission_id bersifat unique, bukan sekadar index biasa?
+
+Kolom `grades.submission_id` dibuat menggunakan constraint **unique** karena memiliki aturan bisnis bahwa satu submission hanya boleh memiliki satu nilai. Setiap pengumpulan tugas dari mahasiswa hanya dapat dinilai satu kali sehingga hubungan antara tabel `submissions` dan `grades` adalah relasi **one-to-one (1:1)**.
+
+Jika hanya menggunakan index biasa, database masih memungkinkan terdapat beberapa record nilai untuk satu submission yang sama. Kondisi tersebut dapat menyebabkan inkonsistensi data, misalnya satu tugas memiliki beberapa nilai berbeda dari proses penilaian yang sama. Dengan menggunakan `unique`, database dapat memastikan bahwa setiap submission hanya memiliki maksimal satu data grade.
+
+Selain meningkatkan performa pencarian, penggunaan unique constraint juga berfungsi sebagai validasi pada tingkat database sehingga aturan bisnis tetap terjaga meskipun terjadi kesalahan pada sisi aplikasi.
 
 ---
 BREAK — Lima kerusakan (45 menit)
@@ -188,7 +223,7 @@ Pada tahap ini dibuat Factory dan Seeder untuk menghasilkan data awal pada datab
 
 Seeder dibuat untuk menghasilkan tiga akun demo yang terdiri dari akun admin, akun dosen, dan akun mahasiswa.
 
-Contoh pembuatan akun demo:
+Contoh pembuatan akun:
 ```php
 User::factory()->create([
     'name' => 'Admin Demo',
