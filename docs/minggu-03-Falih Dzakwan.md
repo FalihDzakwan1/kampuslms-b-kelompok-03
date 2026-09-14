@@ -3,6 +3,29 @@
 #### WEEK 3
 
 
+READ
+1. Gambar ulang ERD dari spesifikasi di papan/kertas, tanpa melihat dokumen.
+![alt text](image/ERD.jpeg)
+
+2. Untuk setiap foreign key, tentukan perilaku onDelete-nya dan tuliskan alasannya.
+- courses.lecturer_id menggunakan restrictOnDelete()	
+- materials.course_id menggunakan cascadeOnDelete()	
+- assignments.course_id menggunakan cascadeOnDelete()	
+- course_user.course_id menggunnakan cascadeOnDelete()	
+- course_user.user_id menggunakan restrictOnDelete()	
+- materials.uploaded_by menggunakan restrictOnDelete()	
+- assignments.created_by menggunakan restrictOnDelete()	
+- submissions.assignment_id menggunakan cascadeOnDelete()	
+- submissions.user_id menggunakan restrictOnDelete()	
+- grades.submission_id menggunakan cascadeOnDelete() 
+- grades.graded_by menggunakan restrictOnDelete()	
+
+3. Jawab: kalau seorang dosen dihapus, apa yang terjadi pada mata kuliahnya? Kenapa dirancang begitu?
+Dengan menggunakan restrictOnDelete dosen tidak akan bisa dihapus karena masih terikat dengan mata kuliahnya, namun jika dipaksa menghapus dosen, maka mata kuliahnya tetap ada dan tidak ikut terhapus, tapi data dosen didalamnya akan menjadi null
+
+4. Jawab: kenapa grades.submission_id bersifat unique, bukan sekadar index biasa?
+bersifat unique karena menjamin relasi ini satu submission cuma boleh punya satu nilai.
+
 BREAK
 
 1. Hapus `unique(['course_id','user_id'])` dari `course_user`, lalu daftarkan mahasiswa yang sama dua kali
