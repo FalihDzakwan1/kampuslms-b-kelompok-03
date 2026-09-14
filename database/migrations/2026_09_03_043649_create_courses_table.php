@@ -25,7 +25,7 @@ return new class extends Migration
 
             $table->foreignId('lecturer_id')
                   ->constrained('users')
-                  ->restrictOnDelet();
+                  ->restrictOnDelete();
 
             $table->enum('status', [
                 'draft',
@@ -34,6 +34,11 @@ return new class extends Migration
             ])->default('draft');
 
             $table->timestamps();
+
+            $table->unique([
+                'course_id',
+                'user_id'
+            ]);
 
         });
     }
