@@ -4,7 +4,7 @@
 READ — Baca skema sebelum menulisnya (30 menit)
 
 ERD 
-<img src="image/ERD.jpeg" width="500">
+<img src="image/ERD.jpeg" width="500"> 
 
 1. Untuk setiap foreign key, tentukan perilaku onDelete-nya dan tuliskan alasannya.
 
