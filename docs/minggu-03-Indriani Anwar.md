@@ -10,30 +10,30 @@ ERD
 
 | Foreign Key | Relasi | `onDelete` | Alasan |
 |---|---|---|---|
-| `courses.lecturer_id → users.id` | User (dosen) mengajar course | `restrict` / `no action` | Mata kuliah tidak boleh otomatis terhapus ketika dosen dihapus karena data akademik harus tetap tersedia. Penghapusan dosen harus dicek terlebih dahulu atau dialihkan ke dosen lain. |
-| `course_user.course_id → courses.id` | Course memiliki peserta | `cascade` | Data peserta hanya relevan jika mata kuliah masih ada. Jika mata kuliah dihapus, data pendaftaran peserta juga harus ikut dihapus agar tidak menjadi data yatim (orphan record). |
-| `course_user.user_id → users.id` | User terdaftar dalam course | `cascade` | Jika akun mahasiswa/dosen dihapus, data keikutsertaannya pada mata kuliah tidak diperlukan lagi sehingga dapat dihapus otomatis. |
-| `materials.course_id → courses.id` | Course memiliki materi | `cascade` | Materi tidak memiliki arti tanpa mata kuliah induknya. Jika course dihapus, semua materi terkait ikut dihapus. |
-| `materials.uploaded_by → users.id` | User mengunggah materi | `set null` | Riwayat materi sebaiknya tetap tersedia walaupun akun pengunggah dihapus. Kolom `uploaded_by` harus dibuat nullable agar dapat dikosongkan. |
-| `assignments.course_id → courses.id` | Course memiliki tugas | `cascade` | Tugas merupakan bagian dari mata kuliah. Jika mata kuliah dihapus, tugas juga harus dihapus. |
-| `assignments.created_by → users.id` | User membuat tugas | `set null` | Informasi tugas tetap penting untuk histori pembelajaran meskipun pembuat tugas sudah tidak aktif. |
-| `submissions.assignment_id → assignments.id` | Assignment memiliki submission | `cascade` | Submission hanya bermakna sebagai jawaban dari tugas tertentu. Jika tugas dihapus, pengumpulan mahasiswa juga tidak diperlukan. |
-| `submissions.user_id → users.id` | User mengumpulkan tugas | `restrict` / `set null` | Nilai dan histori pengumpulan mahasiswa perlu dipertahankan untuk kebutuhan akademik. Data tidak sebaiknya langsung hilang. |
-| `grades.submission_id → submissions.id` | Submission memiliki nilai | `cascade` | Nilai tidak dapat berdiri sendiri tanpa submission yang dinilai. Jika submission hilang, nilai terkait juga harus ikut hilang. |
-| `grades.graded_by → users.id` | User memberi nilai | `set null` | Riwayat nilai tetap tersimpan walaupun akun dosen pemberi nilai sudah dihapus. |
-| `notifications.notifiable_id → users.id` | User menerima notifikasi | `cascade` | Notifikasi merupakan data milik user tertentu sehingga dapat dihapus ketika user sudah tidak ada. |
+| `courses.lecturer_id → users.id` | User (dosen) mengajar course | `restrict` | Data course tidak dapat dihapus jika masih memiliki referensi dosen. Penghapusan akun dosen harus dicek terlebih dahulu agar tidak menghilangkan histori akademik yang masih digunakan. |
+| `course_user.course_id → courses.id` | Course memiliki peserta | `cascade` | Jika sebuah course dihapus, seluruh data peserta yang terdaftar pada course tersebut akan ikut dihapus karena data pendaftaran tidak memiliki arti tanpa course induknya. |
+| `course_user.user_id → users.id` | User terdaftar dalam course | `cascade` | Jika data user dihapus, seluruh data keikutsertaan user pada course akan ikut terhapus karena relasi tersebut sudah tidak diperlukan. |
+| `materials.course_id → courses.id` | Course memiliki materi | `cascade` | Materi merupakan bagian dari course sehingga ketika course dihapus, seluruh materi yang terkait juga ikut dihapus untuk mencegah data yatim (*orphan record*). |
+| `materials.uploaded_by → users.id` | User mengunggah materi | `set null` | Jika akun pengunggah dihapus, data materi tetap dipertahankan karena masih digunakan dalam course. Kolom `uploaded_by` dikosongkan karena pengguna asal sudah tidak tersedia. |
+| `assignments.course_id → courses.id` | Course memiliki tugas | `cascade` | Assignment bergantung pada course sebagai induknya. Jika course dihapus, seluruh tugas terkait ikut dihapus karena tidak memiliki konteks tanpa course tersebut. |
+| `assignments.created_by → users.id` | User membuat tugas | `restrict` | User yang membuat tugas tidak dapat dihapus selama masih memiliki tugas terkait. Hal ini menjaga informasi pembuat tugas dan histori akademik tetap tersedia. |
+| `submissions.assignment_id → assignments.id` | Assignment memiliki submission | `cascade` | Submission hanya merupakan jawaban dari assignment tertentu. Jika assignment dihapus, data pengumpulan mahasiswa juga ikut dihapus karena tidak memiliki referensi tugas. |
+| `submissions.user_id → users.id` | User mengumpulkan tugas | `restrict` | Data submission mahasiswa harus tetap tersedia sebagai bukti pengumpulan dan histori akademik. User tidak dapat dihapus selama masih memiliki data submission. |
+| `grades.submission_id → submissions.id` | Submission memiliki nilai | `cascade` | Nilai hanya berlaku untuk submission tertentu. Jika submission dihapus, data nilai terkait juga harus ikut dihapus agar tidak terdapat nilai tanpa sumber penilaian. |
+| `grades.graded_by → users.id` | User memberi nilai | `restrict` | Data pengguna yang memberikan nilai harus tetap tersedia untuk menjaga transparansi dan histori proses penilaian. Penghapusan user harus dilakukan setelah relasi penilaian ditangani. |
+
 
 2. Jawab: kalau seorang dosen dihapus, apa yang terjadi pada mata kuliahnya? Kenapa dirancang begitu?
 
-Jika seorang dosen dihapus dari sistem, maka mata kuliah yang dimiliki oleh dosen tersebut **tidak ikut terhapus**. Relasi antara tabel `users` dan `courses` pada atribut `courses.lecturer_id` sebaiknya menggunakan perilaku `onDelete: restrict` atau `no action`. Hal ini bertujuan untuk menjaga integritas data akademik karena mata kuliah merupakan data penting yang memiliki keterkaitan dengan peserta, materi, tugas, submission, dan nilai mahasiswa.
+Jika seorang dosen dihapus dari sistem, maka mata kuliah yang pernah diampu oleh dosen tersebut tidak ikut terhapus. Relasi antara tabel users dan courses pada atribut courses.lecturer_id sebaiknya menggunakan perilaku onDelete: restrict untuk mencegah penghapusan dosen yang masih memiliki keterkaitan dengan data mata kuliah. Hal ini bertujuan menjaga integritas data akademik karena mata kuliah merupakan data penting yang berhubungan dengan peserta, materi, tugas, submission, dan nilai mahasiswa.
 
-Penghapusan dosen secara otomatis menggunakan `cascade` dapat menyebabkan kehilangan banyak data yang masih dibutuhkan, seperti riwayat pembelajaran dan aktivitas mahasiswa. Oleh karena itu, sistem sebaiknya mencegah penghapusan dosen secara langsung atau menyediakan mekanisme pemindahan mata kuliah kepada dosen lain. Dengan rancangan ini, data akademik tetap tersimpan meskipun akun dosen sudah tidak aktif.
+Namun, apabila penghapusan dosen tetap dipaksakan, sistem dapat menerapkan mekanisme set null pada atribut lecturer_id, sehingga data mata kuliah tetap tersedia tetapi tidak lagi memiliki referensi terhadap dosen tersebut. Dengan pendekatan ini, informasi akademik seperti materi, tugas, dan aktivitas mahasiswa tetap tersimpan, sementara hubungan dengan dosen yang sudah tidak aktif dihapus. Oleh karena itu, penghapusan dosen sebaiknya dilakukan melalui proses verifikasi terlebih dahulu, seperti pemindahan mata kuliah ke dosen lain atau mengosongkan atribut pengampu ketika akun dosen benar-benar sudah tidak digunakan.
 
 ---
 
 3. Jawab: kenapa grades.submission_id bersifat unique, bukan sekadar index biasa?
 
-Kolom `grades.submission_id` dibuat menggunakan constraint **unique** karena memiliki aturan bisnis bahwa satu submission hanya boleh memiliki satu nilai. Setiap pengumpulan tugas dari mahasiswa hanya dapat dinilai satu kali sehingga hubungan antara tabel `submissions` dan `grades` adalah relasi **one-to-one (1:1)**.
+Kolom `grades.submission_id` dibuat menggunakan constraint **unique** karena memiliki aturan bahwa satu submission hanya boleh memiliki satu nilai. Setiap pengumpulan tugas dari mahasiswa hanya dapat dinilai satu kali sehingga hubungan antara tabel `submissions` dan `grades` adalah relasi **one-to-one (1:1)**.
 
 Jika hanya menggunakan index biasa, database masih memungkinkan terdapat beberapa record nilai untuk satu submission yang sama. Kondisi tersebut dapat menyebabkan inkonsistensi data, misalnya satu tugas memiliki beberapa nilai berbeda dari proses penilaian yang sama. Dengan menggunakan `unique`, database dapat memastikan bahwa setiap submission hanya memiliki maksimal satu data grade.
 
