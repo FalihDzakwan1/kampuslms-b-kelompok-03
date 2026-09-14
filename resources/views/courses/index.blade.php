@@ -81,7 +81,7 @@
 
                 <select class="status-filter">
                     <option value="">Semua Status</option>
-                    <option value="aktif">Aktif</option>
+                    <option value="active">Aktif</option>
                     <option value="draft">Draft</option>
                 </select>
 
@@ -179,7 +179,7 @@
                                     {{-- Status --}}
                                     <td>
 
-                                        @if (($course->status ?? 'aktif') === 'aktif')
+                                        @if (($course->status ?? 'active') === 'active')
 
                                             <span class="status-active">
                                                 <span class="status-active-dot"></span>
