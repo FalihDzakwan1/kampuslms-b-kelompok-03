@@ -2,42 +2,27 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
+        'nim_nip',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -45,19 +30,34 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-    public function courses()
+
+    // Dosen - mengajar mata kuliah
+    public function taughtCourses()
     {
-        return $this->hasMany(
-            Course::class,
-            'lecturer_id'
-        );
+        return $this->hasMany(Course::class, 'lecturer_id');
     }
 
-
-    public function enrolledCourses()
+    // Mahasiswa - terdaftar di mata kuliah
+    public function courses()
     {
-        return $this->belongsToMany(
-            Course::class
-        )->withTimestamps();
+        return $this->belongsToMany(Course::class)->withPivot('enrolled_at')->withTimestamps();
+    }
+
+    // Mahasiswa - mengumpulkan tugas
+    public function submissions()
+    {
+        return $this->hasMany(Submission::class);
+    }
+
+    // Dosen/Admin - mengunggah materi
+    public function materials()
+    {
+        return $this->hasMany(Material::class, 'uploaded_by');
+    }
+
+    // Dosen - memberi nilai
+    public function gradesGiven()
+    {
+        return $this->hasMany(Grade::class, 'graded_by');
     }
 }
