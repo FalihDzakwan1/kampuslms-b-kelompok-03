@@ -10,9 +10,21 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::all();
+        $users = User::query()
+            ->when($request->filled('q'), fn ($query) =>
+                $query->where(fn($q) => 
+                    $q->where('name', 'like', '%' . $request->q . '%')
+                      ->orWhere('email', 'like', '%' . $request->q . '%')
+                )
+            )
+            ->when($request->filled('role'), fn ($query) =>
+                $query->where('role', $request->role)
+            )
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
 
         return view('users.index', compact('users'));
     }
