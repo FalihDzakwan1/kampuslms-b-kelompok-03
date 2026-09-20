@@ -35,11 +35,6 @@ return new class extends Migration
 
             $table->timestamps();
 
-            $table->unique([
-                'course_id',
-                'user_id'
-            ]);
-
         });
     }
 

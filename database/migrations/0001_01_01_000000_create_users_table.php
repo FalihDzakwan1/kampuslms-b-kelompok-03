@@ -22,8 +22,11 @@ return new class extends Migration
                 'dosen',
                 'mahasiswa',
             ])->default('mahasiswa');
+            $table->string('nim_nip')->unique()->nullable();
+            $table->index('role');
             $table->rememberToken();
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
