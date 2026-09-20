@@ -17,20 +17,12 @@
             </div>
         </section>
 
-        <div class="floating-toolbar">
-            <div class="course-search">
-                <span class="course-search-icon">⌕</span>
-                <input type="text" placeholder="Cari pengguna...">
-            </div>
-            <div class="toolbar-actions">
-                <a href="{{ route('users.create') }}" class="btn-primary">+ Tambah Pengguna</a>
-            </div>
-        </div>
+        <form action="{{ route('users.index') }}" method="GET" class="floating-toolbar"><div class="course-search"><span class="course-search-icon"></span><input type="text" name="q" value="{{ request('q') }}" placeholder="Cari pengguna..."></div><div class="toolbar-actions"><select name="role" class="status-filter" onchange="this.form.submit()"><option value="">Semua Peran</option><option value="admin" {{ request('role') === 'admin' ? 'selected' : '' }}>Admin</option><option value="dosen" {{ request('role') === 'dosen' ? 'selected' : '' }}>Dosen</option><option value="mahasiswa" {{ request('role') === 'mahasiswa' ? 'selected' : '' }}>Mahasiswa</option></select><a href="{{ route('users.create') }}" class="btn-primary">+ Tambah Pengguna</a></div></form>
 
         <section class="table-card">
             <div class="table-card-header p-6 border-b border-gray-200 bg-gray-50 flex justify-between items-center rounded-t-3xl">
                 <div class="font-bold text-gray-700">Data Pengguna</div>
-                <span class="text-sm text-gray-500">{{ count($users) }} Pengguna</span>
+                <span class="text-sm text-gray-500">{{ is_countable($users) ? count($users) : $users->total() }} Pengguna</span>
             </div>
 
             @if ($users->count())
@@ -66,15 +58,15 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex gap-2">
-                                            <a href="{{ route('users.edit', $user) }}" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-xs font-medium">Edit</a>
+                                            <a href="{{ route('users.edit', $user) }}" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-xs font-medium">Edit</a> <form action="{{ route('users.destroy', $user) }}" method="POST" class="inline">@csrf @method('DELETE') <button type="submit" class="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 text-xs font-medium" onclick="return confirm('Yakin ingin menghapus pengguna ini?')">Hapus</button></form>
                                         </div>
                                     </td>
                                 </tr>
                             @endforeach
                         </tbody>
-                    </table>
-                </div>
-            @else
+                    </table></div>@if(is_object($users) && method_exists($users, 'hasPages') && $users->hasPages())<div class="p-6 border-t border-gray-100">{{ $users->links() }}</div>
+@endif
+@else
                 <div class="p-16 text-center text-gray-500">
                     <div class="text-5xl mb-4">👥</div>
                     <p class="font-semibold">Belum ada data pengguna.</p>

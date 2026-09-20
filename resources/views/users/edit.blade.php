@@ -10,16 +10,6 @@
                 <p class="text-gray-500 text-sm mt-1">Perbarui informasi untuk pengguna <strong>{{ $user->name }}</strong></p>
             </div>
 
-            @if ($errors->any())
-                <div class="bg-red-50 text-red-600 p-4 rounded-lg mb-6 border border-red-200">
-                    <ul class="list-disc ml-5 text-sm">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
             <form action="{{ route('users.update', $user) }}" method="POST" class="flex flex-col gap-5">
                 @csrf
                 @method('PUT')
@@ -42,7 +32,7 @@
                         <option value="admin"     {{ (old('role') ?? $user->role) == 'admin'     ? 'selected' : '' }}>Admin</option>
                         <option value="dosen"     {{ (old('role') ?? $user->role) == 'dosen'     ? 'selected' : '' }}>Dosen</option>
                         <option value="mahasiswa" {{ (old('role') ?? $user->role) == 'mahasiswa' ? 'selected' : '' }}>Mahasiswa</option>
-                    </select>
+                    </select> @error('role')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
 
                 <div class="pt-4 border-t border-gray-100 flex justify-end gap-3">
