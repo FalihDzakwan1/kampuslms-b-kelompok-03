@@ -115,7 +115,7 @@ csrf berfungsi untuk melindungi aplikasi dari pengiriman request palsu yang mema
 contoh : 
 open ```courses/create.blade.php``` 
 
-Hasil : <img src="image/hapuscsrf.jpeg" width="500"> 
+Hasil : <img src="image/hapuscsrf.png" width="500"> 
 
 Hal tersebut dikarenakan laravel tidak menemukan atau tidak dapat memvalidasi CSRF token pada request yang masuk dikarenakan csrf pada create mata kuliah telah dihapus. 
 
@@ -125,7 +125,7 @@ pada ```CourseController``` atau ```UserController``` terdapat ```$request->vali
 
 Pengujian ini bertujuan untuk melihat hasil jika ```$request->all()``` dijalankan, namun sebelum itu ketika ingin mencoba mengganti status jadi superadmin, maka mengubah ```'status'      => ['required', 'in:draft,active,archived']``` menjadi ```'status'      => ['required']``` Pada ```StoreCourseRequest```
 
-Hasil : <img src="image/superadmin.jpeg" width="500"> 
+Hasil : <img src="image/superadmin.png" width="500"> 
 
 Hasil tersebut dikarenakan request dapat diterima keseluruhan tanpa di validasi terlebih dahulu.
 
@@ -141,7 +141,7 @@ Harus dihapus karena bagian tersebut membuat foreign key constraint pada databas
 
 Sedangkan ->restrictOnDelete() hanya mengatur penghapusan data user yang masih digunakan oleh course, sehingga tidak berpengaruh pada proses memasukkan lecturer_id baru.
 
-Hasil : <img src="image/lecture999.jpeg" width="500"> 
+Hasil : <img src="image/lecture999.png" width="500"> 
 
 Hal tersebut dikarenakan telah menghapus ketentuan validasi `exists` pada `lecturer_id` dan menghapus foreign key pada database, sehingga data dengan `lecturer_id` yang tidak memiliki relasi pada tabel `users` tetap dapat disimpan.
 
