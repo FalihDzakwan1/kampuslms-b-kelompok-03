@@ -5,13 +5,29 @@ namespace App\Http\Controllers;
 use App\Models\Course;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreCourseRequest;
+use App\Http\Requests\UpdateCourseRequest;
 
 class CourseController extends Controller
 {
     // Menampilkan daftar mata kuliah
-    public function index()
+    public function index(Request $request)
     {
-        $courses = Course::with('lecturer')->get();
+        $courses = Course::query()
+            ->with('lecturer')
+            ->when($request->filled('q'), fn ($query) =>
+                $query->where(fn($q) => 
+                    $q->where('name', 'like', '%' . $request->q . '%')
+                      ->orWhere('code', 'like', '%' . $request->q . '%')
+                )
+            )
+            ->when($request->filled('status'), fn ($query) =>
+                $query->where('status', $request->status)
+            )
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
+
         return view('courses.index', compact('courses'));
     }
 
@@ -32,20 +48,12 @@ class CourseController extends Controller
         return view('courses.create', compact('lecturers'));
     }
 
-      public function store(Request $request)
+    public function store(StoreCourseRequest $request)
     {
-        $validated = $request->validate([
-            'code' => 'required|string|max:20|unique:courses,code',
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'sks' => 'required|integer|min:1|max:6',
-            'lecturer_id' => 'required|exists:users,id',
-            'status' => 'required|in:draft,active,archived',
-        ]);
+        Course::create($request->validated());
 
-        Course::create($validated);
-
-        return redirect()->route('courses.index');
+        return redirect()->route('courses.index')
+                         ->with('success', 'Mata kuliah berhasil ditambahkan.');
     }
     // Menampilkan form edit
     public function edit(Course $course)
@@ -60,21 +68,13 @@ class CourseController extends Controller
 
 
     // Update data mata kuliah
-    public function update(Request $request, Course $course)
+    public function update(UpdateCourseRequest $request, Course $course)
     {
-        $validated = $request->validate([
-            'code' => 'required|string|max:20|unique:courses,code,' . $course->id,
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'sks' => 'required|integer|min:1|max:6',
-            'lecturer_id' => 'required|exists:users,id',
-            'status' => 'required|in:draft,active,archived',
-        ]);
-
-        $course->update($validated);
+        $course->update($request->validated());
 
         return redirect()
-            ->route('courses.show', $course);
+            ->route('courses.show', $course)
+            ->with('success', 'Mata kuliah berhasil diperbarui.');
     }
 
     //Hapus data mata kuliah
