@@ -10,16 +10,6 @@
                 <p class="text-gray-500 text-sm mt-1">Masukkan data mata kuliah baru ke dalam sistem</p>
             </div>
 
-            @if ($errors->any())
-                <div class="bg-red-50 text-red-600 p-4 rounded-lg mb-6 border border-red-200">
-                    <ul class="list-disc ml-5 text-sm">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
             <form action="{{ route('courses.store') }}" method="POST" class="flex flex-col gap-5">
                 @csrf
 
@@ -28,11 +18,17 @@
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Kode Mata Kuliah</label>
                         <input type="text" name="code" value="{{ old('code') }}" placeholder="Contoh: SI2514024"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                        @error('code')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">SKS</label>
                         <input type="number" name="sks" value="{{ old('sks') }}" min="1" max="6" placeholder="Contoh: 3"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                        @error('sks')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
                 </div>
 
@@ -40,6 +36,9 @@
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Mata Kuliah</label>
                     <input type="text" name="name" value="{{ old('name') }}" placeholder="Contoh: Pemrograman Web"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                    @error('name')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <div>
@@ -52,6 +51,9 @@
                             </option>
                         @endforeach
                     </select>
+                    @error('lecturer_id')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <div>
@@ -61,11 +63,17 @@
                         <option value="active"   {{ old('status') == 'active'   ? 'selected' : '' }}>Aktif</option>
                         <option value="archived" {{ old('status') == 'archived' ? 'selected' : '' }}>Arsip</option>
                     </select>
+                    @error('status')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Deskripsi Singkat</label>
                     <textarea name="description" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">{{ old('description') }}</textarea>
+                    @error('description')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <div class="pt-4 border-t border-gray-100 flex justify-end gap-3">

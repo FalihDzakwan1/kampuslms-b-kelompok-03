@@ -10,16 +10,6 @@
                 <p class="text-gray-500 text-sm mt-1">Masukkan data pengguna baru ke dalam sistem</p>
             </div>
 
-            @if ($errors->any())
-                <div class="bg-red-50 text-red-600 p-4 rounded-lg mb-6 border border-red-200">
-                    <ul class="list-disc ml-5 text-sm">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
             <form action="{{ route('users.store') }}" method="POST" class="flex flex-col gap-5">
                 @csrf
 
@@ -47,7 +37,7 @@
                         @foreach($allowedRoles as $role)
                             <option value="{{ $role }}" {{ old('role') == $role ? 'selected' : '' }}>{{ ucfirst($role) }}</option>
                         @endforeach
-                    </select>
+                    </select> @error('role')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
 
                 <div class="pt-4 border-t border-gray-100 flex justify-end gap-3">
