@@ -32,7 +32,9 @@ class UserController extends Controller
 
     public function create()
     {
-        return view('users.create');
+    $allowedRoles = ['dosen', 'mahasiswa'];
+
+    return view('users.create', compact('allowedRoles'));
     }
 
 
@@ -72,7 +74,7 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
             $validated = $request->validate([
-                'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
             'role' => 'required|in:admin,dosen,mahasiswa',
             ]);
