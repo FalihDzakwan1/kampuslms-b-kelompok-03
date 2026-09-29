@@ -64,7 +64,7 @@
 
 
         {{-- Toolbar --}}
-        <form action="{{ route('courses.index') }}" method="GET" class="floating-toolbar"><div class="course-search"><span class="course-search-icon">??</span><input type="text" name="q" value="{{ request('q') }}" placeholder="Cari mata kuliah..."></div><div class="toolbar-actions"><select name="status" class="status-filter" onchange="this.form.submit()"><option value="">Semua Status</option><option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Aktif</option><option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>Draft</option><option value="archived" {{ request('status') === 'archived' ? 'selected' : '' }}>Arsip</option></select><a href="{{ route('courses.create') }}" class="btn-primary">+ Tambah Mata Kuliah</a></div></form>
+        <form action="{{ route('courses.index') }}" method="GET" class="floating-toolbar"><div class="course-search"><span class="course-search-icon"></span><input type="text" name="q" value="{{ request('q') }}" placeholder="Cari mata kuliah..."></div><div class="toolbar-actions"><select name="status" class="status-filter" onchange="this.form.submit()"><option value="">Semua Status</option><option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Aktif</option><option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>Draft</option><option value="archived" {{ request('status') === 'archived' ? 'selected' : '' }}>Arsip</option></select><a href="{{ route('courses.create') }}" class="btn-primary">+ Tambah Mata Kuliah</a></div></form>
 
 
         {{-- Course Table --}}
