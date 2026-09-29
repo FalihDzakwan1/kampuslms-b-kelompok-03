@@ -1,7 +1,7 @@
 <x-layout title="Detail Mata Kuliah | KampusLMS">
     <div class="page-container">
         <div class="mb-6">
-            <a href="{{ route('courses.index') }}" class="text-blue-600 hover:underline text-sm">← Kembali ke Daftar Mata Kuliah</a>
+            <a href="{{ route('admin.courses.index') }}" class="text-blue-600 hover:underline text-sm">← Kembali ke Daftar Mata Kuliah</a>
         </div>
 
         <div class="course-detail bg-white rounded-2xl shadow-lg border border-gray-100 mx-auto">
@@ -47,11 +47,11 @@
             </div>
 
             <div class="course-detail__actions gap-3">
-                <a href="{{ route('courses.edit', $course) }}" class="btn-primary">
+                <a href="{{ route('admin.courses.edit', $course) }}" class="btn-primary">
                     ✎ Edit Mata Kuliah
                 </a>
 
-                <form action="{{ route('courses.destroy', $course) }}" method="POST" class="inline">
+                <form action="{{ route('admin.courses.destroy', $course) }}" method="POST" class="inline">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="px-5 py-2 rounded-full bg-red-100 text-red-700 font-semibold hover:bg-red-200 transition"
