@@ -14,20 +14,19 @@
              KampusLMS
         </div>
 
-
         <a href="{{ route('dashboard') }}">
             Dashboard
         </a>
 
-
-        <a href="{{ route('dosen.courses.index') }}">
+        @auth
+        <a href="{{ route(auth()->user()->role . '.courses.index') }}">
             Mata Kuliah
         </a>
-
+        @endauth
 
         <a href="{{ route('tentang') }}">
             Tentang
-     </a>
+        </a>
 
     </nav>
 

@@ -116,8 +116,8 @@
         {{-- Toolbar --}}
         <form
             action="{{ auth()->user()->role === 'admin'
-                ? route('admin.courses.index')
-                : route('dosen.courses.index') }}"
+                ? route(auth()->user()->role . '.courses.index')
+                : route(auth()->user()->role . '.courses.index') }}"
             method="GET"
             class="floating-toolbar"
         >
@@ -175,8 +175,8 @@
 
                 <a
                     href="{{ auth()->user()->role === 'admin'
-                        ? route('admin.courses.create')
-                        : route('dosen.courses.create') }}"
+                        ? route(auth()->user()->role . '.courses.create')
+                        : route(auth()->user()->role . '.courses.create') }}"
                     class="btn-primary"
                 >
                     + Tambah Mata Kuliah
@@ -381,7 +381,7 @@
 
 
                                                 <a
-                                                    href="{{ route('admin.courses.edit', $course->id) }}"
+                                                    href="{{ route(auth()->user()->role . '.courses.edit', $course->id) }}"
                                                     class="action-btn action-btn-edit"
                                                 >
                                                     Edit
@@ -390,7 +390,7 @@
 
 
                                                 <form
-                                                    action="{{ route('admin.courses.destroy', $course->id) }}"
+                                                    action="{{ route(auth()->user()->role . '.courses.destroy', $course->id) }}"
                                                     method="POST"
                                                 >
 
@@ -419,7 +419,7 @@
 
 
                                                 <a
-                                                    href="{{ route('dosen.courses.edit', $course->id) }}"
+                                                    href="{{ route(auth()->user()->role . '.courses.edit', $course->id) }}"
                                                     class="action-btn action-btn-edit"
                                                 >
 
@@ -430,7 +430,7 @@
 
 
                                                 <form
-                                                    action="{{ route('dosen.courses.destroy', $course->id) }}"
+                                                    action="{{ route(auth()->user()->role . '.courses.destroy', $course->id) }}"
                                                     method="POST"
                                                 >
 
@@ -515,8 +515,8 @@
 
                     <a
                         href="{{ auth()->user()->role === 'admin'
-                            ? route('admin.courses.create')
-                            : route('dosen.courses.create') }}"
+                            ? route(auth()->user()->role . '.courses.create')
+                            : route(auth()->user()->role . '.courses.create') }}"
                         class="btn-primary"
                     >
 
