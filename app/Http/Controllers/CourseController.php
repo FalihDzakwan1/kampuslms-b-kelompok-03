@@ -82,6 +82,15 @@ class CourseController extends Controller
 
     public function show(Course $course)
     {
+        // TODO: Akan direfaktor menjadi CoursePolicy@view di minggu 7
+        $authUser = auth()->user();
+        abort_unless(
+            $authUser->role === 'admin'
+            || $course->lecturer_id === $authUser->id
+            || $course->students()->where('users.id', $authUser->id)->exists(),
+            403,
+            'Anda tidak memiliki akses ke sumber daya ini.'
+        );
 
         $course->load('lecturer');
 
@@ -144,7 +153,7 @@ class CourseController extends Controller
 
         return redirect()
             ->route(
-                'dosen.courses.index'
+                auth()->user()->role . '.courses.index'
             )
             ->with(
                 'success',
@@ -170,23 +179,12 @@ class CourseController extends Controller
 
     public function edit(Course $course)
     {
-
-        dd([
-            'user_id' => auth()->id(),
-            'user_role' => auth()->user()->role,
-            'course_id' => $course->id,
-            'course_lecturer_id' => $course->lecturer_id,
-        ]);
-
-
+        // TODO: Akan direfaktor menjadi CoursePolicy@update di minggu 7
         abort_unless(
-
             $course->lecturer_id === auth()->id()
-            ||
-            auth()->user()->role === 'admin',
-
-            403
-
+            || auth()->user()->role === 'admin',
+            403,
+            'Anda tidak memiliki akses ke sumber daya ini.'
         );
 
         $lecturers = User::where(
@@ -216,16 +214,12 @@ class CourseController extends Controller
         Course $course
     )
     {
-
-
+        // TODO: Akan direfaktor menjadi CoursePolicy@update di minggu 7
         abort_unless(
-
             $course->lecturer_id === auth()->id()
-            ||
-            auth()->user()->role === 'admin',
-
-            403
-
+            || auth()->user()->role === 'admin',
+            403,
+            'Anda tidak memiliki akses ke sumber daya ini.'
         );
 
 
@@ -237,11 +231,11 @@ class CourseController extends Controller
 
 
         return redirect()
-            ->route('dosen.courses.show', $course)
+            ->route(auth()->user()->role . '.courses.show', $course)
             ->with(
                 'success',
                 'Mata kuliah berhasil diperbarui.'
-    );
+            );
     }
 
     /*
@@ -254,16 +248,12 @@ class CourseController extends Controller
         Course $course
     )
     {
-
-
+        // TODO: Akan direfaktor menjadi CoursePolicy@delete di minggu 7
         abort_unless(
-
             $course->lecturer_id === auth()->id()
-            ||
-            auth()->user()->role === 'admin',
-
-            403
-
+            || auth()->user()->role === 'admin',
+            403,
+            'Anda tidak memiliki akses ke sumber daya ini.'
         );
 
 
@@ -274,7 +264,7 @@ class CourseController extends Controller
 
         return redirect()
             ->route(
-                'dosen.courses.index'
+                auth()->user()->role . '.courses.index'
             )
             ->with(
                 'success',
