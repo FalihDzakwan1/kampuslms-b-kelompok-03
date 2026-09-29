@@ -20,7 +20,7 @@ class UpdateCourseRequest extends FormRequest
                 'string', 
                 'max:50', 
                 Rule::unique('courses', 'code')->ignore($this->route('course'))
-            ],
+                ],
             'name'        => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'sks'         => ['required', 'integer', 'min:1', 'max:6'],
