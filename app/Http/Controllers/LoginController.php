@@ -28,7 +28,43 @@ class LoginController extends Controller
             $request->session()->regenerate();
 
 
-            return redirect('/');
+            $user = Auth::user();
+
+
+            // Redirect berdasarkan role
+
+            if ($user->role === 'admin') {
+
+                return redirect()
+                    ->route('admin.courses.index');
+
+            }
+
+
+            if ($user->role === 'dosen') {
+
+                return redirect()
+                    ->route('dosen.courses.index');
+
+            }
+
+
+            if ($user->role === 'mahasiswa') {
+
+                return redirect()
+                    ->route('mahasiswa.courses.index');
+
+            }
+
+
+            // Jika role tidak dikenali
+
+            Auth::logout();
+
+            return redirect('/login')
+                ->withErrors([
+                    'email' => 'Role pengguna tidak valid.'
+                ]);
 
         }
 
