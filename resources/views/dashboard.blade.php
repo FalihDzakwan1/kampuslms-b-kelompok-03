@@ -18,14 +18,14 @@
                 <div class="text-4xl mb-4">👥</div>
                 <h3 class="text-xl font-bold text-gray-800">Manajemen Pengguna</h3>
                 <p class="text-sm text-gray-600 mt-2">Kelola data dosen, mahasiswa, dan admin sistem.</p>
-                <a href="{{ route('users.index') }}" class="mt-4 btn-primary w-full text-center">Lihat Pengguna</a>
+                <a href="{{ route('admin.users.index') }}" class="mt-4 btn-primary w-full text-center">Lihat Pengguna</a>
             </div>
 
             <div class="course-card flex flex-col items-center text-center">
                 <div class="text-4xl mb-4">📚</div>
                 <h3 class="text-xl font-bold text-gray-800">Mata Kuliah</h3>
                 <p class="text-sm text-gray-600 mt-2">Daftar mata kuliah, enrollment, dan materi kuliah.</p>
-                <a href="{{ route('courses.index') }}" class="mt-4 btn-primary w-full text-center">Lihat Mata Kuliah</a>
+                <a href="{{ route('admin.courses.index') }}" class="mt-4 btn-primary w-full text-center">Lihat Mata Kuliah</a>
             </div>
 
             <div class="course-card flex flex-col items-center text-center">

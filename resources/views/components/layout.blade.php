@@ -20,7 +20,7 @@
         </a>
 
 
-        <a href="{{ route('courses.index') }}">
+        <a href="{{ route('dosen.courses.index') }}">
             Mata Kuliah
         </a>
 

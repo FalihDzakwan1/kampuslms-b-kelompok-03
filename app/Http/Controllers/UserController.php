@@ -56,7 +56,7 @@ class UserController extends Controller
     $user->role = $validated['role'];
     $user->save();
 
-    return redirect()->route('users.index');
+    return redirect()->route('admin.users.index');
     }
 
     public function show(User $user)
@@ -92,7 +92,7 @@ class UserController extends Controller
 
 
             return redirect()
-                ->route('users.show', $user);
+                ->route('admin.users.show', $user);
 
     }
 
@@ -101,6 +101,6 @@ class UserController extends Controller
     {
         $user->delete();
 
-        return redirect()->route('users.index');
+        return redirect()->route('admin.users.index');
     }
 }

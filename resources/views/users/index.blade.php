@@ -17,7 +17,7 @@
             </div>
         </section>
 
-        <form action="{{ route('users.index') }}" method="GET" class="floating-toolbar"><div class="course-search"><span class="course-search-icon"></span><input type="text" name="q" value="{{ request('q') }}" placeholder="Cari pengguna..."></div><div class="toolbar-actions"><select name="role" class="status-filter" onchange="this.form.submit()"><option value="">Semua Peran</option><option value="admin" {{ request('role') === 'admin' ? 'selected' : '' }}>Admin</option><option value="dosen" {{ request('role') === 'dosen' ? 'selected' : '' }}>Dosen</option><option value="mahasiswa" {{ request('role') === 'mahasiswa' ? 'selected' : '' }}>Mahasiswa</option></select><a href="{{ route('users.create') }}" class="btn-primary">+ Tambah Pengguna</a></div></form>
+        <form action="{{ route('admin.users.index') }}" method="GET" class="floating-toolbar"><div class="course-search"><span class="course-search-icon"></span><input type="text" name="q" value="{{ request('q') }}" placeholder="Cari pengguna..."></div><div class="toolbar-actions"><select name="role" class="status-filter" onchange="this.form.submit()"><option value="">Semua Peran</option><option value="admin" {{ request('role') === 'admin' ? 'selected' : '' }}>Admin</option><option value="dosen" {{ request('role') === 'dosen' ? 'selected' : '' }}>Dosen</option><option value="mahasiswa" {{ request('role') === 'mahasiswa' ? 'selected' : '' }}>Mahasiswa</option></select><a href="{{ route('admin.users.create') }}" class="btn-primary">+ Tambah Pengguna</a></div></form>
 
         <section class="table-card">
             <div class="table-card-header p-6 border-b border-gray-200 bg-gray-50 flex justify-between items-center rounded-t-3xl">
@@ -41,7 +41,7 @@
                             @foreach ($users as $user)
                                 <tr class="border-b hover:bg-gray-50 transition">
                                     <td class="px-6 py-4 font-medium text-gray-800">
-                                        <a href="{{ route('users.show', $user) }}" class="hover:text-blue-600">
+                                        <a href="{{ route('admin.users.show', $user) }}" class="hover:text-blue-600">
                                             {{ $user->name }}
                                         </a>
                                     </td>
@@ -58,7 +58,7 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex gap-2">
-                                            <a href="{{ route('users.edit', $user) }}" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-xs font-medium">Edit</a> <form action="{{ route('users.destroy', $user) }}" method="POST" class="inline">@csrf @method('DELETE') <button type="submit" class="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 text-xs font-medium" onclick="return confirm('Yakin ingin menghapus pengguna ini?')">Hapus</button></form>
+                                            <a href="{{ route('admin.users.edit', $user) }}" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-xs font-medium">Edit</a> <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="inline">@csrf @method('DELETE') <button type="submit" class="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 text-xs font-medium" onclick="return confirm('Yakin ingin menghapus pengguna ini?')">Hapus</button></form>
                                         </div>
                                     </td>
                                 </tr>
