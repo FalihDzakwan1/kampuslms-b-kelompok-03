@@ -275,7 +275,7 @@ class CourseController extends Controller
         return redirect()
             ->route(
                 'dosen.courses.index'
-            )
+                         )
             ->with(
                 'success',
                 'Mata kuliah berhasil dihapus.'
