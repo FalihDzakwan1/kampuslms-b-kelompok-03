@@ -1,7 +1,7 @@
 <x-layout title="Detail Pengguna | KampusLMS">
     <div class="page-container max-w-3xl">
         <div class="mb-6">
-            <a href="{{ route('users.index') }}" class="text-blue-600 hover:underline text-sm">← Kembali ke Daftar Pengguna</a>
+            <a href="{{ route('admin.users.index') }}" class="text-blue-600 hover:underline text-sm">← Kembali ke Daftar Pengguna</a>
         </div>
 
         <section class="course-card">
@@ -39,7 +39,7 @@
             </div>
 
             <div class="flex gap-3 border-t border-gray-100 pt-5">
-                <a href="{{ route('users.edit', $user) }}" class="btn-primary">✎ Edit Profil</a>
+                <a href="{{ route('admin.users.edit', $user) }}" class="btn-primary">✎ Edit Profil</a>
             </div>
         </section>
     </div>

@@ -1,7 +1,7 @@
 <x-layout title="Edit Pengguna | KampusLMS">
     <div class="page-container max-w-3xl">
         <div class="mb-6">
-            <a href="{{ route('users.index') }}" class="text-blue-600 hover:underline text-sm">← Kembali ke Daftar Pengguna</a>
+            <a href="{{ route('admin.users.index') }}" class="text-blue-600 hover:underline text-sm">← Kembali ke Daftar Pengguna</a>
         </div>
 
         <section class="course-card">
@@ -10,7 +10,7 @@
                 <p class="text-gray-500 text-sm mt-1">Perbarui informasi untuk pengguna <strong>{{ $user->name }}</strong></p>
             </div>
 
-            <form action="{{ route('users.update', $user) }}" method="POST" class="flex flex-col gap-5">
+            <form action="{{ route('admin.users.update', $user) }}" method="POST" class="flex flex-col gap-5">
                 @csrf
                 @method('PUT')
 
@@ -36,7 +36,7 @@
                 </div>
 
                 <div class="pt-4 border-t border-gray-100 flex justify-end gap-3">
-                    <a href="{{ route('users.index') }}" class="px-5 py-2 rounded-xl bg-gray-100 text-gray-600 font-medium hover:bg-gray-200 transition">Batal</a>
+                    <a href="{{ route('admin.users.index') }}" class="px-5 py-2 rounded-xl bg-gray-100 text-gray-600 font-medium hover:bg-gray-200 transition">Batal</a>
                     <button type="submit" class="btn-primary border-none cursor-pointer">Perbarui Pengguna</button>
                 </div>
             </form>
