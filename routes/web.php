@@ -10,7 +10,6 @@ use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\SubmissionController;
 
 
-
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
@@ -21,13 +20,8 @@ Route::get('/', function () {
     return view('dashboard');
 })->name('dashboard');
 
-
-Route::get('/tentang',
-    [TentangController::class, 'index']
-)->name('tentang');
-
-
-
+Route::get('/tentang', [TentangController::class, 'index'])
+    ->name('tentang');
 
 
 /*
@@ -37,7 +31,6 @@ Route::get('/tentang',
 */
 
 Route::middleware(['auth'])->group(function () {
-
 
 
     /*
@@ -51,25 +44,17 @@ Route::middleware(['auth'])->group(function () {
         ->middleware('role:admin')
         ->group(function () {
 
-
             Route::resource(
                 'users',
                 UserController::class
             );
-
 
             Route::resource(
                 'courses',
                 CourseController::class
             );
 
-
         });
-
-
-
-
-
 
 
     /*
@@ -84,12 +69,14 @@ Route::middleware(['auth'])->group(function () {
         ->group(function () {
 
 
-
             /*
-            CRUD Course Dosen
-
-            URL:
-            /dosen/courses
+            |--------------------------------------------------------------------------
+            | CRUD Course Dosen
+            |--------------------------------------------------------------------------
+            |
+            | URL:
+            | /dosen/courses
+            |
             */
 
             Route::resource(
@@ -98,21 +85,21 @@ Route::middleware(['auth'])->group(function () {
             );
 
 
-
-
-
             /*
-            Nested Assignment
-
-            URL:
-            /dosen/courses/{course}/assignments
-
-            Detail:
-            /assignments/{assignment}
-
-            Menggunakan:
-            - scopeBindings()
-            - shallow()
+            |--------------------------------------------------------------------------
+            | Nested Assignment
+            |--------------------------------------------------------------------------
+            |
+            | URL:
+            | /dosen/courses/{course}/assignments
+            |
+            | Detail:
+            | /dosen/assignments/{assignment}
+            |
+            | Menggunakan:
+            | - scopeBindings()
+            | - shallow()
+            |
             */
 
             Route::scopeBindings()
@@ -123,17 +110,21 @@ Route::middleware(['auth'])->group(function () {
                 ->shallow();
 
 
-
-
-
             /*
-            Nested Material
-
-            URL:
-            /dosen/courses/{course}/materials
-
-            Detail:
-            /materials/{material}
+            |--------------------------------------------------------------------------
+            | Nested Material
+            |--------------------------------------------------------------------------
+            |
+            | URL:
+            | /dosen/courses/{course}/materials
+            |
+            | Detail:
+            | /dosen/materials/{material}
+            |
+            | Menggunakan:
+            | - scopeBindings()
+            | - shallow()
+            |
             */
 
             Route::scopeBindings()
@@ -143,14 +134,7 @@ Route::middleware(['auth'])->group(function () {
                 )
                 ->shallow();
 
-
-
         });
-
-
-
-
-
 
 
     /*
@@ -165,9 +149,10 @@ Route::middleware(['auth'])->group(function () {
         ->group(function () {
 
 
-
             /*
-            Mahasiswa hanya melihat course
+            |--------------------------------------------------------------------------
+            | Mahasiswa hanya melihat course
+            |--------------------------------------------------------------------------
             */
 
             Route::resource(
@@ -180,14 +165,14 @@ Route::middleware(['auth'])->group(function () {
             ]);
 
 
-
-
-
             /*
-            Submission mahasiswa
-
-            Untuk mencegah IDOR
-            akan dilindungi di SubmissionController
+            |--------------------------------------------------------------------------
+            | Submission mahasiswa
+            |--------------------------------------------------------------------------
+            |
+            | Untuk mencegah IDOR
+            | akan dilindungi di SubmissionController
+            |
             */
 
             Route::resource(
@@ -200,10 +185,6 @@ Route::middleware(['auth'])->group(function () {
                 'store'
             ]);
 
-
-
         });
-
-
 
 });
