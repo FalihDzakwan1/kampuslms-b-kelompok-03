@@ -173,14 +173,14 @@
 
 
 
+                @if(auth()->user()->role !== 'mahasiswa')
                 <a
-                    href="{{ auth()->user()->role === 'admin'
-                        ? route(auth()->user()->role . '.courses.create')
-                        : route(auth()->user()->role . '.courses.create') }}"
+                    href="{{ route(auth()->user()->role . '.courses.create') }}"
                     class="btn-primary"
                 >
                     + Tambah Mata Kuliah
                 </a>
+                @endif
 
 
             </div>
@@ -513,16 +513,16 @@
 
 
 
+                    @if(auth()->user()->role !== 'mahasiswa')
                     <a
-                        href="{{ auth()->user()->role === 'admin'
-                            ? route(auth()->user()->role . '.courses.create')
-                            : route(auth()->user()->role . '.courses.create') }}"
+                        href="{{ route(auth()->user()->role . '.courses.create') }}"
                         class="btn-primary"
                     >
 
                         + Tambah Mata Kuliah
 
                     </a>
+                    @endif
 
 
                 </div>
