@@ -241,4 +241,5 @@ Route::get('/courses/{course}', [CourseController::class, 'show'])
     </div>
 </body>
 </html>
+
 ```

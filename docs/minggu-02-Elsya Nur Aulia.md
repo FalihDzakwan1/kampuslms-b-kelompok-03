@@ -1,55 +1,115 @@
 ## Elsya Nur Aulia Handayani 
 ## 10241026 
 
+2.3 Read → Break → Fix → Build
 READ — Telusuri satu request penuh (30 menit)
 Ambil route /tentang yang Anda buat minggu lalu. Tanpa AI, tulis di catatan Anda:
 ---
+
 1. Baris mana di routes/web.php yang menangkapnya?
-   Jawab:
+   jawab:  Route tersebut menangkap URL /tentang.
+```php
+   Route::get('/tentang', function () {
+    return view('tentang');
+}); 
+
+```
+
 2. Kalau ditangani controller, berkas dan method mana?
    Jawab:
+- File: app/Http/Controllers/PageController.php
+- Method: tentang() 
+
+Method : 
+```php
+public function index()
+    {
+        return view('tentang');
+    }
+``` 
+
 3. View mana yang dikembalikan? Di path apa persisnya?
    Jawab:
+   - resources/views/tentang.blade.php
+  
+```php
+   <x-layout title="Tentang Kami">
+
+    <h1>Kelompok 03</h1>
+
+    <p>Anggota:</p>
+
+    <ul>
+        <li>Elsya Nur Aulia Handayani</li>
+        <li>Falih Dzakwan</li>
+        <li>Fatika Rizki Syahada</li>
+        <li>Indriani Anwar</li>
+    </ul>
+
+</x-layout>
+
+```
+
+
 4. Layout apa yang membungkusnya?
    Jawab:
+
+- resources/views/components/layout.blade.php
+- Layout digunakan untuk menyimpan bagian yang sama pada setiap halaman, seperti navbar, footer, dan struktur HTML dasar. Dengan menggunakan layout, kode menjadi lebih rapi karena tidak perlu menuliskan header dan navigasi berulang kali pada setiap view.
+  
+```php
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ $title ?? 'KampusLMS' }}</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
+
+<body>
+
+    <nav>
+
+        <div class="text-2xl font-bold mr-auto">
+             KampusLMS
+        </div>
+
+
+        <a href="{{ route('dashboard') }}">
+            Dashboard
+        </a>
+
+
+        <a href="{{ route('courses.index') }}">
+            Mata Kuliah
+        </a>
+
+
+        <a href="{{ route('tentang') }}">
+            Tentang
+     </a>
+
+    </nav>
+
+    <main>
+        {{ $slot }}
+    </main>
+
+</body>
+</html>
+```
+Pada file layout.blade.php, isi halaman akan ditampilkan melalui: {{ $slot }}
+
+
 5. Jalankan php artisan route:list --path=tentang. Cocok dengan analisis Anda?
-   jawab:
+   Jawab: 
 
-
-
-
-
-
-
-
-
-
+   ![php artisan](image-2.png)
+   
+analisis sebelumnya karena URL /tentang memang diarahkan ke method index() pada TentangController. Ketika pengguna mengakses halaman /tentang, Laravel akan mencocokkan route tersebut, menjalankan TentangController@index, kemudian mengembalikan view yang ditampilkan kepada pengguna.
+   
 ---
 BREAK — Delapan kerusakan (40 menit)
----
-1. Baris mana di routes/web.php yang menangkapnya?
-
-    berikut baris yang menangkapnya
-```php
-Route::get('/tentang', function () {
-    return view('tentang');
-});
-```
-2. Kalau ditangani controller, berkas dan method mana?
-
-3. View mana yang dikembalikan? Di path apa persisnya?
-4. Layout apa yang membungkusnya?
-5. Jalankan `php artisan route:list --path=tentang`. Cocok dengan analisis Anda?
-
-
-
-
-
-
-
-
-
-
 
 | No | Yang dirusak | Prediksi sebelum mencoba | Pesan error sebenarnya |
 |----|--------------|--------------------------|------------------------|
@@ -61,3 +121,155 @@ Route::get('/tentang', function () {
 | 6 | Menghapus `@vite(...)` dari layout Blade | File CSS dan JavaScript tidak akan dimuat karena koneksi dengan Vite dihilangkan. | Tampilan halaman kehilangan styling|
 | 7 | Menghentikan proses `npm run dev`, kemudian memuat ulang halaman | Laravel tidak dapat mengambil asset dari Vite development server yang sedang berhenti. | Asset CSS/JavaScript gagal dimuat atau muncul pesan `Vite manifest not found at: C:\laragon\www\Pemroweb\kampuslms-b-kelompok-03\public\build/manifest.json |
 | 8 | Memanggil `route('courses.show')` tanpa memberikan parameter | Laravel membutuhkan nilai `{course}` untuk membentuk URL route tersebut. | Missing required parameter for [Route: courses.show] [URI: courses/{course}] [Missing parameter: course]. |
+
+kesimpulan dari: Kesimpulan
+Dari delapan percobaan kerusakan yang dilakukan, dapat disimpulkan bahwa setiap komponen dalam Laravel memiliki peran yang saling berkaitan. Kesalahan pada route, controller, view, parameter, maupun konfigurasi Vite dapat menyebabkan aplikasi tidak berjalan dengan baik. Selain itu, penggunaan sintaks Blade yang tidak tepat dapat menimbulkan celah keamanan seperti XSS. Oleh karena itu, pengembang harus memahami fungsi setiap komponen dan memperhatikan konfigurasi aplikasi agar sistem dapat berjalan dengan benar, aman, dan mudah dipelihara.
+
+---
+BUILD — Kerangka KampusLMS (sisa waktu)
+---
+1. Layout x-layout dengan navbar berisi: Dashboard, Mata Kuliah, Tentang.
+```php
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ $title ?? 'KampusLMS' }}</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
+
+<body>
+
+    <nav>
+        <a href="{{ route('dashboard') }}">Dashboard</a>
+        <a href="{{ route('courses.index') }}">Mata Kuliah</a>
+        <a href="{{ route('tentang') }}">Tentang</a>
+    </nav>
+
+    <main>
+        {{ $slot }}
+    </main>
+
+</body>
+</html>
+```
+2. CourseController dengan index dan show.
+```php
+// Menampilkan daftar mata kuliah
+    public function index()
+    {
+        $courses = Course::all();
+
+        return view('courses.index', compact('courses'));
+    }
+
+
+    // Menampilkan detail satu mata kuliah
+    public function show(Course $course)
+    {
+        return view('courses.show', compact('course'));
+    }
+```
+3. courses/index.blade.php — tabel daftar mata kuliah (kode, nama, SKS, dosen).
+```php
+{{-- resources/views/courses/index.blade.php --}}
+<x-layout title="Daftar Mata Kuliah">
+
+    <h1>Daftar Mata Kuliah</h1>
+
+    <p>Jumlah course: {{ count($courses) }}</p>
+
+    @if (count($courses) === 0)
+        <p>Belum ada data mata kuliah.</p>
+    @else
+        <table border="1" cellpadding="8" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>Kode</th>
+                    <th>Nama</th>
+                    <th>SKS</th>
+                    <th>Dosen</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($courses as $course)
+                    <tr>
+                        <td>{{ $course->kode }}</td>
+                        <td>{{ $course->nama }}</td>
+                        <td>{{ $course->sks }}</td>
+                        <td>{{ $course->dosen }}</td>
+                        <td>
+                            <a href="{{ route('courses.show', $course) }}">
+                                Lihat Detail
+                            </a>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @endif
+
+</x-layout>
+```
+4. courses/show.blade.php — detail satu mata kuliah.
+```php
+{{-- resources/views/courses/show.blade.php --}}
+<x-layout title="Detail Mata Kuliah">
+
+    <div class="container">
+        <h1>{{ $course['name'] }}</h1>
+
+        <p>
+            <strong>Kode Mata Kuliah:</strong>
+            {{ $course['code'] }}
+        </p>
+
+        <p>
+            <strong>Dosen:</strong>
+            {{ $course['lecturer'] }}
+        </p>
+
+        <p>
+            <strong>Deskripsi:</strong>
+            {{ $course['description'] }}
+        </p>
+
+        <a href="{{ route('courses.index') }}">
+            ← Kembali ke Daftar Mata Kuliah
+        </a>
+    </div>
+
+</x-layout>
+```
+5. Semua tautan memakai route().
+```php
+Route::get('/courses', [CourseController::class, 'index'])
+    ->name('courses.index');
+
+Route::get('/courses/{course}', [CourseController::class, 'show'])
+    ->name('courses.show');
+```
+6. Halaman 404 kustom (resources/views/errors/404.blade.php).
+```php
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Halaman Tidak Ditemukan</title>
+</head>
+<body>
+    <div class="container">
+        <div class="illustration">🔍</div>
+        <div class="code">404</div>
+        <div class="title">Halaman Tidak Ditemukan</div>
+        <p class="desc">
+            Maaf, halaman yang Anda cari tidak tersedia atau mungkin sudah dipindahkan.
+        </p>
+        <a href="{{ url('/') }}" class="btn">Kembali ke Beranda</a>
+    </div>
+</body>
+</html>
+
+```

@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TentangController;
 use App\Http\Controllers\CourseController;
-
+use App\Http\Controllers\UserController;
 
 Route::get('/', function () {
     return view('dashboard');
@@ -23,3 +23,7 @@ Route::post('/courses', [CourseController::class, 'store'])
 
 Route::get('/courses/{course}', [CourseController::class, 'show'])
     ->name('courses.show');
+
+Route::resource('courses', CourseController::class);
+
+Route::resource('users', UserController::class);
