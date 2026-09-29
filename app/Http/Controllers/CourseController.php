@@ -168,10 +168,15 @@ class CourseController extends Controller
     |
     */
 
-    public function edit(
-        Course $course
-    )
+    public function edit(Course $course)
     {
+
+        dd([
+            'user_id' => auth()->id(),
+            'user_role' => auth()->user()->role,
+            'course_id' => $course->id,
+            'course_lecturer_id' => $course->lecturer_id,
+        ]);
 
 
         abort_unless(
@@ -184,13 +189,10 @@ class CourseController extends Controller
 
         );
 
-
-
         $lecturers = User::where(
             'role',
             'dosen'
         )->get();
-
 
 
         return view(
@@ -202,10 +204,6 @@ class CourseController extends Controller
         );
 
     }
-
-
-
-
 
     /*
     |--------------------------------------------------------------------------
@@ -239,20 +237,12 @@ class CourseController extends Controller
 
 
         return redirect()
-            ->route(
-                'dosen.courses.show',
-                $course
-            )
+            ->route('dosen.courses.show', $course)
             ->with(
                 'success',
                 'Mata kuliah berhasil diperbarui.'
-            );
-
+    );
     }
-
-
-
-
 
     /*
     |--------------------------------------------------------------------------
