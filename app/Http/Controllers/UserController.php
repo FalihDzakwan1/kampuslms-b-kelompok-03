@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
 
 class UserController extends Controller
 {
@@ -38,19 +40,15 @@ class UserController extends Controller
     }
 
 
-    public function store(Request $request)
+    public function store(StoreUserRequest $request)
     {  
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string',
-            'role' => 'required|in:admin,dosen,mahasiswa',
-        ]);
+        // Kita hanya mengambil data yang SUDAH divalidasi
+        $validated = $request->validated();
     
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'password' => $validated['password'],
+            'password' => \Illuminate\Support\Facades\Hash::make($validated['password']),
         ]);
 
         $user->role = $validated['role'];
@@ -90,7 +88,7 @@ class UserController extends Controller
     }
 
 
-    public function update(Request $request, User $user)
+    public function update(UpdateUserRequest $request, User $user)
     {
         // TODO: Akan direfaktor menjadi UserPolicy@update di minggu 7
         $authUser = auth()->user();
@@ -101,23 +99,17 @@ class UserController extends Controller
             'Anda tidak memiliki akses ke sumber daya ini.'
         );
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'role' => 'required|in:admin,dosen,mahasiswa',
-        ]);
-
+        // Hanya mengambil input yang sah melewati aturan UpdateUserRequest
+        $validated = $request->validated();
 
         $user->update([
             'name' => $validated['name'],
             'email' => $validated['email'],
         ]);
 
-
         // role diisi manual
         $user->role = $validated['role'];
         $user->save();
-
 
         return redirect()
             ->route('admin.users.show', $user)
