@@ -48,17 +48,32 @@ class MaterialController extends Controller
             'Hanya dosen pengampu yang dapat menambah materi.'
         );
 
-        $validated = $request->validate([
-            'title' => 'required|string',
-            'description' => 'nullable|string',
-            'file' => 'nullable|file'
+        $request->validate([
+            'title'        => 'required|string|max:255',
+            'description'  => 'nullable|string',
+            'type'         => 'required|in:file,link',
+            'file'         => 'nullable|file|max:10240',
+            'external_url' => 'nullable|url|max:255',
         ]);
 
-        if($request->hasFile('file')){
-            $validated['file'] = $request->file('file')->store('materials');
+        $data = [
+            'course_id'    => $course->id,
+            'uploaded_by'  => auth()->id(),
+            'title'        => $request->title,
+            'description'  => $request->description ?? '',
+            'type'         => $request->type,
+            'external_url' => $request->external_url,
+        ];
+
+        if ($request->hasFile('file') && $request->type === 'file') {
+            $file = $request->file('file');
+            $data['file_path']     = $file->store('materials');
+            $data['original_name'] = $file->getClientOriginalName();
+            $data['file_size']     = $file->getSize();
+            $data['mime_type']     = $file->getMimeType();
         }
 
-        $course->materials()->create($validated);
+        $course->materials()->create($data);
 
         return redirect()->route('dosen.courses.materials.index', $course)
                          ->with('success', 'Materi berhasil ditambahkan.');
@@ -75,6 +90,8 @@ class MaterialController extends Controller
             403,
             'Anda tidak memiliki akses ke materi ini.'
         );
+
+        $material->load(['uploader', 'course']);
 
         return view('materials.show', compact('material'));
     }
@@ -98,14 +115,33 @@ class MaterialController extends Controller
             'Anda tidak memiliki hak untuk mengubah materi ini.'
         );
 
-        $validated = $request->validate([
-            'title' => 'required|string',
-            'description' => 'nullable|string'
+        $request->validate([
+            'title'        => 'required|string|max:255',
+            'description'  => 'nullable|string',
+            'type'         => 'required|in:file,link',
+            'file'         => 'nullable|file|max:10240',
+            'external_url' => 'nullable|url|max:255',
         ]);
 
-        $material->update($validated);
+        $data = [
+            'title'        => $request->title,
+            'description'  => $request->description ?? '',
+            'type'         => $request->type,
+            'external_url' => $request->external_url,
+        ];
 
-        return back()->with('success', 'Materi berhasil diperbarui.');
+        if ($request->hasFile('file') && $request->type === 'file') {
+            $file = $request->file('file');
+            $data['file_path']     = $file->store('materials');
+            $data['original_name'] = $file->getClientOriginalName();
+            $data['file_size']     = $file->getSize();
+            $data['mime_type']     = $file->getMimeType();
+        }
+
+        $material->update($data);
+
+        return redirect()->route('dosen.materials.show', $material)
+                         ->with('success', 'Materi berhasil diperbarui.');
     }
 
     public function destroy(Material $material)
@@ -116,8 +152,10 @@ class MaterialController extends Controller
             'Anda tidak memiliki hak untuk menghapus materi ini.'
         );
 
+        $course = $material->course;
         $material->delete();
 
-        return back()->with('success', 'Materi berhasil dihapus.');
+        return redirect()->route('dosen.courses.materials.index', $course)
+                         ->with('success', 'Materi berhasil dihapus.');
     }
 }

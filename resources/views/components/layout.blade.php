@@ -22,11 +22,39 @@
         <a href="{{ route(auth()->user()->role . '.courses.index') }}">
             Mata Kuliah
         </a>
-        @endauth
+
+        @if(auth()->user()->role === 'mahasiswa')
+        <a href="{{ route('mahasiswa.submissions.index') }}">
+            Tugas Saya
+        </a>
+        @endif
 
         <a href="{{ route('tentang') }}">
             Tentang
         </a>
+
+        <div class="flex items-center gap-3 ml-auto">
+            <span class="text-xs bg-blue-100 text-blue-800 font-semibold px-2.5 py-1 rounded-full uppercase">
+                {{ auth()->user()->role }}
+            </span>
+            <span class="text-sm font-medium text-gray-700 hidden sm:inline">
+                {{ auth()->user()->name }}
+            </span>
+            <form action="{{ route('logout') }}" method="POST" class="inline">
+                @csrf
+                <button type="submit" class="text-xs text-red-600 hover:text-red-800 font-semibold px-2 py-1 rounded border border-red-200 hover:bg-red-50 transition">
+                    Keluar
+                </button>
+            </form>
+        </div>
+        @else
+        <a href="{{ route('tentang') }}">
+            Tentang
+        </a>
+        <a href="{{ route('login') }}" class="btn-primary text-xs ml-auto">
+            Masuk
+        </a>
+        @endauth
 
     </nav>
 

@@ -454,6 +454,15 @@
 
 
 
+                                            @elseif(auth()->user()->role === 'mahasiswa')
+
+                                                <a
+                                                    href="{{ route('mahasiswa.courses.show', $course->id) }}"
+                                                    class="action-btn action-btn-edit"
+                                                >
+                                                    Lihat Kelas
+                                                </a>
+
                                             @endif
 
 

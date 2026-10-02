@@ -48,15 +48,21 @@ class AssignmentController extends Controller
             'Hanya dosen pengampu yang dapat membuat tugas.'
         );
 
-        $course->assignments()->create(
-            $request->validate([
-                'title' => 'required|string',
-                'description' => 'nullable|string',
-                'deadline' => 'nullable|date'
-            ])
-        );
+        $validated = $request->validate([
+            'title'        => 'required|string|max:255',
+            'instructions' => 'required|string',
+            'due_at'       => 'required|date',
+            'max_score'    => 'nullable|integer|between:1,100',
+            'status'       => 'required|in:draft,published',
+        ]);
 
-        return back()->with('success', 'Tugas berhasil ditambahkan.');
+        $validated['created_by'] = auth()->id();
+        $validated['max_score']  = $validated['max_score'] ?? 100;
+
+        $course->assignments()->create($validated);
+
+        return redirect()->route('dosen.courses.assignments.index', $course)
+                         ->with('success', 'Tugas berhasil ditambahkan.');
     }
 
 
@@ -96,15 +102,18 @@ class AssignmentController extends Controller
             'Anda tidak memiliki hak untuk mengubah tugas ini.'
         );
 
-        $assignment->update(
-            $request->validate([
-                'title' => 'required|string',
-                'description' => 'nullable|string',
-                'deadline' => 'nullable|date'
-            ])
-        );
+        $validated = $request->validate([
+            'title'        => 'required|string|max:255',
+            'instructions' => 'required|string',
+            'due_at'       => 'required|date',
+            'max_score'    => 'nullable|integer|between:1,100',
+            'status'       => 'required|in:draft,published',
+        ]);
 
-        return back()->with('success', 'Tugas berhasil diperbarui.');
+        $assignment->update($validated);
+
+        return redirect()->route('dosen.assignments.show', $assignment)
+                         ->with('success', 'Tugas berhasil diperbarui.');
     }
 
     public function destroy(Assignment $assignment)
@@ -115,8 +124,10 @@ class AssignmentController extends Controller
             'Anda tidak memiliki hak untuk menghapus tugas ini.'
         );
 
+        $course = $assignment->course;
         $assignment->delete();
 
-        return back()->with('success', 'Tugas berhasil dihapus.');
+        return redirect()->route('dosen.courses.assignments.index', $course)
+                         ->with('success', 'Tugas berhasil dihapus.');
     }
 }
