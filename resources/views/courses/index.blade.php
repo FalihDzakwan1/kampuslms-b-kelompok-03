@@ -274,16 +274,18 @@
                                     <td>
 
                                         <div class="course-name">
-
-                                            {{ $course->name }}
-
+                                            <a href="{{ route(auth()->user()->role . '.courses.show', $course->id) }}" class="text-blue-900 hover:text-blue-600 font-bold transition">
+                                                {{ $course->name }}
+                                            </a>
                                         </div>
 
-
-                                        <div class="course-subtitle">
-
-                                            Mata Kuliah Sistem Informasi
-
+                                        <div class="flex items-center gap-2 mt-1.5 text-xs">
+                                            <a href="{{ route(auth()->user()->role . '.courses.materials.index', $course->id) }}" class="inline-flex items-center gap-1 text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 px-2 py-0.5 rounded-md font-medium transition">
+                                                📂 {{ $course->materials()->count() }} Materi
+                                            </a>
+                                            <a href="{{ route(auth()->user()->role . '.courses.assignments.index', $course->id) }}" class="inline-flex items-center gap-1 text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded-md font-medium transition">
+                                                📝 {{ $course->assignments()->count() }} Tugas
+                                            </a>
                                         </div>
 
                                     </td>
@@ -416,15 +418,18 @@
 
                                             @elseif(auth()->user()->role === 'dosen')
 
-
+                                                <a
+                                                    href="{{ route('dosen.courses.show', $course->id) }}"
+                                                    class="action-btn action-btn-edit bg-blue-50 text-blue-700 hover:bg-blue-100 font-semibold"
+                                                >
+                                                    Buka Kelas
+                                                </a>
 
                                                 <a
                                                     href="{{ route(auth()->user()->role . '.courses.edit', $course->id) }}"
                                                     class="action-btn action-btn-edit"
                                                 >
-
                                                     Edit
-
                                                 </a>
 
 
@@ -456,12 +461,25 @@
 
                                             @elseif(auth()->user()->role === 'mahasiswa')
 
-                                                <a
-                                                    href="{{ route('mahasiswa.courses.show', $course->id) }}"
-                                                    class="action-btn action-btn-edit"
-                                                >
-                                                    Lihat Kelas
-                                                </a>
+                                                @php
+                                                    $isEnrolled = $course->students()->where('users.id', auth()->id())->exists();
+                                                @endphp
+
+                                                @if($isEnrolled)
+                                                    <a
+                                                        href="{{ route('mahasiswa.courses.show', $course->id) }}"
+                                                        class="action-btn action-btn-edit bg-blue-50 text-blue-700 hover:bg-blue-100 font-semibold"
+                                                    >
+                                                        Buka Kelas
+                                                    </a>
+                                                @else
+                                                    <form action="{{ route('mahasiswa.courses.enroll', $course->id) }}" method="POST" class="inline">
+                                                        @csrf
+                                                        <button type="submit" class="action-btn action-btn-edit bg-green-50 text-green-700 hover:bg-green-100 font-semibold">
+                                                            + Gabung
+                                                        </button>
+                                                    </form>
+                                                @endif
 
                                             @endif
 

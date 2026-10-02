@@ -95,16 +95,81 @@
             </div>
         @endif
 
-        {{-- Area Dosen: Ringkasan Pengumpulan Mahasiswa --}}
+        {{-- Area Dosen: Tabel Pengumpulan Tugas Mahasiswa --}}
         @if(auth()->user()->role === 'dosen' && $assignment->course->lecturer_id === auth()->id())
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-bold text-gray-800">Status Pengumpulan Mahasiswa</h2>
-                    <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold">
-                        {{ $assignment->submissions()->count() }} / {{ $assignment->course->students()->count() }} Mahasiswa
+                <div class="flex flex-wrap justify-between items-center gap-4 mb-6 pb-4 border-b border-gray-100">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800">Daftar Pengumpulan Mahasiswa</h2>
+                        <p class="text-xs text-gray-500 mt-0.5">Periksa berkas jawaban tugas mahasiswa dan berikan nilai.</p>
+                    </div>
+                    <span class="px-3.5 py-1.5 bg-blue-50 text-blue-700 rounded-full text-xs font-bold border border-blue-100">
+                        📥 {{ $assignment->submissions->count() }} dari {{ $assignment->course->students()->count() }} Mahasiswa Mengumpulkan
                     </span>
                 </div>
-                <p class="text-sm text-gray-500">Mahasiswa yang telah mengumpulkan tugas dapat dinilai dan dipantau di sini.</p>
+
+                @if($assignment->submissions->count())
+                    <div class="overflow-x-auto rounded-xl border border-gray-100">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    <th class="py-3.5 px-4">Mahasiswa</th>
+                                    <th class="py-3.5 px-4">Waktu Submit</th>
+                                    <th class="py-3.5 px-4">Berkas Jawaban</th>
+                                    <th class="py-3.5 px-4">Status Nilai</th>
+                                    <th class="py-3.5 px-4 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 text-xs text-gray-700">
+                                @foreach($assignment->submissions as $sub)
+                                    <tr class="hover:bg-gray-50/70 transition">
+                                        <td class="py-3.5 px-4">
+                                            <div class="font-bold text-gray-900">{{ $sub->student->name ?? 'Mahasiswa' }}</div>
+                                            <div class="text-[11px] text-gray-400">NIM: {{ $sub->student->nim_nip ?? '-' }}</div>
+                                        </td>
+                                        <td class="py-3.5 px-4">
+                                            <div>{{ $sub->submitted_at ? \Carbon\Carbon::parse($sub->submitted_at)->translatedFormat('d M Y, H:i') : '-' }}</div>
+                                            @if($sub->is_late)
+                                                <span class="inline-block mt-0.5 px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-[10px] font-bold">Terlambat</span>
+                                            @else
+                                                <span class="inline-block mt-0.5 px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-[10px] font-bold">Tepat Waktu</span>
+                                            @endif
+                                        </td>
+                                        <td class="py-3.5 px-4">
+                                            <a href="{{ asset('storage/' . $sub->file_path) }}" target="_blank" download class="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-800 font-semibold bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-md transition">
+                                                ⬇ {{ $sub->original_name ?? 'Berkas' }}
+                                            </a>
+                                            @if($sub->note)
+                                                <p class="text-[11px] text-gray-400 mt-1 italic line-clamp-1" title="{{ $sub->note }}">"{{ $sub->note }}"</p>
+                                            @endif
+                                        </td>
+                                        <td class="py-3.5 px-4">
+                                            @if($sub->grade)
+                                                <span class="px-2.5 py-1 bg-green-100 text-green-800 rounded-full font-bold">
+                                                    ⭐ {{ $sub->grade->score }} / {{ $assignment->max_score ?? 100 }}
+                                                </span>
+                                            @else
+                                                <span class="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full font-semibold">
+                                                    ⏳ Belum Dinilai
+                                                </span>
+                                            @endif
+                                        </td>
+                                        <td class="py-3.5 px-4 text-right">
+                                            <a href="{{ route('dosen.submissions.show', $sub) }}" class="btn-primary text-xs px-3 py-1.5 inline-flex items-center gap-1">
+                                                <span>{{ $sub->grade ? 'Ubah Nilai' : 'Beri Nilai' }}</span> →
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <div class="p-8 text-center text-gray-400 bg-gray-50 rounded-xl">
+                        <p class="text-3xl mb-1">📥</p>
+                        <p class="text-sm font-medium text-gray-600">Belum ada mahasiswa yang mengumpulkan tugas ini.</p>
+                    </div>
+                @endif
             </div>
         @endif
     </div>

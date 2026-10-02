@@ -23,6 +23,12 @@
             Mata Kuliah
         </a>
 
+        @if(auth()->user()->role === 'admin')
+        <a href="{{ route('admin.users.index') }}">
+            Pengguna
+        </a>
+        @endif
+
         @if(auth()->user()->role === 'mahasiswa')
         <a href="{{ route('mahasiswa.submissions.index') }}">
             Tugas Saya

@@ -82,24 +82,38 @@ class CourseController extends Controller
 
     public function show(Course $course)
     {
-        // TODO: Akan direfaktor menjadi CoursePolicy@view di minggu 7
         $authUser = auth()->user();
-        abort_unless(
-            $authUser->role === 'admin'
-            || $course->lecturer_id === $authUser->id
-            || $course->students()->where('users.id', $authUser->id)->exists(),
-            403,
-            'Anda tidak memiliki akses ke sumber daya ini.'
-        );
 
-        $course->load('lecturer');
+        $isEnrolled = true;
+        if ($authUser->role === 'mahasiswa') {
+            $isEnrolled = $course->students()->where('users.id', $authUser->id)->exists();
+        } elseif ($authUser->role === 'dosen') {
+            abort_unless(
+                $authUser->id === $course->lecturer_id,
+                403,
+                'Anda tidak memiliki akses ke mata kuliah ini.'
+            );
+        }
 
+        $course->load(['lecturer', 'materials.uploader', 'assignments.submissions']);
 
         return view(
             'courses.show',
-            compact('course')
+            compact('course', 'isEnrolled')
         );
+    }
 
+    public function enroll(Course $course)
+    {
+        $user = auth()->user();
+        abort_unless($user->role === 'mahasiswa', 403, 'Hanya mahasiswa yang dapat bergabung dengan mata kuliah.');
+
+        if (!$course->students()->where('users.id', $user->id)->exists()) {
+            $course->students()->attach($user->id, ['enrolled_at' => now()]);
+        }
+
+        return redirect()->route('mahasiswa.courses.show', $course)
+            ->with('success', 'Selamat! Anda berhasil terdaftar di mata kuliah ' . $course->name . '.');
     }
 
 
