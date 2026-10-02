@@ -82,6 +82,27 @@ Route::middleware(['auth'])->group(function () {
                 CourseController::class
             );
 
+            Route::scopeBindings()
+                ->resource(
+                    'courses.assignments',
+                    AssignmentController::class
+                )
+                ->only(['index', 'show'])
+                ->shallow();
+
+            Route::scopeBindings()
+                ->resource(
+                    'courses.materials',
+                    MaterialController::class
+                )
+                ->only(['index', 'show'])
+                ->shallow();
+
+            Route::resource(
+                'submissions',
+                SubmissionController::class
+            )->only(['show']);
+
         });
 
 
