@@ -126,6 +126,11 @@ Route::middleware(['auth'])->group(function () {
                 SubmissionController::class
             )->only(['show']);
 
+            Route::put(
+                'submissions/{submission}/grade',
+                [SubmissionController::class, 'grade']
+            )->name('submissions.grade');
+
         });
 
 
@@ -150,6 +155,11 @@ Route::middleware(['auth'])->group(function () {
                 'index',
                 'show'
             ]);
+
+            Route::post(
+                'courses/{course}/enroll',
+                [CourseController::class, 'enroll']
+            )->name('courses.enroll');
 
 
             Route::scopeBindings()

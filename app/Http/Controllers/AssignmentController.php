@@ -91,6 +91,8 @@ class AssignmentController extends Controller
             'Anda tidak memiliki akses ke tugas ini.'
         );
 
+        $assignment->load(['course.lecturer', 'submissions.student', 'submissions.grade']);
+
         return view('assignments.show', compact('assignment'));
     }
 

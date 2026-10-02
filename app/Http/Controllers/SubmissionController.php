@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Submission;
 use App\Models\Assignment;
+use App\Models\Grade;
 use Illuminate\Http\Request;
 
 class SubmissionController extends Controller
@@ -28,14 +29,18 @@ class SubmissionController extends Controller
     )
     {
         $request->validate([
-            'file' => 'required|file|max:2048',
+            'file' => 'required|file|max:10240',
             'note' => 'nullable|string|max:500'
         ]);
 
-        $uploadedFile = $request->file('file');
-        $path = $uploadedFile->store('submissions');
-
         $isLate = $assignment->due_at ? now()->gt($assignment->due_at) : false;
+
+        if ($isLate && !$assignment->allow_late) {
+            return back()->with('error', 'Batas waktu pengumpulan telah lewat dan tugas ini tidak mengizinkan keterlambatan.');
+        }
+
+        $uploadedFile = $request->file('file');
+        $path = $uploadedFile->store('submissions', 'public');
 
         Submission::updateOrCreate(
             [
@@ -52,7 +57,7 @@ class SubmissionController extends Controller
             ]
         );
 
-        return back()->with('success', 'Tugas berhasil dikumpulkan.');
+        return back()->with('success', 'Tugas berhasil dikumpulkan!');
     }
 
     public function show(
@@ -90,5 +95,36 @@ class SubmissionController extends Controller
         $submission->delete();
 
         return back()->with('success', 'Pengumpulan tugas berhasil dibatalkan.');
+    }
+
+    public function grade(
+        Request $request,
+        Submission $submission
+    ) {
+        $submission->load('assignment.course');
+
+        abort_unless(
+            auth()->user()->role === 'dosen'
+            && $submission->assignment->course->lecturer_id === auth()->id(),
+            403,
+            'Anda tidak memiliki akses untuk menilai pengumpulan tugas ini.'
+        );
+
+        $request->validate([
+            'score'    => 'required|numeric|min:0|max:' . ($submission->assignment->max_score ?? 100),
+            'feedback' => 'nullable|string|max:1000',
+        ]);
+
+        Grade::updateOrCreate(
+            ['submission_id' => $submission->id],
+            [
+                'graded_by' => auth()->id(),
+                'score'     => $request->score,
+                'feedback'  => $request->feedback,
+                'graded_at' => now(),
+            ]
+        );
+
+        return back()->with('success', 'Nilai dan umpan balik berhasil disimpan.');
     }
 }
