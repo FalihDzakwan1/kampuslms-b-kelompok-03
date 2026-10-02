@@ -7,28 +7,23 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class MaterialResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(Request $request): array
     {
         return [
-            'id'            => $this->id,
-            'course_id'     => $this->course_id,
-            'title'         => $this->title,
-            'description'   => $this->description,
-            'type'          => $this->type,
-            'file_path'     => $this->file_path,
+            'id' => $this->id,
+            'course_id' => $this->course_id,
+            'uploaded_by' => $this->uploaded_by,
+            'title' => $this->title,
+            'description' => $this->description,
+            'type' => $this->type,
+            'file_path' => $this->file_path,
             'original_name' => $this->original_name,
-            'file_size'     => (int) $this->file_size,
-            'mime_type'     => $this->mime_type,
-            'external_url'  => $this->external_url,
-            'course'        => new CourseResource($this->whenLoaded('course')),
-            'uploader'      => new UserResource($this->whenLoaded('uploader')),
-            'created_at'    => $this->created_at?->toIso8601String(),
-            'updated_at'    => $this->updated_at?->toIso8601String(),
+            'file_size' => $this->file_size,
+            'mime_type' => $this->mime_type,
+            'external_url' => $this->external_url,
+            'uploader' => new UserResource($this->whenLoaded('uploader')),
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
         ];
     }
 }

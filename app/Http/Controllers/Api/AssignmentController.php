@@ -3,70 +3,41 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\AssignmentResource;
 use App\Models\Assignment;
 use App\Models\Course;
+use App\Models\Submission;
+use App\Http\Resources\AssignmentResource;
+use App\Http\Resources\SubmissionResource;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Http\Response;
 
 class AssignmentController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     */
-    public function index(Request $request): AnonymousResourceCollection
-    {
-        $assignments = Assignment::query()
-            ->with(['course', 'creator'])
-            ->withCount('submissions')
-            ->when($request->filled('course_id'), function ($query) use ($request) {
-                $query->where('course_id', $request->course_id);
-            })
-            ->when($request->filled('status'), function ($query) use ($request) {
-                $query->where('status', $request->status);
-            })
-            ->latest()
-            ->paginate($request->integer('per_page', 15));
-
-        return AssignmentResource::collection($assignments);
-    }
-
-    /**
-     * Store a newly created resource in storage.
+     * POST /api/v1/assignments
+     * Dosen only — membuat tugas baru
      */
     public function store(Request $request)
     {
         $user = $request->user();
-
-        // Mahasiswa tidak berhak membuat tugas (harus 403, bukan 401)
-        if (! in_array($user?->role, ['admin', 'dosen'], strict: true)) {
-            abort(403, 'Hanya dosen atau admin yang dapat membuat tugas.');
-        }
+        abort_unless($user->role === 'dosen', 403, 'Anda tidak memiliki akses ke sumber daya ini.');
 
         $validated = $request->validate([
-            'course_id'    => ['required', 'exists:courses,id'],
-            'title'        => ['required', 'string', 'max:255'],
-            'instructions' => ['required', 'string'],
-            'due_at'       => ['required', 'date'],
-            'max_score'    => ['nullable', 'integer', 'between:1,100'],
-            'allow_late'   => ['nullable', 'boolean'],
-            'status'       => ['required', 'in:draft,published'],
+            'course_id' => 'required|exists:courses,id',
+            'title' => 'required|string|max:255',
+            'instructions' => 'nullable|string',
+            'due_at' => 'nullable|date',
+            'max_score' => 'nullable|integer|min:0',
+            'allow_late' => 'nullable|boolean',
         ]);
 
         $course = Course::findOrFail($validated['course_id']);
-
-        // Jika dosen, pastikan mengampu mata kuliah ini
-        if ($user->role === 'dosen' && $course->lecturer_id !== $user->id) {
-            abort(403, 'Anda bukan dosen pengampu mata kuliah ini.');
-        }
+        abort_unless(
+            $course->lecturer_id === $user->id,
+            403, 'Anda tidak memiliki akses ke sumber daya ini.'
+        );
 
         $validated['created_by'] = $user->id;
-        $validated['max_score']  = $validated['max_score'] ?? 100;
-        $validated['allow_late'] = $validated['allow_late'] ?? false;
-
         $assignment = Assignment::create($validated);
-        $assignment->load(['course', 'creator'])->loadCount('submissions');
 
         return (new AssignmentResource($assignment))
             ->response()
@@ -74,62 +45,73 @@ class AssignmentController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * PUT/PATCH /api/v1/assignments/{assignment}
+     * Dosen pemilik
+     * Eager loading: course
      */
-    public function show(Assignment $assignment): AssignmentResource
+    public function update(Request $request, Assignment $assignment)
     {
-        $assignment->load(['course', 'creator'])->loadCount('submissions');
-
-        return new AssignmentResource($assignment);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Assignment $assignment): AssignmentResource
-    {
+        $assignment->load('course');
         $user = $request->user();
 
-        if ($user?->role === 'mahasiswa') {
-            abort(403, 'Mahasiswa tidak berhak mengubah tugas.');
-        }
-
-        if ($user?->role === 'dosen' && $assignment->created_by !== $user->id && $assignment->course?->lecturer_id !== $user->id) {
-            abort(403, 'Anda tidak memiliki hak untuk mengubah tugas ini.');
-        }
+        abort_unless(
+            $user->role === 'dosen' && $assignment->course->lecturer_id === $user->id,
+            403, 'Anda tidak memiliki akses ke sumber daya ini.'
+        );
 
         $validated = $request->validate([
-            'title'        => ['sometimes', 'required', 'string', 'max:255'],
-            'instructions' => ['sometimes', 'required', 'string'],
-            'due_at'       => ['sometimes', 'required', 'date'],
-            'max_score'    => ['nullable', 'integer', 'between:1,100'],
-            'allow_late'   => ['nullable', 'boolean'],
-            'status'       => ['sometimes', 'required', 'in:draft,published'],
+            'title' => 'sometimes|required|string|max:255',
+            'instructions' => 'nullable|string',
+            'due_at' => 'nullable|date',
+            'max_score' => 'nullable|integer|min:0',
+            'allow_late' => 'nullable|boolean',
+            'status' => 'nullable|string|in:draft,published,archived',
         ]);
 
         $assignment->update($validated);
-        $assignment->load(['course', 'creator'])->loadCount('submissions');
 
-        return new AssignmentResource($assignment);
+        return new AssignmentResource($assignment->fresh());
     }
 
     /**
-     * Remove the specified resource from storage.
+     * DELETE /api/v1/assignments/{assignment}
+     * Dosen pemilik — 204 No Content
+     * Eager loading: course
      */
-    public function destroy(Request $request, Assignment $assignment): Response
+    public function destroy(Request $request, Assignment $assignment)
     {
+        $assignment->load('course');
         $user = $request->user();
 
-        if ($user?->role === 'mahasiswa') {
-            abort(403, 'Mahasiswa tidak berhak menghapus tugas.');
-        }
-
-        if ($user?->role === 'dosen' && $assignment->created_by !== $user->id && $assignment->course?->lecturer_id !== $user->id) {
-            abort(403, 'Anda tidak memiliki hak untuk menghapus tugas ini.');
-        }
+        abort_unless(
+            $user->role === 'dosen' && $assignment->course->lecturer_id === $user->id,
+            403, 'Anda tidak memiliki akses ke sumber daya ini.'
+        );
 
         $assignment->delete();
 
-        return response()->noContent();
+        return response()->noContent(); // 204
+    }
+
+    /**
+     * GET /api/v1/assignments/{assignment}/submissions
+     * Dosen pemilik — melihat daftar submission
+     * Eager loading: student, grade
+     */
+    public function submissions(Request $request, Assignment $assignment)
+    {
+        $assignment->load('course');
+        $user = $request->user();
+
+        abort_unless(
+            $user->role === 'dosen' && $assignment->course->lecturer_id === $user->id,
+            403, 'Anda tidak memiliki akses ke sumber daya ini.'
+        );
+
+        $submissions = $assignment->submissions()
+            ->with(['student', 'grade'])
+            ->paginate($request->get('per_page', 15));
+
+        return SubmissionResource::collection($submissions);
     }
 }
