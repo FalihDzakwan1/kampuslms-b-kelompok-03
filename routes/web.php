@@ -121,6 +121,11 @@ Route::middleware(['auth'])->group(function () {
                 ->shallow();
 
 
+            Route::resource(
+                'submissions',
+                SubmissionController::class
+            )->only(['show']);
+
         });
 
 
@@ -147,6 +152,35 @@ Route::middleware(['auth'])->group(function () {
             ]);
 
 
+            Route::scopeBindings()
+                ->resource(
+                    'courses.assignments',
+                    AssignmentController::class
+                )
+                ->only([
+                    'index',
+                    'show'
+                ])
+                ->shallow();
+
+
+            Route::scopeBindings()
+                ->resource(
+                    'courses.materials',
+                    MaterialController::class
+                )
+                ->only([
+                    'index',
+                    'show'
+                ])
+                ->shallow();
+
+
+            Route::post(
+                'assignments/{assignment}/submissions',
+                [SubmissionController::class, 'store']
+            )->name('assignments.submissions.store');
+
 
             Route::resource(
                 'submissions',
@@ -155,7 +189,7 @@ Route::middleware(['auth'])->group(function () {
             ->only([
                 'index',
                 'show',
-                'store'
+                'destroy'
             ]);
 
 

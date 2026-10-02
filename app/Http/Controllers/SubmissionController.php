@@ -6,109 +6,89 @@ use App\Models\Submission;
 use App\Models\Assignment;
 use Illuminate\Http\Request;
 
-
 class SubmissionController extends Controller
 {
-
     public function index()
     {
-
-        $submissions = Submission::where(
-            'student_id',
-            auth()->id()
-        )->get();
-
+        // Mahasiswa hanya melihat submission miliknya sendiri
+        $submissions = Submission::with(['assignment.course'])
+            ->where('user_id', auth()->id())
+            ->latest()
+            ->get();
 
         return view(
             'submissions.index',
             compact('submissions')
         );
-
     }
-
-
 
     public function store(
         Request $request,
         Assignment $assignment
     )
     {
-
-        $validated = $request->validate([
-            'file' => 'required|file|max:2048'
+        $request->validate([
+            'file' => 'required|file|max:2048',
+            'note' => 'nullable|string|max:500'
         ]);
 
+        $uploadedFile = $request->file('file');
+        $path = $uploadedFile->store('submissions');
 
-        $path = $request
-            ->file('file')
-            ->store('submissions');
+        $isLate = $assignment->due_at ? now()->gt($assignment->due_at) : false;
 
+        Submission::updateOrCreate(
+            [
+                'assignment_id' => $assignment->id,
+                'user_id'       => auth()->id(),
+            ],
+            [
+                'file_path'     => $path,
+                'original_name' => $uploadedFile->getClientOriginalName(),
+                'file_size'     => $uploadedFile->getSize(),
+                'note'          => $request->note,
+                'submitted_at'  => now(),
+                'is_late'       => $isLate,
+            ]
+        );
 
-        Submission::create([
-
-            'assignment_id' => $assignment->id,
-
-            'student_id' => auth()->id(),
-
-            'file' => $path
-
-        ]);
-
-
-        return back();
-
+        return back()->with('success', 'Tugas berhasil dikumpulkan.');
     }
-
-
-
-
 
     public function show(
         Submission $submission
     )
     {
-
-
+        // TODO: Akan direfaktor menjadi SubmissionPolicy@view di minggu 7
         abort_unless(
-
-            $submission->student_id === auth()->id()
-            ||
-            auth()->user()->role === 'admin'
-            ||
-            $submission->assignment
-                ->course
-                ->lecturer_id === auth()->id(),
-
-            403
-
+            $submission->user_id === auth()->id()
+            || auth()->user()->role === 'admin'
+            || $submission->assignment->course->lecturer_id === auth()->id(),
+            403,
+            'Anda tidak memiliki akses untuk melihat pengumpulan tugas ini.'
         );
 
+        $submission->load(['assignment.course', 'student']);
 
         return view(
             'submissions.show',
             compact('submission')
         );
-
     }
-
-
 
     public function destroy(
         Submission $submission
     )
     {
-
+        // TODO: Akan direfaktor menjadi SubmissionPolicy@delete di minggu 7
         abort_unless(
-            $submission->student_id === auth()->id(),
-            403
+            $submission->user_id === auth()->id(),
+            403,
+            'Anda tidak memiliki akses untuk membatalkan pengumpulan tugas ini.'
         );
-
 
         $submission->delete();
 
-
-        return back();
-
+        return back()->with('success', 'Pengumpulan tugas berhasil dibatalkan.');
     }
-
 }

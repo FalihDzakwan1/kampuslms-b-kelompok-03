@@ -1,7 +1,7 @@
 <x-layout title="Tambah Mata Kuliah | KampusLMS">
     <div class="page-container max-w-3xl">
         <div class="mb-6">
-            <a href="{{ route('admin.courses.index') }}" class="text-blue-600 hover:underline text-sm">← Kembali ke Daftar Mata Kuliah</a>
+            <a href="{{ route(auth()->user()->role . '.courses.index') }}" class="text-blue-600 hover:underline text-sm">← Kembali ke Daftar Mata Kuliah</a>
         </div>
 
         <section class="course-card">
@@ -10,7 +10,7 @@
                 <p class="text-gray-500 text-sm mt-1">Masukkan data mata kuliah baru ke dalam sistem</p>
             </div>
 
-            <form action="{{ route('admin.courses.store') }}" method="POST" class="flex flex-col gap-5">
+            <form action="{{ route(auth()->user()->role . '.courses.store') }}" method="POST" class="flex flex-col gap-5">
                 @csrf
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -77,7 +77,7 @@
                 </div>
 
                 <div class="pt-4 border-t border-gray-100 flex justify-end gap-3">
-                    <a href="{{ route('admin.courses.index') }}" class="px-5 py-2 rounded-xl bg-gray-100 text-gray-600 font-medium hover:bg-gray-200 transition">Batal</a>
+                    <a href="{{ route(auth()->user()->role . '.courses.index') }}" class="px-5 py-2 rounded-xl bg-gray-100 text-gray-600 font-medium hover:bg-gray-200 transition">Batal</a>
                     <button type="submit" class="btn-primary border-none cursor-pointer">Simpan Mata Kuliah</button>
                 </div>
             </form>

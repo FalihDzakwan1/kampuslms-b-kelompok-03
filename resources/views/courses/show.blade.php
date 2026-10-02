@@ -1,7 +1,7 @@
 <x-layout title="Detail Mata Kuliah | KampusLMS">
     <div class="page-container">
         <div class="mb-6">
-            <a href="{{ route('admin.courses.index') }}" class="text-blue-600 hover:underline text-sm">← Kembali ke Daftar Mata Kuliah</a>
+            <a href="{{ route(auth()->user()->role . '.courses.index') }}" class="text-blue-600 hover:underline text-sm">← Kembali ke Daftar Mata Kuliah</a>
         </div>
 
         <div class="course-detail bg-white rounded-2xl shadow-lg border border-gray-100 mx-auto">
@@ -46,19 +46,39 @@
                 <p class="text-gray-600 leading-relaxed">{{ $course->description ?? 'Belum ada deskripsi untuk mata kuliah ini.' }}</p>
             </div>
 
-            <div class="course-detail__actions gap-3">
-                <a href="{{ route('admin.courses.edit', $course) }}" class="btn-primary">
-                    ✎ Edit Mata Kuliah
-                </a>
+            {{-- Navigasi Modul Perkuliahan --}}
+            <div class="mb-8 p-6 bg-blue-50/50 rounded-xl border border-blue-100 flex flex-wrap gap-4 items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-bold text-gray-800">Aktivitas Perkuliahan</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">Kelola dan pantau tugas pada mata kuliah ini.</p>
+                </div>
+                <div class="flex gap-2">
+                    @if(in_array(auth()->user()->role, ['dosen', 'mahasiswa']))
+                        <a href="{{ route(auth()->user()->role . '.courses.materials.index', $course) }}" class="btn-secondary text-xs px-4 py-2">
+                            📂 Buka Materi Kuliah ({{ $course->materials()->count() }})
+                        </a>
+                        <a href="{{ route(auth()->user()->role . '.courses.assignments.index', $course) }}" class="btn-primary text-xs px-4 py-2">
+                            📝 Buka Daftar Tugas ({{ $course->assignments()->count() }})
+                        </a>
+                    @endif
+                </div>
+            </div>
 
-                <form action="{{ route('admin.courses.destroy', $course) }}" method="POST" class="inline">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="px-5 py-2 rounded-full bg-red-100 text-red-700 font-semibold hover:bg-red-200 transition"
-                        onclick="return confirm('Yakin ingin menghapus mata kuliah ini?')">
-                        🗑 Hapus
-                    </button>
-                </form>
+            <div class="course-detail__actions gap-3">
+                @if(auth()->user()->role !== 'mahasiswa')
+                    <a href="{{ route(auth()->user()->role . '.courses.edit', $course) }}" class="btn-primary">
+                        ✎ Edit Mata Kuliah
+                    </a>
+
+                    <form action="{{ route(auth()->user()->role . '.courses.destroy', $course) }}" method="POST" class="inline">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="px-5 py-2 rounded-full bg-red-100 text-red-700 font-semibold hover:bg-red-200 transition"
+                            onclick="return confirm('Yakin ingin menghapus mata kuliah ini?')">
+                            🗑 Hapus
+                        </button>
+                    </form>
+                @endif
             </div>
         </div>
     </div>
