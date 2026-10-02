@@ -13,7 +13,7 @@
             </div>
         </section>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+        <div class="grid grid-cols-1 {{ auth()->check() && auth()->user()->role === 'admin' ? 'md:grid-cols-2 max-w-4xl mx-auto' : 'md:grid-cols-3' }} gap-6 mt-8">
             @auth
                 @if(auth()->user()->role === 'admin')
                     <div class="course-card flex flex-col items-center text-center">
@@ -28,13 +28,6 @@
                         <h3 class="text-xl font-bold text-gray-800">Semua Mata Kuliah</h3>
                         <p class="text-sm text-gray-600 mt-2">Daftar seluruh mata kuliah yang terdaftar di sistem.</p>
                         <a href="{{ route('admin.courses.index') }}" class="mt-4 btn-primary w-full text-center">Kelola Mata Kuliah</a>
-                    </div>
-
-                    <div class="course-card flex flex-col items-center text-center">
-                        <div class="text-4xl mb-4">📑</div>
-                        <h3 class="text-xl font-bold text-gray-800">Dokumentasi API</h3>
-                        <p class="text-sm text-gray-600 mt-2">Spesifikasi REST API dan pengujian rate limiting.</p>
-                        <a href="{{ url('docs/api.md') }}" target="_blank" class="mt-4 btn-secondary w-full text-center">Buka Dokumen API</a>
                     </div>
 
                 @elseif(auth()->user()->role === 'dosen')
