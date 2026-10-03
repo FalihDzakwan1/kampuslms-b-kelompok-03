@@ -2,7 +2,11 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $title ?? 'KampusLMS' }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
@@ -10,9 +14,9 @@
 
     <nav class="main-nav">
 
-        <div class="text-2xl font-bold mr-auto">
+        <a href="{{ route('dashboard') }}" class="text-2xl font-bold mr-auto text-white no-underline tracking-wide hover:opacity-90 transition">
              KampusLMS
-        </div>
+        </a>
 
         <a href="{{ route('dashboard') }}">
             Dashboard
