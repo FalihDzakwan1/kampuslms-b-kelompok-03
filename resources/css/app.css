@@ -17,13 +17,21 @@
 ================================== */
 
 body {
-    @apply min-h-screen text-gray-800 font-sans;
+    min-height: 100vh;
 
-    background: linear-gradient(
-        135deg,
-        #a9c5d8,
-        #d8e6f0
-    );
+    color: #1e293b;
+
+    font-family: 'Plus Jakarta Sans', sans-serif;
+
+    background: linear-gradient(180deg,
+            #bdd5eb 0%,
+            #cee0f2 35%,
+            #dfebf7 70%,
+            #e9f2fa 100%);
+
+    display: flex;
+
+    flex-direction: column;
 }
 
 
@@ -32,11 +40,9 @@ body {
 ================================== */
 
 .main-nav {
-    background: linear-gradient(
-        90deg,
-        #0b1f3a,
-        #102f54
-    );
+    background: linear-gradient(90deg,
+            #0b1f3a,
+            #102f54);
 
     @apply px-10 py-5 shadow-xl flex items-center gap-8;
 }
@@ -262,7 +268,72 @@ tbody tr:hover {
 .course-detail__actions {
     display: flex;
 
-    justify-content: flex-start;
+    align-items: center;
+
+    flex-wrap: wrap;
+
+    gap: 12px;
+
+    margin-top: 2rem;
+
+    padding-top: 1.5rem;
+
+    border-top: 1px solid #e2e8f0;
+}
+
+
+.course-detail__actions form {
+    display: inline-flex;
+
+    margin: 0;
+}
+
+
+.course-detail__actions .btn-primary {
+    border-radius: 9999px;
+
+    padding: 10px 22px;
+
+    font-size: 13px;
+
+    font-weight: 600;
+}
+
+
+.course-detail__actions button[type="submit"] {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    padding: 10px 22px;
+
+    border-radius: 9999px;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    border: 1px solid #fecaca;
+
+    transition: all 0.2s ease;
+}
+
+
+.course-detail__actions button[type="submit"]:hover {
+    background: #fee2e2;
+
+    border-color: #fca5a5;
+
+    transform: translateY(-1px);
+}
+
+
+.course-detail__actions .back-nav-btn {
+    padding: 10px 22px !important;
 }
 
 
@@ -300,6 +371,89 @@ tbody tr:hover {
     margin: 0 auto;
 
     padding: 32px 24px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 24px;
+}
+
+
+/* ==================================
+   BACK NAVIGATION BUTTON (KEMBALI)
+================================== */
+
+.back-nav-btn,
+.page-container > .mb-6 > a,
+.page-container .mb-6 > a.text-blue-600 {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 9px !important;
+    padding: 9px 20px !important;
+    border-radius: 9999px !important;
+    background: #ffffff !important;
+    border: 1px solid #bfdbfe !important;
+    color: #0a2540 !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.01em !important;
+    text-decoration: none !important;
+    box-shadow: 0 4px 12px rgba(10, 37, 64, 0.08) !important;
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    cursor: pointer !important;
+    width: fit-content !important;
+}
+
+.back-nav-btn:hover,
+.page-container > .mb-6 > a:hover,
+.page-container .mb-6 > a.text-blue-600:hover {
+    background: #0a2540 !important;
+    color: #ffffff !important;
+    border-color: #0a2540 !important;
+    box-shadow: 0 8px 22px rgba(10, 37, 64, 0.24) !important;
+    transform: translateX(-4px) !important;
+    text-decoration: none !important;
+}
+
+.back-nav-icon {
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.22s ease, color 0.22s ease;
+    color: #2563eb;
+    flex-shrink: 0;
+}
+
+.back-nav-btn:hover .back-nav-icon,
+.page-container > .mb-6 > a:hover .back-nav-icon,
+.page-container .mb-6 > a.text-blue-600:hover .back-nav-icon {
+    color: #ffffff !important;
+    transform: translateX(-3px);
+}
+
+/* Form Cancel Button */
+form a[href*="courses"].bg-gray-100 {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 22px;
+    border-radius: 12px;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+}
+
+form a[href*="courses"].bg-gray-100:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+    border-color: #cbd5e1;
 }
 
 
@@ -308,27 +462,50 @@ tbody tr:hover {
 ================================== */
 
 .success-alert {
-    margin-bottom: 24px;
+    display: flex;
 
-    padding: 16px;
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 14px 20px;
+
+    border-radius: 16px;
+
+    background: #ecfdf5;
+
+    border: 1px solid #a7f3d0;
+
+    color: #065f46;
+
+    font-size: 14px;
+
+    font-weight: 500;
+}
+
+
+.success-alert-icon {
+    width: 26px;
+
+    height: 26px;
 
     display: flex;
 
     align-items: center;
 
-    justify-content: space-between;
+    justify-content: center;
 
-    gap: 12px;
+    border-radius: 8px;
 
-    background: rgba(236, 253, 245, 0.9);
+    background: #10b981;
 
-    border: 1px solid #a7f3d0;
+    color: white;
 
-    border-radius: 16px;
+    font-weight: 700;
 
-    color: #065f46;
+    font-size: 13px;
 
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    flex-shrink: 0;
 }
 
 
@@ -341,21 +518,19 @@ tbody tr:hover {
 
     overflow: hidden;
 
-    padding: 32px;
+    padding: 36px 40px;
 
-    border-radius: 24px;
+    border-radius: 28px;
 
     color: white;
 
-    background: linear-gradient(
-        90deg,
-        #0a2540 0%,
-        #0f3460 50%,
-        #1e40af 100%
-    );
+    background: linear-gradient(90deg,
+            #0a2540 0%,
+            #0e3b68 50%,
+            #0284c7 100%);
 
     box-shadow:
-        0 20px 40px rgba(15, 52, 96, 0.12);
+        0 20px 40px -10px rgba(10, 37, 64, 0.35);
 
     margin-bottom: 24px;
 }
@@ -577,6 +752,13 @@ tbody tr:hover {
 }
 
 
+.hero-stat-body {
+    display: flex;
+
+    flex-direction: column;
+}
+
+
 .hero-stat-label {
     margin-bottom: 2px;
 
@@ -610,20 +792,20 @@ tbody tr:hover {
 
     justify-content: space-between;
 
-    gap: 12px;
+    gap: 16px;
 
-    padding: 10px;
+    padding: 14px 20px;
 
-    margin-bottom: 32px;
+    margin-bottom: 24px;
 
     background: white;
 
     border: 1px solid #e2e8f0;
 
-    border-radius: 999px;
+    border-radius: 18px;
 
     box-shadow:
-        0 8px 25px rgba(148, 163, 184, 0.15);
+        0 4px 15px rgba(148, 163, 184, 0.08);
 }
 
 
@@ -641,7 +823,7 @@ tbody tr:hover {
 .course-search-icon {
     position: absolute;
 
-    left: 16px;
+    left: 14px;
 
     top: 50%;
 
@@ -650,25 +832,27 @@ tbody tr:hover {
     color: #94a3b8;
 
     pointer-events: none;
+
+    font-size: 14px;
 }
 
 
 .course-search input {
     width: 100%;
 
-    padding: 11px 16px 11px 44px;
+    padding: 10px 16px 10px 40px;
 
-    border: 1px solid transparent;
+    border: 1px solid #e2e8f0;
 
-    border-radius: 999px;
+    border-radius: 12px;
 
     outline: none;
 
-    background: #f8fafc;
+    background: #ffffff;
 
     color: #1e293b;
 
-    font-size: 14px;
+    font-size: 13px;
 
     transition: 0.2s ease;
 }
@@ -680,7 +864,7 @@ tbody tr:hover {
 
 
 .course-search input:hover {
-    background: #f1f5f9;
+    border-color: #cbd5e1;
 }
 
 
@@ -690,7 +874,7 @@ tbody tr:hover {
     border-color: #2563eb;
 
     box-shadow:
-        0 0 0 3px rgba(37, 99, 235, 0.10);
+        0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
 
@@ -703,7 +887,7 @@ tbody tr:hover {
 
     align-items: center;
 
-    gap: 8px;
+    gap: 12px;
 }
 
 
@@ -714,17 +898,29 @@ tbody tr:hover {
 
     gap: 6px;
 
-    padding: 8px 14px;
+    padding: 10px 18px;
 
-    border-radius: 999px;
+    border-radius: 12px;
 
-    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
 
-    color: #475569;
+    background: #ffffff;
 
-    font-size: 12px;
+    color: #334155;
 
-    font-weight: 600;
+    font-size: 13px;
+
+    font-weight: 500;
+
+    cursor: pointer;
+
+    outline: none;
+
+    transition: 0.2s ease;
+}
+
+.status-filter:hover {
+    border-color: #cbd5e1;
 }
 
 
@@ -741,46 +937,32 @@ tbody tr:hover {
 
     gap: 8px;
 
-    padding: 11px 22px;
+    padding: 10px 20px;
 
     border: none;
 
-    border-radius: 999px;
+    border-radius: 12px;
 
-    background: linear-gradient(
-        90deg,
-        #1d4ed8,
-        #2563eb
-    );
+    background: #2563eb;
 
     color: white;
 
-    font-size: 14px;
+    font-size: 13px;
 
     font-weight: 600;
 
+    box-shadow:
+        0 2px 8px rgba(37, 99, 235, 0.25);
+
     text-decoration: none;
 
-    cursor: pointer;
-
     transition: all 0.2s ease;
-
-    box-shadow:
-        0 6px 15px rgba(37, 99, 235, 0.20);
 }
 
-
 .btn-primary:hover {
-    background: linear-gradient(
-        90deg,
-        #1e40af,
-        #1d4ed8
-    );
+    background: #1d4ed8;
 
     transform: translateY(-1px);
-
-    box-shadow:
-        0 10px 20px rgba(37, 99, 235, 0.28);
 }
 
 
@@ -795,10 +977,12 @@ tbody tr:hover {
 
     border: 1px solid #e2e8f0;
 
-    border-radius: 24px;
+    border-radius: 28px;
 
     box-shadow:
-        0 4px 15px rgba(148, 163, 184, 0.08);
+        0 15px 35px -5px rgba(15, 23, 42, 0.05);
+
+    padding: 28px;
 }
 
 
@@ -815,11 +999,11 @@ tbody tr:hover {
 
     gap: 12px;
 
-    padding: 16px 24px;
+    padding: 0 0 20px 0;
 
-    background: rgba(248, 250, 252, 0.7);
+    background: transparent;
 
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: none;
 }
 
 
@@ -830,18 +1014,18 @@ tbody tr:hover {
 
     gap: 10px;
 
-    color: #1e293b;
+    color: #0f172a;
 
-    font-size: 14px;
+    font-size: 16px;
 
-    font-weight: 700;
+    font-weight: 800;
 }
 
 
 .table-card-title-dot {
-    width: 10px;
+    width: 9px;
 
-    height: 10px;
+    height: 9px;
 
     border-radius: 50%;
 
@@ -849,17 +1033,39 @@ tbody tr:hover {
 }
 
 
-.table-card-count {
-    color: #64748b;
+.table-card-subtitle {
+    color: #94a3b8;
 
     font-size: 12px;
 
-    font-weight: 500;
+    margin-top: 4px;
+
+    padding-left: 19px;
 }
 
 
-.table-card-count strong {
-    color: #334155;
+.table-card-count {
+    display: inline-flex;
+
+    align-items: center;
+
+    padding: 6px 16px;
+
+    border-radius: 9999px;
+
+    background: #eff6ff;
+
+    border: 1px solid #bfdbfe;
+
+    color: #2563eb;
+
+    font-size: 12px;
+}
+
+.table-card-heading {
+    display: flex;
+
+    flex-direction: column;
 }
 
 
@@ -869,6 +1075,10 @@ tbody tr:hover {
 
 .course-table-wrapper {
     overflow-x: auto;
+
+    border-radius: 18px;
+
+    border: 1px solid #f1f5f9;
 }
 
 
@@ -886,26 +1096,34 @@ tbody tr:hover {
 
 
 .course-table thead {
-    background: rgba(248, 250, 252, 0.8);
+    background: #0a2540;
 
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid #0a2540;
 }
 
 
 .course-table th {
     padding: 16px 24px;
 
-    color: #94a3b8;
+    color: #ffffff;
 
     font-size: 11px;
 
-    font-weight: 600;
+    font-weight: 700;
 
     letter-spacing: 0.08em;
 
     text-transform: uppercase;
 
     white-space: nowrap;
+}
+
+
+.course-table th:nth-child(5),
+.course-table th:nth-child(6),
+.course-table td:nth-child(5),
+.course-table td:nth-child(6) {
+    text-align: center;
 }
 
 
@@ -944,13 +1162,13 @@ tbody tr:hover {
 
     border-radius: 8px;
 
-    background: #eff6ff;
+    background: #f8fafc;
 
-    border: 1px solid #bfdbfe;
+    border: 1px solid #e2e8f0;
 
-    color: #1d4ed8;
+    color: #334155;
 
-    font-family: monospace;
+    font-family: inherit;
 
     font-size: 12px;
 
@@ -969,23 +1187,102 @@ tbody tr:hover {
 
     font-size: 14px;
 
-    font-weight: 600;
+    font-weight: 700;
 
     transition: color 0.15s ease;
 }
 
 
-.course-table tbody tr:hover .course-name {
-    color: #1d4ed8;
+.course-name a {
+    color: #0f172a;
+
+    text-decoration: none;
+
+    transition: color 0.15s ease;
 }
 
 
-.course-subtitle {
-    margin-top: 3px;
+.course-name a:hover {
+    color: #2563eb;
+}
 
-    color: #94a3b8;
+
+.course-badges {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    margin-top: 6px;
+}
+
+
+.badge-materi {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 5px;
+
+    padding: 2px 10px;
+
+    border-radius: 6px;
+
+    background: #f8fafc;
+
+    border: 1px solid #e2e8f0;
+
+    color: #475569;
 
     font-size: 11px;
+
+    font-weight: 500;
+
+    text-decoration: none;
+
+    transition: all 0.15s ease;
+}
+
+
+.badge-materi:hover {
+    background: #f1f5f9;
+
+    color: #1e293b;
+}
+
+
+.badge-tugas {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 5px;
+
+    padding: 2px 10px;
+
+    border-radius: 6px;
+
+    background: #eff6ff;
+
+    border: 1px solid #bfdbfe;
+
+    color: #2563eb;
+
+    font-size: 11px;
+
+    font-weight: 500;
+
+    text-decoration: none;
+
+    transition: all 0.15s ease;
+}
+
+
+.badge-tugas:hover {
+    background: #dbeafe;
+
+    color: #1d4ed8;
 }
 
 
@@ -994,21 +1291,11 @@ tbody tr:hover {
 ================================== */
 
 .sks-badge {
-    display: inline-flex;
+    color: #1e293b;
 
-    align-items: center;
+    font-size: 14px;
 
-    padding: 5px 10px;
-
-    border-radius: 999px;
-
-    background: #f1f5f9;
-
-    color: #475569;
-
-    font-size: 12px;
-
-    font-weight: 600;
+    font-weight: 700;
 
     white-space: nowrap;
 }
@@ -1019,18 +1306,36 @@ tbody tr:hover {
 ================================== */
 
 .lecturer-info {
-    display: flex;
+    display: inline-flex;
 
     align-items: center;
 
-    gap: 10px;
+    gap: 12px;
+
+    text-align: left;
+}
+
+
+.lecturer-details {
+    display: flex;
+
+    flex-direction: column;
+}
+
+
+.lecturer-name {
+    color: #0f172a;
+
+    font-size: 13px;
+
+    font-weight: 700;
 }
 
 
 .lecturer-avatar {
-    width: 30px;
+    width: 32px;
 
-    height: 30px;
+    height: 32px;
 
     display: flex;
 
@@ -1042,26 +1347,17 @@ tbody tr:hover {
 
     border-radius: 50%;
 
-    background: #f1f5f9;
+    background: #0a2540;
 
-    border: 1px solid #e2e8f0;
+    border: 1px solid #0a2540;
 
-    color: #475569;
+    color: #ffffff;
 
-    font-size: 10px;
+    font-size: 11px;
 
     font-weight: 700;
 
     text-transform: uppercase;
-}
-
-
-.lecturer-name {
-    color: #475569;
-
-    font-size: 14px;
-
-    font-weight: 500;
 }
 
 
@@ -1202,6 +1498,95 @@ tbody tr:hover {
 
 
 /* ==================================
+   BUKA KELAS & GABUNG PILL BUTTONS
+================================== */
+
+.btn-buka-kelas {
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 8px;
+
+    padding: 8px 22px;
+
+    border-radius: 9999px;
+
+    background: #0a2540;
+
+    color: #ffffff !important;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    text-decoration: none;
+
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+    transition: all 0.2s ease;
+
+    white-space: nowrap;
+}
+
+.btn-buka-kelas:hover {
+    background: #13385e;
+
+    color: #ffffff !important;
+
+    transform: translateY(-1px);
+}
+
+.btn-gabung-kelas {
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 6px;
+
+    padding: 8px 22px;
+
+    border-radius: 9999px;
+
+    background: #059669;
+
+    color: #ffffff;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    border: none;
+
+    cursor: pointer;
+
+    transition: all 0.2s ease;
+
+    white-space: nowrap;
+}
+
+.btn-gabung-kelas:hover {
+    background: #047857;
+}
+
+.enroll-form {
+    display: inline;
+
+    margin: 0;
+}
+
+.lecturer-role {
+    color: #94a3b8;
+
+    font-size: 11px;
+}
+
+
+/* ==================================
    EMPTY STATE
 ================================== */
 
@@ -1271,27 +1656,7 @@ tbody tr:hover {
 ================================== */
 
 .info-card {
-    display: flex;
-
-    align-items: center;
-
-    justify-content: space-between;
-
-    gap: 16px;
-
-    margin-top: 24px;
-
-    padding: 16px;
-
-    background: rgba(239, 246, 255, 0.65);
-
-    border: 1px solid #dbeafe;
-
-    border-radius: 16px;
-
-    color: #1e3a8a;
-
-    font-size: 12px;
+    display: none;
 }
 
 
