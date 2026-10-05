@@ -21,14 +21,9 @@
         'resources/js/app.js'
     ])
 
-    <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-    </style>
 </head>
-
-<body class="min-h-screen bg-[#f7f9fb] text-slate-800 antialiased flex flex-col">
+ 
+<body class="antialiased">
 
     {{-- ========================================================= --}}
     {{-- NAVBAR --}}
@@ -82,21 +77,21 @@
 
                         <a
                             href="{{ route('dashboard') }}"
-                            class="px-4 py-2 text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition"
+                            class="px-4 py-2 text-sm font-semibold {{ request()->routeIs('dashboard') ? 'text-white bg-white/10' : 'text-slate-300 hover:text-white hover:bg-white/10' }} rounded-lg transition"
                         >
                             Dashboard
                         </a>
 
                         <a
                             href="{{ route(auth()->user()->role . '.courses.index') }}"
-                            class="px-4 py-2 text-sm font-semibold text-white bg-white/10 rounded-lg transition"
+                            class="px-4 py-2 text-sm font-semibold {{ request()->routeIs('*courses*') ? 'text-white bg-white/10' : 'text-slate-300 hover:text-white hover:bg-white/10' }} rounded-lg transition"
                         >
                             Mata Kuliah
                         </a>
 
                         <a
                             href="{{ route('tentang') }}"
-                            class="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition"
+                            class="px-4 py-2 text-sm font-medium {{ request()->routeIs('tentang') ? 'text-white bg-white/10' : 'text-slate-300 hover:text-white hover:bg-white/10' }} rounded-lg transition"
                         >
                             Tentang
                         </a>
@@ -222,9 +217,40 @@
 
             </div>
 
-        </div>
-
     </footer>
+
+    {{-- Script Navigasi Tombol Kembali --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Relokasi tombol kembali agar sejajar dengan Edit Mata Kuliah dan Hapus di halaman detail
+            const detailActions = document.querySelector('.course-detail__actions');
+            const topBack = document.querySelector('.page-container > .mb-6 > a, .page-container .mb-6 a');
+
+            if (detailActions && topBack && topBack.textContent.includes('Kembali')) {
+                const parentMb = topBack.closest('.mb-6');
+                detailActions.appendChild(topBack);
+                if (parentMb && parentMb.querySelectorAll('a, button').length === 0) {
+                    parentMb.style.display = 'none';
+                }
+            }
+
+            const backLinks = document.querySelectorAll('.page-container .mb-6 a, a.text-blue-600, .course-detail__actions a');
+            backLinks.forEach(link => {
+                const text = link.textContent.trim();
+                if (text.includes('Kembali') && !link.classList.contains('back-nav-btn')) {
+                    link.classList.add('back-nav-btn');
+                    const labelText = text.replace(/^[←\s]+/, '').trim();
+                    link.innerHTML = `
+                        <svg class="back-nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="19" y1="12" x2="5" y2="12"></line>
+                            <polyline points="12 19 5 12 12 5"></polyline>
+                        </svg>
+                        <span>${labelText}</span>
+                    `;
+                }
+            });
+        });
+    </script>
 
 </body>
 
