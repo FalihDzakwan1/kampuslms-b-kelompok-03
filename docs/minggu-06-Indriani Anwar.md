@@ -50,8 +50,6 @@ CourseController Web dan CourseController API memiliki tujuan yang sama yaitu me
 | Tanpa header `Accept: application/json` | `GET /api/v1/courses` | Laravel tidak diberi informasi bahwa client meminta JSON. Jika terjadi error, response dapat berupa HTML atau redirect ke halaman login |
 | Dengan header `Accept: application/json` | `GET /api/v1/courses` + header `Accept: application/json` | Laravel memberikan response dalam format JSON. Error authentication dikembalikan sebagai JSON dengan status 401 |
 
-## Kesimpulan
-
 Header `Accept: application/json` digunakan untuk memberitahu Laravel bahwa client mengharapkan response JSON. Pada API, penggunaan header ini membantu memastikan response tetap dalam format JSON, terutama ketika terjadi error.
 
 5. Jalankan php artisan route:list --path=api. Cocokkan dengan kontrak di spesifikasi.
