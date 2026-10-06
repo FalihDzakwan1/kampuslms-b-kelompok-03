@@ -27,6 +27,7 @@ class UpdateUserRequest extends FormRequest
                 'max:255',
                 Rule::unique('users', 'email')->ignore($user->id),
             ],
+            'nim_nip' => ['required', 'string', 'max:50', Rule::unique('users', 'nim_nip')->ignore($user->id)],
             'role' => 'required|in:admin,dosen,mahasiswa',
             // Note: Password di update dibikin opsional di kebanyakan sistem, 
             // tapi kita ikuti sesuai field yang Anda sediakan.
@@ -45,3 +46,4 @@ class UpdateUserRequest extends FormRequest
         ];
     }
 }
+

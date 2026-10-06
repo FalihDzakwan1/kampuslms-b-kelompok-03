@@ -101,6 +101,51 @@
                 @endif
             </div>
 
+            {{-- Form Penilaian Dosen --}}
+            @if(auth()->user()->role === 'dosen' && $submission->assignment->course->lecturer_id === auth()->id())
+                <div class="mt-6 p-6 rounded-2xl border border-blue-100 bg-blue-50/40">
+                    <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <span>✏️</span> {{ $submission->grade ? 'Perbarui Nilai & Umpan Balik' : 'Beri Nilai untuk Mahasiswa' }}
+                    </h3>
+
+                    <form action="{{ route('dosen.submissions.grade', $submission) }}" method="POST" class="space-y-4">
+                        @csrf
+                        @method('PUT')
+
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                Nilai (Skor 0 - {{ $submission->assignment->max_score ?? 100 }}) <span class="text-red-500">*</span>
+                            </label>
+                            <input type="number" name="score" min="0" max="{{ $submission->assignment->max_score ?? 100 }}" step="0.5" 
+                                value="{{ old('score', $submission->grade->score ?? '') }}" required
+                                class="w-full max-w-xs px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                placeholder="Contoh: 85">
+                            @error('score')
+                                <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">
+                                Umpan Balik / Catatan untuk Mahasiswa (Opsional)
+                            </label>
+                            <textarea name="feedback" rows="3" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                placeholder="Berikan saran, masukan perbaikan, atau apresiasi...">{{ old('feedback', $submission->grade->feedback ?? '') }}</textarea>
+                            @error('feedback')
+                                <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <button type="submit" class="btn-primary text-xs px-6 py-2.5">
+                                💾 Simpan Nilai & Umpan Balik
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            @endif
+
             {{-- Batalkan Pengumpulan (Mahasiswa) --}}
             @if(auth()->user()->role === 'mahasiswa' && $submission->user_id === auth()->id() && !$submission->grade)
                 <div class="mt-8 pt-6 border-t border-gray-100 flex justify-end">

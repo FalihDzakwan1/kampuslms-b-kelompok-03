@@ -15,10 +15,10 @@ use App\Http\Controllers\Api\NotificationController;
 |--------------------------------------------------------------------------
 */
 
-Route::prefix('v1')->group(function () {
+Route::prefix('v1')->middleware('throttle:api')->group(function () {
     
-    // Auth Publik
-    Route::post('/auth/login', [AuthController::class, 'login']);
+    // Auth Publik (Rate limiting: 5/menit)
+    Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:login');
 
     // API yang butuh autentikasi Sanctum
     Route::middleware('auth:sanctum')->group(function () {

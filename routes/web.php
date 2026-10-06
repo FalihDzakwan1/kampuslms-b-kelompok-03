@@ -82,6 +82,32 @@ Route::middleware(['auth'])->group(function () {
                 CourseController::class
             );
 
+            // Admin: kelola peserta semua MK
+            Route::get('courses/{course}/enrollments', [CourseController::class, 'enrollments'])->name('courses.enrollments');
+            Route::post('courses/{course}/enrollments', [CourseController::class, 'enrollStore'])->name('courses.enrollments.store');
+            Route::delete('courses/{course}/enrollments/{student}', [CourseController::class, 'unenroll'])->name('courses.enrollments.destroy');
+
+            Route::scopeBindings()
+                ->resource(
+                    'courses.assignments',
+                    AssignmentController::class
+                )
+                ->only(['index', 'show'])
+                ->shallow();
+
+            Route::scopeBindings()
+                ->resource(
+                    'courses.materials',
+                    MaterialController::class
+                )
+                ->only(['index', 'show'])
+                ->shallow();
+
+            Route::resource(
+                'submissions',
+                SubmissionController::class
+            )->only(['show']);
+
         });
 
 
@@ -101,8 +127,10 @@ Route::middleware(['auth'])->group(function () {
             Route::resource(
                 'courses',
                 CourseController::class
-            );
-
+            )->only(['index', 'show']);
+            Route::get('courses/{course}/enrollments', [CourseController::class, 'enrollments'])->name('courses.enrollments');
+            Route::post('courses/{course}/enrollments', [CourseController::class, 'enrollStore'])->name('courses.enrollments.store');
+            Route::delete('courses/{course}/enrollments/{student}', [CourseController::class, 'unenroll'])->name('courses.enrollments.destroy');
 
             Route::scopeBindings()
                 ->resource(
@@ -125,6 +153,11 @@ Route::middleware(['auth'])->group(function () {
                 'submissions',
                 SubmissionController::class
             )->only(['show']);
+
+            Route::put(
+                'submissions/{submission}/grade',
+                [SubmissionController::class, 'grade']
+            )->name('submissions.grade');
 
         });
 
@@ -150,6 +183,11 @@ Route::middleware(['auth'])->group(function () {
                 'index',
                 'show'
             ]);
+
+            Route::post(
+                'courses/{course}/enroll',
+                [CourseController::class, 'enroll']
+            )->name('courses.enroll');
 
 
             Route::scopeBindings()
