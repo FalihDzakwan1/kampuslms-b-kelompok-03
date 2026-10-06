@@ -18,6 +18,7 @@ class StoreUserRequest extends FormRequest
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email',
             'password' => 'required|string|min:8',
+            'nim_nip' => 'required|string|max:50|unique:users,nim_nip',
             'role' => 'required|in:admin,dosen,mahasiswa',
         ];
     }
@@ -32,6 +33,8 @@ class StoreUserRequest extends FormRequest
             'email.unique' => 'Maaf, email ini sudah terdaftar di sistem. Silakan gunakan email lain.',
             'password.required' => 'Kata sandi wajib diisi untuk pengguna baru.',
             'password.min' => 'Kata sandi minimal harus 8 karakter untuk keamanan.',
+            'nim_nip.required' => 'NIM/NIP wajib diisi.',
+            'nim_nip.unique' => 'NIM/NIP ini sudah terdaftar. Silakan periksa kembali.',
             'role.required' => 'Peran pengguna (role) harus dipilih.',
             'role.in' => 'Pilihan peran tidak valid.',
         ];
