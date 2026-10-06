@@ -10,13 +10,7 @@
             $courseTotal = is_countable($courses) ? count($courses) : (method_exists($courses, 'total') ? $courses->total() : $courses->count());
         @endphp
 
-        {{-- Success Message --}}
-        @if (session('success'))
-            <div class="success-alert">
-                <span class="success-alert-icon">✓</span>
-                <span class="success-alert-text">{{ session('success') }}</span>
-            </div>
-        @endif
+        {{-- Flash message ditangani oleh layout global --}}
 
         {{-- Hero Banner --}}
         <section class="ocean-banner">
@@ -92,9 +86,9 @@
                     <option value="archived" {{ request('status') === 'archived' ? 'selected' : '' }}>Arsip</option>
                 </select>
 
-                @if(auth()->check() && auth()->user()->role !== 'mahasiswa')
+                @if(auth()->check() && auth()->user()->role === 'admin')
                     <a
-                        href="{{ route(auth()->user()->role . '.courses.create') }}"
+                        href="{{ route('admin.courses.create') }}"
                         class="btn-primary"
                     >
                         + Tambah Mata Kuliah
@@ -187,10 +181,15 @@
 
                                     {{-- Status --}}
                                     <td>
-                                        @if (($course->status ?? 'active') === 'active')
+                                        @if ($course->status === 'active')
                                             <span class="status-active">
                                                 <span class="status-active-dot"></span>
                                                 Aktif
+                                            </span>
+                                        @elseif ($course->status === 'archived')
+                                            <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;">
+                                                <span style="width:6px;height:6px;border-radius:50%;background:#9ca3af;display:inline-block;"></span>
+                                                Arsip
                                             </span>
                                         @else
                                             <span class="status-draft">
@@ -241,7 +240,7 @@
 
                 @if (is_object($courses) && method_exists($courses, 'hasPages') && $courses->hasPages())
                     <div class="pagination-wrapper">
-                        {{ $courses->links() }}
+                        {{ $courses->appends(request()->query())->links() }}
                     </div>
                 @endif
             @else
@@ -249,8 +248,8 @@
                     <div class="empty-icon">📚</div>
                     <h3 class="empty-title">Belum Ada Mata Kuliah</h3>
                     <p class="empty-description">Belum terdapat data mata kuliah yang tersedia.</p>
-                    @if(auth()->user()->role !== 'mahasiswa')
-                        <a href="{{ route(auth()->user()->role . '.courses.create') }}" class="btn-primary">
+                    @if(auth()->user()->role === 'admin')
+                        <a href="{{ route('admin.courses.create') }}" class="btn-primary">
                             + Tambah Mata Kuliah
                         </a>
                     @endif
