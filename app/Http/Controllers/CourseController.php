@@ -116,6 +116,74 @@ class CourseController extends Controller
             ->with('success', 'Selamat! Anda berhasil terdaftar di mata kuliah ' . $course->name . '.');
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Kelola Enrollment (Dosen & Admin)
+    |--------------------------------------------------------------------------
+    */
+
+    public function enrollments(Course $course)
+    {
+        $authUser = auth()->user();
+
+        // Dosen hanya boleh mengelola MK miliknya
+        abort_unless(
+            $authUser->role === 'admin' || $course->lecturer_id === $authUser->id,
+            403,
+            'Anda tidak memiliki akses untuk mengelola peserta mata kuliah ini.'
+        );
+
+        $course->load('students');
+
+        // Semua mahasiswa yang belum terdaftar (untuk form tambah)
+        $enrolledIds = $course->students->pluck('id');
+        $available = User::where('role', 'mahasiswa')
+            ->whereNotIn('id', $enrolledIds)
+            ->orderBy('name')
+            ->get();
+
+        return view('courses.enrollments', compact('course', 'available'));
+    }
+
+    public function enrollStore(Request $request, Course $course)
+    {
+        $authUser = auth()->user();
+
+        abort_unless(
+            $authUser->role === 'admin' || $course->lecturer_id === $authUser->id,
+            403,
+            'Anda tidak memiliki akses untuk menambah peserta.'
+        );
+
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+        ]);
+
+        $student = User::findOrFail($request->user_id);
+        abort_unless($student->role === 'mahasiswa', 422, 'Hanya mahasiswa yang bisa didaftarkan.');
+
+        if (!$course->students()->where('users.id', $student->id)->exists()) {
+            $course->students()->attach($student->id, ['enrolled_at' => now()]);
+        }
+
+        return back()->with('success', $student->name . ' berhasil ditambahkan ke mata kuliah ' . $course->name . '.');
+    }
+
+    public function unenroll(Course $course, User $student)
+    {
+        $authUser = auth()->user();
+
+        abort_unless(
+            $authUser->role === 'admin' || $course->lecturer_id === $authUser->id,
+            403,
+            'Anda tidak memiliki akses untuk menghapus peserta.'
+        );
+
+        $course->students()->detach($student->id);
+
+        return back()->with('success', $student->name . ' berhasil dikeluarkan dari mata kuliah.');
+    }
+
 
 
 
@@ -165,10 +233,7 @@ class CourseController extends Controller
 
 
 
-        return redirect()
-            ->route(
-                auth()->user()->role . '.courses.index'
-            )
+        return redirect()->route(auth()->user()->role . '.courses.index')
             ->with(
                 'success',
                 'Mata kuliah berhasil ditambahkan.'
@@ -276,10 +341,7 @@ class CourseController extends Controller
 
 
 
-        return redirect()
-            ->route(
-                auth()->user()->role . '.courses.index'
-            )
+        return redirect()->route(auth()->user()->role . '.courses.index')
             ->with(
                 'success',
                 'Mata kuliah berhasil dihapus.'
@@ -289,3 +351,4 @@ class CourseController extends Controller
 
 
 }
+
