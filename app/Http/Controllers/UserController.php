@@ -48,6 +48,7 @@ class UserController extends Controller
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
+            'nim_nip' => $validated['nim_nip'],
             'password' => \Illuminate\Support\Facades\Hash::make($validated['password']),
         ]);
 
@@ -84,7 +85,9 @@ class UserController extends Controller
             'Anda tidak memiliki akses ke sumber daya ini.'
         );
 
-        return view('users.edit', compact('user'));
+        $allowedRoles = ['admin', 'dosen', 'mahasiswa'];
+
+        return view('users.edit', compact('user', 'allowedRoles'));
     }
 
 
@@ -105,6 +108,7 @@ class UserController extends Controller
         $user->update([
             'name' => $validated['name'],
             'email' => $validated['email'],
+            'nim_nip' => $validated['nim_nip'],
         ]);
 
         // role diisi manual

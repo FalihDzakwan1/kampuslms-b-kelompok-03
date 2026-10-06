@@ -205,12 +205,24 @@
             </div>
 
             <div class="course-detail__actions gap-3">
-                @if(auth()->user()->role !== 'mahasiswa')
-                    <a href="{{ route(auth()->user()->role . '.courses.edit', $course) }}" class="btn-primary">
+                {{-- Edit & Hapus: HANYA Admin --}}
+                @if(auth()->user()->role === 'admin')
+                    <a href="{{ route('admin.courses.edit', $course) }}" class="btn-primary">
                         ✎ Edit Mata Kuliah
                     </a>
+                @endif
 
-                    <form action="{{ route(auth()->user()->role . '.courses.destroy', $course) }}" method="POST" class="inline">
+                {{-- Kelola Peserta: Admin dan Dosen pengampu --}}
+                @if(auth()->user()->role === 'admin' || (auth()->user()->role === 'dosen' && $course->lecturer_id === auth()->id()))
+                    <a href="{{ route(auth()->user()->role . '.courses.enrollments', $course) }}"
+                       class="px-5 py-2 rounded-full bg-indigo-100 text-indigo-700 font-semibold hover:bg-indigo-200 transition">
+                        👥 Kelola Peserta
+                    </a>
+                @endif
+
+                {{-- Hapus: HANYA Admin --}}
+                @if(auth()->user()->role === 'admin')
+                    <form action="{{ route('admin.courses.destroy', $course) }}" method="POST" class="inline">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="px-5 py-2 rounded-full bg-red-100 text-red-700 font-semibold hover:bg-red-200 transition"

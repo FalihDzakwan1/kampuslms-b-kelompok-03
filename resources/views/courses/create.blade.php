@@ -19,7 +19,7 @@
                         <input type="text" name="code" value="{{ old('code') }}" placeholder="Contoh: SI2514024"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
                         @error('code')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            <p class="text-red-500 text-xs mt-1" style="color: #ef4444; font-weight: 500;">{{ $message }}</p>
                         @enderror
                     </div>
                     <div>
@@ -27,7 +27,7 @@
                         <input type="number" name="sks" value="{{ old('sks') }}" min="1" max="6" placeholder="Contoh: 3"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
                         @error('sks')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            <p class="text-red-500 text-xs mt-1" style="color: #ef4444; font-weight: 500;">{{ $message }}</p>
                         @enderror
                     </div>
                 </div>
@@ -37,7 +37,7 @@
                     <input type="text" name="name" value="{{ old('name') }}" placeholder="Contoh: Pemrograman Web"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
                     @error('name')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        <p class="text-red-500 text-xs mt-1" style="color: #ef4444; font-weight: 500;">{{ $message }}</p>
                     @enderror
                 </div>
 
@@ -52,7 +52,7 @@
                         @endforeach
                     </select>
                     @error('lecturer_id')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        <p class="text-red-500 text-xs mt-1" style="color: #ef4444; font-weight: 500;">{{ $message }}</p>
                     @enderror
                 </div>
 
@@ -64,7 +64,7 @@
                         <option value="archived" {{ old('status') == 'archived' ? 'selected' : '' }}>Arsip</option>
                     </select>
                     @error('status')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        <p class="text-red-500 text-xs mt-1" style="color: #ef4444; font-weight: 500;">{{ $message }}</p>
                     @enderror
                 </div>
 
@@ -72,7 +72,7 @@
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Deskripsi Singkat</label>
                     <textarea name="description" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">{{ old('description') }}</textarea>
                     @error('description')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        <p class="text-red-500 text-xs mt-1" style="color: #ef4444; font-weight: 500;">{{ $message }}</p>
                     @enderror
                 </div>
 

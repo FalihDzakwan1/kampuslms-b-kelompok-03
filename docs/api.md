@@ -191,8 +191,11 @@ Jika batas permintaan terlampaui, server akan mengembalikan respons HTTP `429 To
         "updated_at": "2026-01-15T09:00:00.000000Z"
       }
     ],
-    "links": { ... },
-    "meta": { ... }
+    "meta": {
+      "current_page": 1,
+      "last_page": 5,
+      "total": 47
+    }
   }
   ```
 

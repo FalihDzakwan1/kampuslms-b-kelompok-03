@@ -82,6 +82,11 @@ Route::middleware(['auth'])->group(function () {
                 CourseController::class
             );
 
+            // Admin: kelola peserta semua MK
+            Route::get('courses/{course}/enrollments', [CourseController::class, 'enrollments'])->name('courses.enrollments');
+            Route::post('courses/{course}/enrollments', [CourseController::class, 'enrollStore'])->name('courses.enrollments.store');
+            Route::delete('courses/{course}/enrollments/{student}', [CourseController::class, 'unenroll'])->name('courses.enrollments.destroy');
+
             Route::scopeBindings()
                 ->resource(
                     'courses.assignments',
@@ -122,8 +127,10 @@ Route::middleware(['auth'])->group(function () {
             Route::resource(
                 'courses',
                 CourseController::class
-            );
-
+            )->only(['index', 'show']);
+            Route::get('courses/{course}/enrollments', [CourseController::class, 'enrollments'])->name('courses.enrollments');
+            Route::post('courses/{course}/enrollments', [CourseController::class, 'enrollStore'])->name('courses.enrollments.store');
+            Route::delete('courses/{course}/enrollments/{student}', [CourseController::class, 'unenroll'])->name('courses.enrollments.destroy');
 
             Route::scopeBindings()
                 ->resource(

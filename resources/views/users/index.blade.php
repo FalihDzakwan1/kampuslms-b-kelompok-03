@@ -64,7 +64,7 @@
                                 </tr>
                             @endforeach
                         </tbody>
-                    </table></div>@if(is_object($users) && method_exists($users, 'hasPages') && $users->hasPages())<div class="p-6 border-t border-gray-100">{{ $users->links() }}</div>
+                    </table></div>@if(is_object($users) && method_exists($users, 'hasPages') && $users->hasPages())<div class="p-6 border-t border-gray-100">{{ $users->appends(request()->query())->links() }}</div>
 @endif
 @else
                 <div class="p-16 text-center text-gray-500">
