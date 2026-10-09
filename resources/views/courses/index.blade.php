@@ -203,22 +203,10 @@
                                     <td>
                                         <div class="table-actions">
                                             @if(auth()->user()->role === 'mahasiswa')
-                                                @php
-                                                    $isEnrolled = $course->students()->where('users.id', auth()->id())->exists();
-                                                @endphp
-                                                @if($isEnrolled)
-                                                    <a href="{{ route('mahasiswa.courses.show', $course->id) }}" class="btn-buka-kelas">
-                                                        <span>Buka Kelas</span>
-                                                        <span>&rarr;</span>
-                                                    </a>
-                                                @else
-                                                    <form action="{{ route('mahasiswa.courses.enroll', $course->id) }}" method="POST" class="enroll-form">
-                                                        @csrf
-                                                        <button type="submit" class="btn-gabung-kelas">
-                                                            + Gabung
-                                                        </button>
-                                                    </form>
-                                                @endif
+                                                <a href="{{ route('mahasiswa.courses.show', $course->id) }}" class="btn-buka-kelas">
+                                                    <span>Buka Kelas</span>
+                                                    <span>&rarr;</span>
+                                                </a>
                                             @elseif(auth()->user()->role === 'dosen')
                                                 <a href="{{ route('dosen.courses.show', $course->id) }}" class="btn-buka-kelas">
                                                     <span>Buka Kelas</span>
