@@ -41,14 +41,8 @@ class CourseController extends Controller
      */
     public function show(Request $request, Course $course)
     {
-        $user = $request->user();
-
-        abort_unless(
-            $user->role === 'admin'
-            || $course->lecturer_id === $user->id
-            || $course->students()->where('users.id', $user->id)->exists(),
-            403, 'Anda tidak memiliki akses ke sumber daya ini.'
-        );
+        // Pengecekan Otorisasi Berdasarkan Policy
+        \Illuminate\Support\Facades\Gate::authorize('view', $course);
 
         $course->loadCount(['materials', 'assignments']);
         $course->load('lecturer');

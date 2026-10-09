@@ -93,7 +93,6 @@ class UserController extends Controller
 
     public function update(UpdateUserRequest $request, User $user)
     {
-        // TODO: Akan direfaktor menjadi UserPolicy@update di minggu 7
         $authUser = auth()->user();
         abort_unless(
             $authUser->role === 'admin'
@@ -105,20 +104,21 @@ class UserController extends Controller
         // Hanya mengambil input yang sah melewati aturan UpdateUserRequest
         $validated = $request->validated();
 
-        $user->update([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'nim_nip' => $validated['nim_nip'],
-        ]);
+        $user->name = $validated['name'];
+        $user->email = $validated['email'];
+        $user->nim_nip = $validated['nim_nip'];
 
-        // role diisi manual
-        $user->role = $validated['role'];
+        // CEGAH ELEVASI PRIVILEGE (PENGUBAHAN ROLE ILEGAL)
+        // Hanya Admin yang boleh mengganti field role
+        if ($authUser->role === 'admin' && isset($validated['role'])) {
+            $user->role = $validated['role'];
+        }
+
         $user->save();
 
         return redirect()
-            ->route('admin.users.show', $user)
-            ->with('success', 'Data pengguna berhasil diperbarui.');
-
+            ->route(auth()->user()->role === 'admin' ? 'admin.users.show' : 'dashboard', $user)
+            ->with('success', 'Data profil berhasil diperbarui.');
     }
 
 

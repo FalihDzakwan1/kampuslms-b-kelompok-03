@@ -21,9 +21,22 @@ class CourseController extends Controller
 
     public function index(Request $request)
     {
+        $authUser = auth()->user();
 
         $courses = Course::query()
             ->with('lecturer')
+            
+            // Filter Keamanan Berdasarkan Peran (Collection-Level IDOR Protection)
+            ->when($authUser->role === 'dosen', function ($query) use ($authUser) {
+                // Dosen hanya melihat MK miliknya
+                $query->where('lecturer_id', $authUser->id);
+            })
+            ->when($authUser->role === 'mahasiswa', function ($query) use ($authUser) {
+                // Mahasiswa hanya melihat MK yang sudah diikutinya
+                $query->whereHas('students', function ($q) use ($authUser) {
+                    $q->where('users.id', $authUser->id);
+                });
+            })
 
             ->when(
                 $request->filled('q'),
@@ -82,25 +95,14 @@ class CourseController extends Controller
 
     public function show(Course $course)
     {
-        $authUser = auth()->user();
-
-        $isEnrolled = true;
-        if ($authUser->role === 'mahasiswa') {
-            $isEnrolled = $course->students()->where('users.id', $authUser->id)->exists();
-        } elseif ($authUser->role === 'dosen') {
-            abort_unless(
-                $authUser->id === $course->lecturer_id,
-                403,
-                'Anda tidak memiliki akses ke mata kuliah ini.'
-            );
-        }
+        // Pengecekan Otorisasi Berdasarkan Policy
+        \Illuminate\Support\Facades\Gate::authorize('view', $course);
 
         $course->load(['lecturer', 'materials.uploader', 'assignments.submissions']);
 
-        return view(
-            'courses.show',
-            compact('course', 'isEnrolled')
-        );
+        $isEnrolled = true; // Ditambahkan agar view blade tidak error undefined variable
+
+        return view('courses.show', compact('course', 'isEnrolled'));
     }
 
     public function enroll(Course $course)
@@ -126,12 +128,8 @@ class CourseController extends Controller
     {
         $authUser = auth()->user();
 
-        // Dosen hanya boleh mengelola MK miliknya
-        abort_unless(
-            $authUser->role === 'admin' || $course->lecturer_id === $authUser->id,
-            403,
-            'Anda tidak memiliki akses untuk mengelola peserta mata kuliah ini.'
-        );
+        // CoursePolicy@update dipakai sebagai proxy untuk kelola enrollment
+        Gate::authorize('update', $course);
 
         $course->load('students');
 
@@ -149,11 +147,7 @@ class CourseController extends Controller
     {
         $authUser = auth()->user();
 
-        abort_unless(
-            $authUser->role === 'admin' || $course->lecturer_id === $authUser->id,
-            403,
-            'Anda tidak memiliki akses untuk menambah peserta.'
-        );
+        Gate::authorize('update', $course);
 
         $request->validate([
             'user_id' => 'required|exists:users,id',
@@ -173,11 +167,7 @@ class CourseController extends Controller
     {
         $authUser = auth()->user();
 
-        abort_unless(
-            $authUser->role === 'admin' || $course->lecturer_id === $authUser->id,
-            403,
-            'Anda tidak memiliki akses untuk menghapus peserta.'
-        );
+        Gate::authorize('update', $course);
 
         $course->students()->detach($student->id);
 
@@ -258,13 +248,7 @@ class CourseController extends Controller
 
     public function edit(Course $course)
     {
-        // TODO: Akan direfaktor menjadi CoursePolicy@update di minggu 7
-        abort_unless(
-            $course->lecturer_id === auth()->id()
-            || auth()->user()->role === 'admin',
-            403,
-            'Anda tidak memiliki akses ke sumber daya ini.'
-        );
+        Gate::authorize('update', $course);
 
         $lecturers = User::where(
             'role',
@@ -293,13 +277,7 @@ class CourseController extends Controller
         Course $course
     )
     {
-        // TODO: Akan direfaktor menjadi CoursePolicy@update di minggu 7
-        abort_unless(
-            $course->lecturer_id === auth()->id()
-            || auth()->user()->role === 'admin',
-            403,
-            'Anda tidak memiliki akses ke sumber daya ini.'
-        );
+        Gate::authorize('update', $course);
 
 
 
@@ -327,13 +305,7 @@ class CourseController extends Controller
         Course $course
     )
     {
-        // TODO: Akan direfaktor menjadi CoursePolicy@delete di minggu 7
-        abort_unless(
-            $course->lecturer_id === auth()->id()
-            || auth()->user()->role === 'admin',
-            403,
-            'Anda tidak memiliki akses ke sumber daya ini.'
-        );
+        Gate::authorize('delete', $course);
 
 
 
