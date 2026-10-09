@@ -6,31 +6,37 @@ use App\Models\Submission;
 use App\Models\Assignment;
 use App\Models\Grade;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class SubmissionController extends Controller
 {
+    /**
+     * Daftar submission milik mahasiswa yang sedang login.
+     * Query sudah disaring — mahasiswa HANYA melihat miliknya sendiri.
+     */
     public function index()
     {
-        // Mahasiswa hanya melihat submission miliknya sendiri
         $submissions = Submission::with(['assignment.course'])
             ->where('user_id', auth()->id())
             ->latest()
             ->get();
 
-        return view(
-            'submissions.index',
-            compact('submissions')
-        );
+        return view('submissions.index', compact('submissions'));
     }
 
-    public function store(
-        Request $request,
-        Assignment $assignment
-    )
+    /**
+     * Kumpulkan tugas baru.
+     * SubmissionPolicy@create: Mahasiswa terdaftar di MK + belum pernah submit.
+     */
+    public function store(Request $request, Assignment $assignment)
     {
+        $assignment->loadMissing('course');
+
+        Gate::authorize('create', [Submission::class, $assignment]);
+
         $request->validate([
             'file' => 'required|file|max:10240',
-            'note' => 'nullable|string|max:500'
+            'note' => 'nullable|string|max:500',
         ]);
 
         $isLate = $assignment->due_at ? now()->gt($assignment->due_at) : false;
@@ -40,75 +46,69 @@ class SubmissionController extends Controller
         }
 
         $uploadedFile = $request->file('file');
-        $path = $uploadedFile->store('submissions', 'public');
+        $path         = $uploadedFile->store('submissions', 'private');
 
-        Submission::updateOrCreate(
-            [
-                'assignment_id' => $assignment->id,
-                'user_id'       => auth()->id(),
-            ],
-            [
-                'file_path'     => $path,
-                'original_name' => $uploadedFile->getClientOriginalName(),
-                'file_size'     => $uploadedFile->getSize(),
-                'note'          => $request->note,
-                'submitted_at'  => now(),
-                'is_late'       => $isLate,
-            ]
-        );
+        Submission::create([
+            'assignment_id' => $assignment->id,
+            'user_id'       => auth()->id(),
+            'file_path'     => $path,
+            'original_name' => $uploadedFile->getClientOriginalName(),
+            'file_size'     => $uploadedFile->getSize(),
+            'note'          => $request->note,
+            'submitted_at'  => now(),
+            'is_late'       => $isLate,
+        ]);
 
         return back()->with('success', 'Tugas berhasil dikumpulkan!');
     }
 
-    public function show(
-        Submission $submission
-    )
+    /**
+     * Detail satu submission.
+     * SubmissionPolicy@view:
+     *   Admin ✅ | Dosen MK sendiri ✅ | Mahasiswa (milik sendiri saja) ✅
+     * Ini juga melindungi dari IDOR antar mahasiswa.
+     */
+    public function show(Submission $submission)
     {
-        // TODO: Akan direfaktor menjadi SubmissionPolicy@view di minggu 7
-        abort_unless(
-            $submission->user_id === auth()->id()
-            || auth()->user()->role === 'admin'
-            || $submission->assignment->course->lecturer_id === auth()->id(),
-            403,
-            'Anda tidak memiliki akses untuk melihat pengumpulan tugas ini.'
-        );
+        $submission->loadMissing(['assignment.course']);
+
+        Gate::authorize('view', $submission);
 
         $submission->load(['assignment.course', 'student']);
 
-        return view(
-            'submissions.show',
-            compact('submission')
-        );
+        return view('submissions.show', compact('submission'));
     }
 
-    public function destroy(
-        Submission $submission
-    )
+    /**
+     * Hapus submission.
+     * SubmissionPolicy@delete: semua peran ditolak (return false).
+     * Method ini dipertahankan tetapi akan selalu menghasilkan 403.
+     */
+    public function destroy(Submission $submission)
     {
-        // TODO: Akan direfaktor menjadi SubmissionPolicy@delete di minggu 7
-        abort_unless(
-            $submission->user_id === auth()->id(),
-            403,
-            'Anda tidak memiliki akses untuk membatalkan pengumpulan tugas ini.'
-        );
+        Gate::authorize('delete', $submission);
 
         $submission->delete();
 
         return back()->with('success', 'Pengumpulan tugas berhasil dibatalkan.');
     }
 
-    public function grade(
-        Request $request,
-        Submission $submission
-    ) {
-        $submission->load('assignment.course');
+    /**
+     * Beri / perbarui nilai.
+     * GradePolicy@create atau @update (upsert):
+     *   Dosen hanya bisa menilai submission dari MK miliknya.
+     */
+    public function grade(Request $request, Submission $submission)
+    {
+        $submission->loadMissing(['assignment.course']);
 
-        abort_unless(
-            auth()->user()->role === 'dosen'
-            && $submission->assignment->course->lecturer_id === auth()->id(),
-            403,
-            'Anda tidak memiliki akses untuk menilai pengumpulan tugas ini.'
-        );
+        // Cek apakah sudah ada nilai (update) atau belum (create)
+        $existingGrade = $submission->grade;
+        if ($existingGrade) {
+            Gate::authorize('update', $existingGrade);
+        } else {
+            Gate::authorize('create', [Grade::class, $submission]);
+        }
 
         $request->validate([
             'score'    => 'required|numeric|min:0|max:' . ($submission->assignment->max_score ?? 100),
