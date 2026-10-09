@@ -61,7 +61,7 @@ class MaterialController extends Controller
 
         if ($request->hasFile('file') && $request->type === 'file') {
             $file                  = $request->file('file');
-            $data['file_path']     = $file->store('materials', 'private');
+            $data['file_path']     = $file->store('materials');
             $data['original_name'] = $file->getClientOriginalName();
             $data['file_size']     = $file->getSize();
             $data['mime_type']     = $file->getMimeType();
@@ -131,7 +131,7 @@ class MaterialController extends Controller
 
         if ($request->hasFile('file') && $request->type === 'file') {
             $file                  = $request->file('file');
-            $data['file_path']     = $file->store('materials', 'private');
+            $data['file_path']     = $file->store('materials');
             $data['original_name'] = $file->getClientOriginalName();
             $data['file_size']     = $file->getSize();
             $data['mime_type']     = $file->getMimeType();

@@ -46,7 +46,7 @@ class SubmissionController extends Controller
         }
 
         $uploadedFile = $request->file('file');
-        $path         = $uploadedFile->store('submissions', 'private');
+        $path         = $uploadedFile->store('submissions');
 
         Submission::create([
             'assignment_id' => $assignment->id,
