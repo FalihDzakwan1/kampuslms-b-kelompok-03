@@ -5,48 +5,45 @@ namespace App\Http\Controllers;
 use App\Models\Assignment;
 use App\Models\Course;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Gate;
 
 class AssignmentController extends Controller
 {
-
+    /**
+     * Daftar tugas dalam satu MK.
+     * AssignmentPolicy@viewAny: Admin ✅ | Dosen MK sendiri ✅ | Mahasiswa terdaftar ✅
+     */
 
     public function index(Course $course)
     {
-        // TODO: Akan direfaktor menjadi AssignmentPolicy@viewAny di minggu 7
-        $authUser = auth()->user();
-        abort_unless(
-            $authUser->role === 'admin'
-            || $course->lecturer_id === $authUser->id
-            || $course->students()->where('users.id', $authUser->id)->exists(),
-            403,
-            'Anda tidak memiliki akses ke daftar tugas mata kuliah ini.'
-        );
+        Gate::authorize('viewAny', [Assignment::class, $course]);
 
         return view('assignments.index', [
-            'course' => $course,
-            'assignments' => $course->assignments
+            'course'        => $course,
+            'assignments'   => $course->assignments,
         ]);
     }
 
+    /**
+     * Form tambah tugas.
+     * AssignmentPolicy@create: Admin ✅ | Dosen MK sendiri ✅ | Mahasiswa ❌
+     */
+
     public function create(Course $course)
     {
-        abort_unless(
-            $course->lecturer_id === auth()->id(),
-            403,
-            'Hanya dosen pengampu yang dapat membuat tugas.'
-        );
+        Gate::authorize('create', [Assignment::class, $course]);
 
         return view('assignments.create', compact('course'));
     }
 
+    /**
+     * Simpan tugas baru.
+     * AssignmentPolicy@create: sama seperti create().
+     */
+
     public function store(Request $request, Course $course)
     {
-        abort_unless(
-            $course->lecturer_id === auth()->id(),
-            403,
-            'Hanya dosen pengampu yang dapat membuat tugas.'
-        );
+        Gate::authorize('create', [Assignment::class, $course]);
 
         $validated = $request->validate([
             'title'        => 'required|string|max:255',
@@ -61,48 +58,52 @@ class AssignmentController extends Controller
 
         $course->assignments()->create($validated);
 
-        return redirect()->route('dosen.courses.assignments.index', $course)
-                         ->with('success', 'Tugas berhasil ditambahkan.');
+        return redirect()
+            ->route('dosen.courses.assignments.index', $course)
+            ->with('success', 'Tugas berhasil ditambahkan.');
     }
 
 
+    /**
+     * Detail satu tugas.
+     * AssignmentPolicy@view: Admin ✅ | Dosen MK sendiri ✅ | Mahasiswa terdaftar ✅
+     *
+     * Eager-load 'course' terlebih dahulu agar Policy tidak memicu N+1.
+     */
+    public function show(Assignment $assignment)
+    {
+        $assignment->loadMissing('course');
 
+        Gate::authorize('view', $assignment);
 
+        $assignment->load(['course.lecturer', 'submissions.student', 'submissions.grade']); 
+    
+    
+    return view('assignments.show', compact('assignment'));
+    }
+
+    /**
+     * Form edit tugas.
+     * AssignmentPolicy@update: Admin ✅ | Dosen MK sendiri ✅ | Mahasiswa ❌
+     */
     public function edit(Assignment $assignment)
     {
-        abort_unless(
-            $assignment->course->lecturer_id === auth()->id(),
-            403,
-            'Anda tidak memiliki akses untuk mengedit tugas ini.'
-        );
+        $assignment->loadMissing('course');
+
+        Gate::authorize('update', $assignment);
 
         return view('assignments.edit', compact('assignment'));
     }
 
-    public function show(Assignment $assignment)
-    {
-        // TODO: Akan direfaktor menjadi AssignmentPolicy@view di minggu 7
-        $authUser = auth()->user();
-        abort_unless(
-            $authUser->role === 'admin'
-            || $assignment->course->lecturer_id === $authUser->id
-            || $assignment->course->students()->where('users.id', $authUser->id)->exists(),
-            403,
-            'Anda tidak memiliki akses ke tugas ini.'
-        );
-
-        $assignment->load(['course.lecturer', 'submissions.student', 'submissions.grade']);
-
-        return view('assignments.show', compact('assignment'));
-    }
-
+    /**
+     * Simpan perubahan tugas.
+     * AssignmentPolicy@update: sama seperti edit().
+     */
     public function update(Request $request, Assignment $assignment)
     {
-        abort_unless(
-            $assignment->course->lecturer_id === auth()->id(),
-            403,
-            'Anda tidak memiliki hak untuk mengubah tugas ini.'
-        );
+        $assignment->loadMissing('course');
+
+        Gate::authorize('update', $assignment);
 
         $validated = $request->validate([
             'title'        => 'required|string|max:255',
@@ -114,22 +115,26 @@ class AssignmentController extends Controller
 
         $assignment->update($validated);
 
-        return redirect()->route('dosen.assignments.show', $assignment)
-                         ->with('success', 'Tugas berhasil diperbarui.');
+        return redirect()
+            ->route('dosen.assignments.show', $assignment)
+            ->with('success', 'Tugas berhasil diperbarui.');
     }
 
+    /**
+     * Hapus tugas.
+     * AssignmentPolicy@delete: Admin ✅ | Dosen MK sendiri ✅ | Mahasiswa ❌
+     */
     public function destroy(Assignment $assignment)
     {
-        abort_unless(
-            $assignment->course->lecturer_id === auth()->id(),
-            403,
-            'Anda tidak memiliki hak untuk menghapus tugas ini.'
-        );
+        $assignment->loadMissing('course');
+
+        Gate::authorize('delete', $assignment);
 
         $course = $assignment->course;
         $assignment->delete();
 
-        return redirect()->route('dosen.courses.assignments.index', $course)
-                         ->with('success', 'Tugas berhasil dihapus.');
+        return redirect()
+            ->route('dosen.courses.assignments.index', $course)
+            ->with('success', 'Tugas berhasil dihapus.');
     }
 }

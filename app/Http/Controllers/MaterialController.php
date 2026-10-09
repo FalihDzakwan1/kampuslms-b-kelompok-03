@@ -2,51 +2,45 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Material;
 use App\Models\Course;
+use App\Models\Material;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Gate;
 
 class MaterialController extends Controller
 {
-
-
+    /**
+     * Daftar materi dalam satu MK.
+     * MaterialPolicy@viewAny: Admin ✅ | Dosen MK sendiri ✅ | Mahasiswa terdaftar ✅
+     */
     public function index(Course $course)
     {
-        // TODO: Akan direfaktor menjadi MaterialPolicy@viewAny di minggu 7
-        $authUser = auth()->user();
-        abort_unless(
-            $authUser->role === 'admin'
-            || $course->lecturer_id === $authUser->id
-            || $course->students()->where('users.id', $authUser->id)->exists(),
-            403,
-            'Anda tidak memiliki akses ke materi mata kuliah ini.'
-        );
+        Gate::authorize('viewAny', [Material::class, $course]);
 
         return view('materials.index', [
-            'course' => $course,
-            'materials' => $course->materials
+            'course'    => $course,
+            'materials' => $course->materials,
         ]);
     }
 
+    /**
+     * Form tambah materi.
+     * MaterialPolicy@create: Admin ✅ | Dosen MK sendiri ✅ | Mahasiswa ❌
+     */
     public function create(Course $course)
     {
-        abort_unless(
-            $course->lecturer_id === auth()->id(),
-            403,
-            'Hanya dosen pengampu yang dapat menambah materi.'
-        );
+        Gate::authorize('create', [Material::class, $course]);
 
         return view('materials.create', compact('course'));
     }
 
+    /**
+     * Simpan materi baru.
+     * MaterialPolicy@create: sama seperti create().
+     */
     public function store(Request $request, Course $course)
     {
-        abort_unless(
-            $course->lecturer_id === auth()->id(),
-            403,
-            'Hanya dosen pengampu yang dapat menambah materi.'
-        );
+        Gate::authorize('create', [Material::class, $course]);
 
         $request->validate([
             'title'        => 'required|string|max:255',
@@ -66,8 +60,8 @@ class MaterialController extends Controller
         ];
 
         if ($request->hasFile('file') && $request->type === 'file') {
-            $file = $request->file('file');
-            $data['file_path']     = $file->store('materials');
+            $file                  = $request->file('file');
+            $data['file_path']     = $file->store('materials', 'private');
             $data['original_name'] = $file->getClientOriginalName();
             $data['file_size']     = $file->getSize();
             $data['mime_type']     = $file->getMimeType();
@@ -75,45 +69,50 @@ class MaterialController extends Controller
 
         $course->materials()->create($data);
 
-        return redirect()->route('dosen.courses.materials.index', $course)
-                         ->with('success', 'Materi berhasil ditambahkan.');
+        return redirect()
+            ->route('dosen.courses.materials.index', $course)
+            ->with('success', 'Materi berhasil ditambahkan.');
     }
 
+    /**
+     * Detail materi (juga dipakai sebagai otorisasi tombol Unduh).
+     * MaterialPolicy@view: Admin ✅ | Dosen MK sendiri ✅ | Mahasiswa terdaftar ✅
+     *
+     * Eager-load 'course' terlebih dahulu agar Policy tidak memicu N+1.
+     */
     public function show(Material $material)
     {
-        // TODO: Akan direfaktor menjadi MaterialPolicy@view di minggu 7
-        $authUser = auth()->user();
-        abort_unless(
-            $authUser->role === 'admin'
-            || $material->course->lecturer_id === $authUser->id
-            || $material->course->students()->where('users.id', $authUser->id)->exists(),
-            403,
-            'Anda tidak memiliki akses ke materi ini.'
-        );
+        $material->loadMissing('course');
 
-        $material->load(['uploader', 'course']);
+        Gate::authorize('view', $material);
+
+        $material->load('uploader');
 
         return view('materials.show', compact('material'));
     }
 
+    /**
+     * Form edit materi.
+     * MaterialPolicy@update: Admin ✅ | Dosen MK sendiri ✅ | Mahasiswa ❌
+     */
     public function edit(Material $material)
     {
-        abort_unless(
-            $material->course->lecturer_id === auth()->id(),
-            403,
-            'Anda tidak memiliki akses untuk mengedit materi ini.'
-        );
+        $material->loadMissing('course');
+
+        Gate::authorize('update', $material);
 
         return view('materials.edit', compact('material'));
     }
 
+    /**
+     * Simpan perubahan materi.
+     * MaterialPolicy@update: sama seperti edit().
+     */
     public function update(Request $request, Material $material)
     {
-        abort_unless(
-            $material->course->lecturer_id === auth()->id(),
-            403,
-            'Anda tidak memiliki hak untuk mengubah materi ini.'
-        );
+        $material->loadMissing('course');
+
+        Gate::authorize('update', $material);
 
         $request->validate([
             'title'        => 'required|string|max:255',
@@ -131,8 +130,8 @@ class MaterialController extends Controller
         ];
 
         if ($request->hasFile('file') && $request->type === 'file') {
-            $file = $request->file('file');
-            $data['file_path']     = $file->store('materials');
+            $file                  = $request->file('file');
+            $data['file_path']     = $file->store('materials', 'private');
             $data['original_name'] = $file->getClientOriginalName();
             $data['file_size']     = $file->getSize();
             $data['mime_type']     = $file->getMimeType();
@@ -140,22 +139,26 @@ class MaterialController extends Controller
 
         $material->update($data);
 
-        return redirect()->route('dosen.materials.show', $material)
-                         ->with('success', 'Materi berhasil diperbarui.');
+        return redirect()
+            ->route('dosen.materials.show', $material)
+            ->with('success', 'Materi berhasil diperbarui.');
     }
 
+    /**
+     * Hapus materi.
+     * MaterialPolicy@delete: Admin ✅ | Dosen MK sendiri ✅ | Mahasiswa ❌
+     */
     public function destroy(Material $material)
     {
-        abort_unless(
-            $material->course->lecturer_id === auth()->id(),
-            403,
-            'Anda tidak memiliki hak untuk menghapus materi ini.'
-        );
+        $material->loadMissing('course');
+
+        Gate::authorize('delete', $material);
 
         $course = $material->course;
         $material->delete();
 
-        return redirect()->route('dosen.courses.materials.index', $course)
-                         ->with('success', 'Materi berhasil dihapus.');
+        return redirect()
+            ->route('dosen.courses.materials.index', $course)
+            ->with('success', 'Materi berhasil dihapus.');
     }
 }
