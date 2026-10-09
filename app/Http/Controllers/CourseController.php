@@ -7,7 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreCourseRequest;
 use App\Http\Requests\UpdateCourseRequest;
-
+use Illuminate\Support\Facades\Gate;
 
 class CourseController extends Controller
 {
@@ -128,8 +128,8 @@ class CourseController extends Controller
     {
         $authUser = auth()->user();
 
-        // CoursePolicy@update dipakai sebagai proxy untuk kelola enrollment
-        Gate::authorize('update', $course);
+        // Menggunakan method khusus manageEnrollments di CoursePolicy
+        Gate::authorize('manageEnrollments', $course);
 
         $course->load('students');
 
@@ -147,7 +147,7 @@ class CourseController extends Controller
     {
         $authUser = auth()->user();
 
-        Gate::authorize('update', $course);
+        Gate::authorize('manageEnrollments', $course);
 
         $request->validate([
             'user_id' => 'required|exists:users,id',
@@ -167,7 +167,7 @@ class CourseController extends Controller
     {
         $authUser = auth()->user();
 
-        Gate::authorize('update', $course);
+        Gate::authorize('manageEnrollments', $course);
 
         $course->students()->detach($student->id);
 

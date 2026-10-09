@@ -53,4 +53,19 @@ class CoursePolicy
     {
         return $user->role === 'admin';
     }
+
+    /** 
+     * Kelola Enrollment.
+     * Admin: Boleh semua.
+     * Dosen: Boleh jika itu mata kuliahnya sendiri.
+     * Mahasiswa: Tidak boleh.
+     */
+    public function manageEnrollments(User $user, Course $course): bool
+    {
+        return match ($user->role) {
+            'admin' => true,
+            'dosen' => $course->lecturer_id === $user->id,
+            default => false,
+        };
+    }
 }
