@@ -30,5 +30,5 @@ berikut methodnya:
 
     Layout yang membukusnya adalah x-layout, dengan viewnya berada di resources/views/components/layout.blade.php
 5. Jalankan `php artisan route:list --path=tentang`. Cocok dengan analisis Anda?
-![alt text](image/routelist.png)
+![alt text](../image/routelist.png)
 Output route:list mengonfirmasi route /tentang memang terdaftar dan aktif. Bagian Action di output TentangController@index sama dengan yang ada di file TentangController.php, method index().

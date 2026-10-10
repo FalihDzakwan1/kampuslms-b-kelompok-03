@@ -32,7 +32,7 @@ Dan bagian inilah yang mengurus exception
 ```
 3. Buka routes/web.php. Temukan route yang menghasilkan halaman selamat datang. Ubah teksnya, muat ulang browser, pastikan berubah.
 
-![gambar](./image/image.png)
+![gambar](../image/image.png)
 
 4. Jalankan php artisan route:list. Cocokkan keluarannya dengan isi routes/web.php.
 
