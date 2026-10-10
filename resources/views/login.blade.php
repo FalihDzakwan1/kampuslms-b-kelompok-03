@@ -473,13 +473,6 @@
 
                             </div>
 
-                            {{-- Hidden Quick Reset Form --}}
-                            <form id="quickForgotForm" action="{{ route('password.email') }}" method="POST" class="hidden">
-                                @csrf
-                                <input type="hidden" name="email" id="quickForgotEmail">
-                            </form>
-
-
                             <div class="relative">
 
                                 <span
@@ -570,6 +563,12 @@
 
                         </button>
 
+                    </form>
+
+                    {{-- Hidden Quick Reset Form --}}
+                    <form id="quickForgotForm" action="{{ route('password.email') }}" method="POST" class="hidden">
+                        @csrf
+                        <input type="hidden" name="email" id="quickForgotEmail">
                     </form>
 
                 </div>
