@@ -9,6 +9,8 @@ use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\PasswordResetController;
+use Illuminate\Support\Facades\Auth;
 
 
 /*
@@ -32,6 +34,29 @@ Route::post('/logout',
 )->name('logout');
 
 
+/*
+|--------------------------------------------------------------------------
+| PASSWORD RESET
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/forgot-password',
+    [PasswordResetController::class, 'showForgotPasswordForm']
+)->name('password.request');
+
+Route::post('/forgot-password',
+    [PasswordResetController::class, 'sendResetLinkEmail']
+)->name('password.email');
+
+Route::get('/reset-password/{token}',
+    [PasswordResetController::class, 'showResetPasswordForm']
+)->name('password.reset');
+
+Route::post('/reset-password',
+    [PasswordResetController::class, 'resetPassword']
+)->name('password.update');
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -40,8 +65,11 @@ Route::post('/logout',
 */
 
 Route::get('/', function () {
-    return view('dashboard');
-})->name('dashboard');
+    if (Auth::check()) {
+        return redirect()->route('dashboard');
+    }
+    return redirect()->route('login');
+});
 
 
 Route::get('/tentang',
@@ -57,6 +85,10 @@ Route::get('/tentang',
 */
 
 Route::middleware(['auth'])->group(function () {
+
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
 
 
     /*

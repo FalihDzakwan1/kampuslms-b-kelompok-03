@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Login | KampusLMS</title>
+    <title>Atur Ulang Kata Sandi | KampusLMS</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -58,16 +58,16 @@
             box-shadow: 0 0 0 3px rgba(33, 98, 147, 0.12);
         }
 
-        .login-button {
+        .btn-action {
             transition: all 0.2s ease;
         }
 
-        .login-button:hover {
+        .btn-action:hover {
             transform: translateY(-1px);
             box-shadow: 0 8px 20px rgba(0, 15, 34, 0.18);
         }
 
-        .login-button:active {
+        .btn-action:active {
             transform: translateY(0);
         }
     </style>
@@ -83,7 +83,7 @@
         <div class="max-w-7xl mx-auto px-6 lg:px-10 h-20 flex items-center justify-between">
 
             {{-- Logo --}}
-            <div class="flex items-center gap-3">
+            <a href="{{ route('login') }}" class="flex items-center gap-3">
 
                 <div
                     class="w-10 h-10 rounded-full bg-[#0a2540] flex items-center justify-center text-white font-bold text-lg">
@@ -100,29 +100,23 @@
                     </span>
                 </div>
 
-            </div>
+            </a>
 
             {{-- Navigation --}}
             <nav class="flex items-center gap-2">
 
                 <a
-                    href="{{ route('tentang') }}"
-                    class="hidden sm:block px-4 py-2 rounded-full text-sm font-semibold text-gray-600 hover:text-[#000f22] hover:bg-gray-100 transition">
-                    Tentang Aplikasi
+                    href="{{ route('login') }}"
+                    class="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold text-gray-600 hover:text-[#000f22] hover:bg-gray-100 transition">
+                    <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                    Ke Halaman Login
                 </a>
 
                 <a
-                    href="#"
+                    href="{{ route('tentang') }}"
                     class="hidden md:block px-4 py-2 rounded-full text-sm font-semibold text-gray-600 hover:text-[#000f22] hover:bg-gray-100 transition">
-                    Pusat Bantuan
+                    Tentang Aplikasi
                 </a>
-
-                <div
-                    class="w-9 h-9 rounded-full bg-[#000f22] flex items-center justify-center">
-                    <span class="material-symbols-outlined text-white text-[18px]">
-                        person
-                    </span>
-                </div>
 
             </nav>
 
@@ -154,7 +148,6 @@
                     class="absolute -bottom-28 -right-20 w-96 h-96 rounded-full bg-[#8ec6fd] opacity-10 blur-3xl">
                 </div>
 
-
                 {{-- Branding --}}
                 <div class="relative z-10">
 
@@ -164,11 +157,10 @@
                         <span class="w-2.5 h-2.5 rounded-full bg-[#8ec6fd]"></span>
 
                         <span class="text-[11px] font-semibold tracking-wider uppercase text-[#cee5ff]">
-                            SSO Akademik Terpadu
+                            Keamanan Akun Terpadu
                         </span>
 
                     </div>
-
 
                     <div class="mt-6">
 
@@ -184,92 +176,62 @@
 
                 </div>
 
-
-                {{-- Academic Information --}}
+                {{-- Tips Card --}}
                 <div class="relative z-10 my-10">
 
                     <div class="glass-card rounded-3xl p-6 border border-white/5">
 
-                        <div class="flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-2">
 
-                            <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[#97cbff]">
+                                security
+                            </span>
 
-                                <span class="material-symbols-outlined text-[#97cbff]">
-                                    event_note
-                                </span>
-
-                                <span class="text-sm font-semibold">
-                                    Kalender Perkuliahan
-                                </span>
-
-                            </div>
-
-                            <span
-                                class="px-3 py-1 rounded-full bg-[#cee5ff]/15 text-[#cee5ff] text-[10px] font-semibold whitespace-nowrap">
-                                TA 2026/2027
+                            <span class="text-sm font-semibold">
+                                Tips Kata Sandi Kuat
                             </span>
 
                         </div>
 
-
-                        <p class="mt-5 text-xs sm:text-sm text-gray-300 leading-relaxed">
-                            Informasi akademik, perkuliahan, dan aktivitas pembelajaran
-                            mahasiswa dapat diakses melalui sistem KampusLMS.
-                        </p>
-
-
-                        {{-- Progress --}}
-                        <div class="mt-6">
-
-                            <div class="flex items-center justify-between text-[11px] text-[#b0c8eb] mb-2">
-
-                                <span>
-                                    Sistem Akademik Terintegrasi
-                                </span>
-
-                                <span>
-                                    Aktif
-                                </span>
-
-                            </div>
-
-                            <div class="w-full h-2 rounded-full bg-white/10 overflow-hidden">
-
-                                <div
-                                    class="h-full w-full rounded-full bg-[#8ec6fd]">
-                                </div>
-
-                            </div>
-
-                        </div>
+                        <ul class="mt-4 space-y-2.5 text-xs sm:text-sm text-gray-300 leading-relaxed">
+                            <li class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-emerald-400 text-[18px]">check_circle</span>
+                                <span>Minimal 6 karakter atau lebih</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-emerald-400 text-[18px]">check_circle</span>
+                                <span>Kombinasi huruf, angka, dan simbol</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-emerald-400 text-[18px]">check_circle</span>
+                                <span>Hindari tanggal lahir atau data pribadi</span>
+                            </li>
+                        </ul>
 
                     </div>
 
-
-                    {{-- Features --}}
                     <div class="grid grid-cols-2 gap-3 mt-5">
 
                         <div class="flex items-center gap-2 text-xs text-[#b0c8eb]">
 
                             <span class="material-symbols-outlined text-[#8ec6fd] text-[18px]">
-                                verified_user
+                                lock
                             </span>
 
                             <span>
-                                Sistem Aman
+                                Enkripsi Bcrypt
                             </span>
 
                         </div>
 
-
                         <div class="flex items-center gap-2 text-xs text-[#b0c8eb]">
 
                             <span class="material-symbols-outlined text-[#8ec6fd] text-[18px]">
-                                cloud_sync
+                                key
                             </span>
 
                             <span>
-                                Data Terintegrasi
+                                Sesi Diperbarui
                             </span>
 
                         </div>
@@ -277,7 +239,6 @@
                     </div>
 
                 </div>
-
 
                 {{-- Helpdesk --}}
                 <div
@@ -328,42 +289,19 @@
 
                         </div>
 
-
                         <h1
                             class="text-3xl sm:text-4xl font-bold tracking-tight text-[#191c1e]">
-                            Masuk ke Akun Anda
+                            Atur Ulang Kata Sandi
                         </h1>
 
-
                         <p class="mt-3 text-sm text-gray-500 leading-relaxed">
-                            Gunakan akun KampusLMS Anda untuk mengakses
-                            sistem pembelajaran Institut Teknologi Kalimantan.
+                            Buat kata sandi baru untuk akun Anda. Pastikan kata sandi baru mudah diingat oleh Anda dan aman.
                         </p>
 
                     </div>
 
 
-                    {{-- =================================================
-                        ERROR / SUCCESS MESSAGE
-                    ================================================== --}}
-                    @if (session('success') || session('status'))
-
-                        <div
-                            class="mt-6 p-4 rounded-2xl bg-green-50 border border-green-100 text-green-700 text-sm flex items-start gap-3">
-
-                            <span class="material-symbols-outlined text-[20px]">
-                                check_circle
-                            </span>
-
-                            <span>
-                                {{ session('success') ?? session('status') }}
-                            </span>
-
-                        </div>
-
-                    @endif
-
-
+                    {{-- Errors --}}
                     @if ($errors->any())
 
                         <div
@@ -371,14 +309,14 @@
 
                             <div class="flex items-start gap-3">
 
-                                <span class="material-symbols-outlined text-[20px]">
+                                <span class="material-symbols-outlined text-[20px] text-red-600 mt-0.5">
                                     error
                                 </span>
 
                                 <div>
 
                                     <p class="font-semibold text-sm">
-                                        Login gagal
+                                        Pembaruan kata sandi gagal
                                     </p>
 
                                     <ul class="mt-1 text-xs space-y-1">
@@ -403,15 +341,17 @@
 
 
                     {{-- =================================================
-                        LOGIN FORM
+                        FORM
                     ================================================== --}}
                     <form
-                        action="{{ url('/login') }}"
+                        action="{{ route('password.update') }}"
                         method="POST"
                         class="mt-8 space-y-5">
 
                         @csrf
 
+                        {{-- Hidden Token --}}
+                        <input type="hidden" name="token" value="{{ $token }}">
 
                         {{-- EMAIL --}}
                         <div>
@@ -419,26 +359,24 @@
                             <label
                                 for="email"
                                 class="block text-sm font-semibold text-[#191c1e] mb-2">
-                                Email
+                                Email Terdaftar
                             </label>
 
                             <div class="relative">
 
                                 <span
                                     class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-[20px]">
-                                    badge
+                                    mail
                                 </span>
 
                                 <input
                                     type="email"
                                     name="email"
                                     id="email"
-                                    value="{{ old('email') }}"
-                                    autocomplete="username"
+                                    value="{{ old('email', $email) }}"
+                                    readonly
                                     required
-                                    autofocus
-                                    placeholder="Masukkan email Anda"
-                                    class="input-field w-full pl-12 pr-4 py-3.5 bg-[#f2f4f6] border border-transparent rounded-full text-sm text-[#191c1e] placeholder:text-gray-400 focus:outline-none focus:bg-white focus:border-[#216293]">
+                                    class="input-field w-full pl-12 pr-4 py-3.5 bg-slate-100 text-slate-700 font-medium cursor-not-allowed border border-slate-200 rounded-full text-sm focus:outline-none select-none">
 
                             </div>
 
@@ -453,25 +391,14 @@
                         </div>
 
 
-                        {{-- PASSWORD --}}
+                        {{-- NEW PASSWORD --}}
                         <div>
 
-                            <div class="flex items-center justify-between mb-2">
-
-                                <label
-                                    for="password"
-                                    class="block text-sm font-semibold text-[#191c1e]">
-                                    Kata Sandi
-                                </label>
-
-                                <a
-                                    href="{{ route('password.request') }}"
-                                    id="forgotPasswordLink"
-                                    class="text-xs font-semibold text-[#216293] hover:text-[#000f22]">
-                                    Lupa Kata Sandi?
-                                </a>
-
-                            </div>
+                            <label
+                                for="password"
+                                class="block text-sm font-semibold text-[#191c1e] mb-2">
+                                Kata Sandi Baru
+                            </label>
 
                             <div class="relative">
 
@@ -480,18 +407,16 @@
                                     lock
                                 </span>
 
-
                                 <input
                                     type="password"
                                     name="password"
                                     id="password"
-                                    autocomplete="current-password"
                                     required
-                                    placeholder="Masukkan kata sandi Anda"
+                                    autocomplete="new-password"
+                                    placeholder="Minimal 6 karakter"
                                     class="input-field w-full pl-12 pr-12 py-3.5 bg-[#f2f4f6] border border-transparent rounded-full text-sm text-[#191c1e] placeholder:text-gray-400 focus:outline-none focus:bg-white focus:border-[#216293]">
 
-
-                                {{-- Show Password --}}
+                                {{-- Show Password Button --}}
                                 <button
                                     type="button"
                                     id="togglePassword"
@@ -507,7 +432,6 @@
 
                             </div>
 
-
                             @error('password')
 
                                 <p class="mt-2 ml-3 text-xs text-red-600">
@@ -519,75 +443,89 @@
                         </div>
 
 
-                        {{-- REMEMBER --}}
-                        <div class="flex items-center justify-between pt-1">
+                        {{-- CONFIRM PASSWORD --}}
+                        <div>
 
                             <label
-                                for="remember"
-                                class="flex items-center gap-2 cursor-pointer">
-
-                                <input
-                                    type="checkbox"
-                                    name="remember"
-                                    id="remember"
-                                    value="1"
-                                    class="w-4 h-4 rounded accent-[#000f22]"
-                                    {{ old('remember') ? 'checked' : '' }}>
-
-                                <span class="text-sm text-gray-500">
-                                    Ingat saya di perangkat ini
-                                </span>
-
+                                for="password_confirmation"
+                                class="block text-sm font-semibold text-[#191c1e] mb-2">
+                                Konfirmasi Kata Sandi Baru
                             </label>
 
+                            <div class="relative">
 
-                            <span class="text-[10px] text-gray-400">
-                                Aman • SSL/TLS
-                            </span>
+                                <span
+                                    class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-[20px]">
+                                    lock_reset
+                                </span>
+
+                                <input
+                                    type="password"
+                                    name="password_confirmation"
+                                    id="password_confirmation"
+                                    required
+                                    autocomplete="new-password"
+                                    placeholder="Ulangi kata sandi baru"
+                                    class="input-field w-full pl-12 pr-12 py-3.5 bg-[#f2f4f6] border border-transparent rounded-full text-sm text-[#191c1e] placeholder:text-gray-400 focus:outline-none focus:bg-white focus:border-[#216293]">
+
+                                {{-- Show Password Button --}}
+                                <button
+                                    type="button"
+                                    id="togglePasswordConfirmation"
+                                    class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#000f22] transition">
+
+                                    <span
+                                        class="material-symbols-outlined text-[20px]"
+                                        id="passwordConfirmationIcon">
+                                        visibility_off
+                                    </span>
+
+                                </button>
+
+                            </div>
 
                         </div>
 
 
-                        {{-- BUTTON --}}
+                        {{-- SUBMIT BUTTON --}}
                         <button
                             type="submit"
-                            class="login-button w-full py-3.5 px-6 rounded-full bg-[#000f22] hover:bg-[#0a2540] text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-md">
+                            class="btn-action w-full py-3.5 px-6 rounded-full bg-[#000f22] hover:bg-[#0a2540] text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-md">
 
                             <span>
-                                Masuk Sekarang
+                                Simpan Kata Sandi Baru
                             </span>
 
                             <span class="material-symbols-outlined text-[20px]">
-                                arrow_forward
+                                check_circle
                             </span>
 
                         </button>
 
-                    </form>
+                        <div class="text-center pt-2">
+                            <a
+                                href="{{ route('login') }}"
+                                class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#216293] hover:text-[#000f22] transition">
+                                <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+                                Batal dan Kembali ke Login
+                            </a>
+                        </div>
 
-                    {{-- Hidden Quick Reset Form --}}
-                    <form id="quickForgotForm" action="{{ route('password.email') }}" method="POST" class="hidden">
-                        @csrf
-                        <input type="hidden" name="email" id="quickForgotEmail">
                     </form>
 
                 </div>
-
 
                 {{-- Bottom CTA --}}
                 <div
                     class="mt-10 -mx-8 sm:-mx-10 lg:-mx-12 -mb-8 sm:-mb-10 lg:-mb-12 px-8 sm:px-10 lg:px-12 py-5 bg-[#f2f4f6] text-center">
 
                     <p class="text-xs sm:text-sm text-gray-500">
-
-                        Belum memiliki akun?
-
+                        Butuh bantuan teknis?
                         <a
                             href="#"
                             class="font-semibold text-[#216293] hover:text-[#000f22]">
-                            Hubungi Administrator →
+                            Hubungi Helpdesk ITK →
                         </a>
-
                     </p>
 
                 </div>
@@ -612,7 +550,6 @@
                 Institut Teknologi Kalimantan (ITK).
                 Hak Cipta Dilindungi.
             </p>
-
 
             <div class="flex items-center gap-5 text-xs">
 
@@ -642,46 +579,25 @@
 
 
     {{-- =====================================================
-        SHOW / HIDE PASSWORD
+        SHOW / HIDE PASSWORD SCRIPT
     ====================================================== --}}
     <script>
+        const setupPasswordToggle = (toggleBtnId, inputId, iconId) => {
+            const toggleBtn = document.getElementById(toggleBtnId);
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
 
-        const togglePassword = document.getElementById('togglePassword');
-        const passwordInput = document.getElementById('password');
-        const passwordIcon = document.getElementById('passwordIcon');
+            if (toggleBtn && input && icon) {
+                toggleBtn.addEventListener('click', () => {
+                    const isPassword = input.getAttribute('type') === 'password';
+                    input.setAttribute('type', isPassword ? 'text' : 'password');
+                    icon.textContent = isPassword ? 'visibility' : 'visibility_off';
+                });
+            }
+        };
 
-        togglePassword.addEventListener('click', function () {
-
-            const isPassword =
-                passwordInput.getAttribute('type') === 'password';
-
-            passwordInput.setAttribute(
-                'type',
-                isPassword ? 'text' : 'password'
-            );
-
-            passwordIcon.textContent =
-                isPassword ? 'visibility' : 'visibility_off';
-
-        });
-
-        // Quick Send Forgot Password
-        const forgotLink = document.getElementById('forgotPasswordLink');
-        if (forgotLink) {
-            forgotLink.addEventListener('click', function (e) {
-                const emailInput = document.getElementById('email');
-                const emailVal = emailInput ? emailInput.value.trim() : '';
-
-                if (emailVal) {
-                    e.preventDefault();
-                    if (confirm('Kirimkan tautan reset kata sandi langsung ke email: ' + emailVal + '?')) {
-                        document.getElementById('quickForgotEmail').value = emailVal;
-                        document.getElementById('quickForgotForm').submit();
-                    }
-                }
-            });
-        }
-
+        setupPasswordToggle('togglePassword', 'password', 'passwordIcon');
+        setupPasswordToggle('togglePasswordConfirmation', 'password_confirmation', 'passwordConfirmationIcon');
     </script>
 
 </body>
