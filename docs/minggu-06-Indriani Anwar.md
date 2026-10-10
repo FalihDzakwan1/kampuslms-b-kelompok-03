@@ -13,8 +13,6 @@ Pembuatan ```routes/api.php``` dengan mendaftarkan method, prefix, dan endpoint.
 
 3. Bandingkan dengan CourseController versi web yang sudah ada. Tulis di catatan: apa yang sama dan apa yang berbeda di antara keduanya?
 
-## Perbandingan CourseController Web dan CourseController API
-
 | Bagian | CourseController Web | CourseController API |
 |---|---|---|
 | Lokasi Controller | `app/Http/Controllers/CourseController.php` | `app/Http/Controllers/Api/CourseController.php` |
@@ -29,8 +27,6 @@ Pembuatan ```routes/api.php``` dengan mendaftarkan method, prefix, dan endpoint.
 | Tampilan | Controller ikut mengatur halaman yang ditampilkan | Controller hanya menyediakan data, tampilan diatur oleh client |
 | Pengguna Utama | Browser pengguna aplikasi web | Frontend lain, mobile app, atau sistem eksternal |
 
-## Kesamaan
-
 | Bagian | Penjelasan |
 |---|---|
 | Model | Sama-sama menggunakan model `Course` untuk mengambil data dari database |
@@ -38,12 +34,9 @@ Pembuatan ```routes/api.php``` dengan mendaftarkan method, prefix, dan endpoint.
 | Method | Dapat memiliki method yang sama seperti `index()`, `store()`, `update()`, dan `destroy()` |
 | Logika Bisnis | Dapat menggunakan aturan bisnis yang sama |
 
-## Kesimpulan
-
 CourseController Web dan CourseController API memiliki tujuan yang sama yaitu mengelola data course. Perbedaannya terdapat pada cara penyampaian data. Controller web mengembalikan halaman HTML menggunakan Blade, sedangkan controller API mengembalikan data dalam format JSON agar dapat digunakan oleh berbagai client.
 
 4. Panggil endpoint API tanpa header Accept: application/json. Lalu dengan header itu. Catat bedanya.
-## Perbandingan Request Tanpa dan Dengan Header Accept JSON
 
 | Pengujian | Request | Hasil |
 |---|---|---|
@@ -56,8 +49,6 @@ Header `Accept: application/json` digunakan untuk memberitahu Laravel bahwa clie
 
 ---
 BREAK — Tujuh kerusakan (45 menit)
-
-## Hasil Pengujian BREAK API
 
 | No | Pengujian yang Dilakukan | Hasil Pengamatan | Kesimpulan |
 |---|---|---|---|
