@@ -1,7 +1,7 @@
 #### Nama: Falih Dzakwan
 #### NIM : 10241028
 
-READ
+## READ
 
 1. Jalankan `php artisan route:list --except-vendor` . Salin keluarannya ke catatan.
 
@@ -51,3 +51,14 @@ READ
 | 6 | GET | `users/{user}/edit` | `{user}` | Mahasiswa mengganti ID di URL untuk mengakses halaman edit profil milik Admin atau Dosen. |
 | 7 | PUT/PATCH | `users/{user}` | `{user}` | User A mengirim request PUT dengan ID User B untuk meretas akun (mengganti password, email, atau mengubah role-nya sendiri menjadi Admin). |
 | 8 | DELETE | `users/{user}` | `{user}` | Mahasiswa menebak ID Admin, mengirim request DELETE, dan menghapus akun Admin dari sistem. |
+
+## BREAK
+
+| # | Yang Dicoba | Yang Terjadi | Hasil | Kesimpulan |
+|---|---|---|---|---|
+| 1 | Login sebagai **mahasiswa A**, lalu buka submission milik **mahasiswa B** dengan mengubah angka ID di URL browser. | Mahasiswa A berhasil masuk dan melihat halaman tugas beserta nilai milik Mahasiswa B. | Terjadi celah keamanan **IDOR (Insecure Direct Object Reference)** nyata di aplikasi. | Hanya dengan menyembunyikan tombol di antarmuka saja tidak cukup, perlu adanya validasi kepemilikan data pada level backend karena peretas bisa menebak ID di URL. |
+| 2 | Buka URL nested route `/courses/1/assignments/99` (di mana tugas ID 99 sebenarnya milik mata kuliah lain, bukan MK 1). | Halaman tugas 99 tetap terbuka normal dan secara visual seolah-olah menjadi bagian dari Mata Kuliah 1. | Terjadi inkonsistensi *Nested Route* tanpa scoping. | Secara default, Laravel mem-*fetch* model Assignment murni berdasarkan ID-nya saja, tanpa mempedulikan apakah ia benar-benar anak (*child*) dari Course 1 (*parent*). |
+| 3 | Aktifkan `Route::scopeBindings()` (atau `scoped()`) pada rute grup, lalu ulangi langkah nomor 2. | Halaman menolak untuk dimuat dan menampilkan pesan error **404 Not Found**. | Sistem aman dari manipulasi relasi URL. | Fitur *Scoped Bindings* wajib diaktifkan pada rute bersarang *nested route* ksrena Fitur ini memaksa Laravel untuk memverifikasi ulang apakah *child* tersebut benar-benar memiliki *foreign key* yang sesuai dengan *parent*-nya. |
+| 4 | Mencoba mendaftarkan middleware kustom di file `app/Http/Kernel.php` seperti instruksi pada tutorial-tutorial lama di internet. | File tersebut tidak ditemukan di struktur direktori proyek. | Arsitektur framework telah berubah (kenali gejalanya). | Pada Laravel 11 (dan 12), file `Kernel.php` sudah dihilangkan. Registrasi middleware, alias, dan konfigurasi request kini dipusatkan di file `bootstrap/app.php` melalui method `withMiddleware()`. |
+| 5 | Memasang middleware `role:admin` pada grup rute `/admin`, lalu mencoba mengakses rute tersebut menggunakan akun **Dosen**. | Tampil halaman error merah bertuliskan **403 Forbidden / Akses Ditolak**. | Middleware berhasil bekerja memblokir masuknya user asing. | Middleware sangat efektif digunakan untuk keamanan otorisasi makro. Ini bertugas menyaring request berdasarkan tipe atau grup Role pengguna secara global. |
+| 6 | Login sebagai **Dosen A**, lalu tembak URL untuk masuk ke halaman Edit mata kuliah milik **Dosen B**. (Keduanya sama-sama lolos middleware `role:dosen`). | Dosen A berhasil masuk ke halaman Edit dan bisa memodifikasi data milik Dosen B. | Terjadi pelanggaran data lintas pengguna walau role sama. | Middleware `role` saja tidak cukup karena Middleware hanya peduli "Apakah dia Dosen?". Untuk mengecek "Apakah dia Dosen **pemilik kelas ini**?", maka wajib menggunakan perlindungan tingkat objek, yaitu **Policy / Gate**. |

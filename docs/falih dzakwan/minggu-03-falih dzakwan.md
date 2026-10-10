@@ -5,7 +5,7 @@
 
 READ
 1. Gambar ulang ERD dari spesifikasi di papan/kertas, tanpa melihat dokumen.
-![alt text](image/ERD.jpeg)
+![alt text](../image/ERD.jpeg)
 
 2. Untuk setiap foreign key, tentukan perilaku onDelete-nya dan tuliskan alasannya.
 - courses.lecturer_id menggunakan restrictOnDelete()	
