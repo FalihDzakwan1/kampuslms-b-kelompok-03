@@ -32,6 +32,6 @@ class Grade extends Model
 
     public function grader()
     {
-        return $this->belongsTo(User::class, 'graded_by');
+        return $this->belongsTo(User::class, 'graded_by')->withTrashed();
     }
 }

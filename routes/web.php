@@ -90,6 +90,10 @@ Route::middleware(['auth'])->group(function () {
         return view('dashboard');
     })->name('dashboard');
 
+    // Unduh berkas: otorisasi lewat Policy@view (bukan lewat role di URL)
+    Route::get('materials/{material}/download', [MaterialController::class, 'download'])->name('materials.download');
+    Route::get('submissions/{submission}/download', [SubmissionController::class, 'download'])->name('submissions.download');
+
 
     /*
     |--------------------------------------------------------------------------
@@ -124,7 +128,6 @@ Route::middleware(['auth'])->group(function () {
                     'courses.assignments',
                     AssignmentController::class
                 )
-                ->only(['index', 'show'])
                 ->shallow();
 
             Route::scopeBindings()
@@ -132,7 +135,6 @@ Route::middleware(['auth'])->group(function () {
                     'courses.materials',
                     MaterialController::class
                 )
-                ->only(['index', 'show'])
                 ->shallow();
 
             Route::resource(

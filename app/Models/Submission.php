@@ -36,7 +36,7 @@ class Submission extends Model
 
     public function student()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'user_id')->withTrashed();
     }
 
     public function grade()
