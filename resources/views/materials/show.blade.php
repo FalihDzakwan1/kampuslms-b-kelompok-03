@@ -5,13 +5,13 @@
                 ← Kembali ke Daftar Materi
             </a>
 
-            @if(auth()->user()->role === 'dosen' && $material->course->lecturer_id === auth()->id())
+            @can('update', $material)
                 <div class="space-x-2">
-                    <a href="{{ route('dosen.materials.edit', $material) }}" class="btn-secondary text-xs px-4 py-2">
+                    <a href="{{ route(auth()->user()->role . '.materials.edit', $material) }}" class="btn-secondary text-xs px-4 py-2">
                         ✎ Edit Materi
                     </a>
                 </div>
-            @endif
+            @endcan
         </div>
 
         {{-- Kartu Detail Materi --}}
@@ -63,7 +63,7 @@
                             </div>
                         </div>
 
-                        <a href="{{ asset('storage/' . $material->file_path) }}" target="_blank" download
+                        <a href="{{ route('materials.download', $material) }}" target="_blank" download
                             class="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs transition flex items-center gap-2 shadow-sm">
                             ⬇ Unduh Berkas
                         </a>

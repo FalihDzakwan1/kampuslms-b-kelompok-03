@@ -74,11 +74,11 @@
                     </div>
 
                     <div class="flex items-center gap-2">
-                        @if(auth()->user()->role === 'dosen' && $course->lecturer_id === auth()->id())
-                            <a href="{{ route('dosen.courses.materials.create', $course) }}" class="btn-primary text-xs px-4 py-2">
+                        @can('create', [App\Models\Material::class, $course])
+                            <a href="{{ route(auth()->user()->role . '.courses.materials.create', $course) }}" class="btn-primary text-xs px-4 py-2">
                                 + Tambah Materi
                             </a>
-                        @endif
+                        @endcan
                         <a href="{{ route(auth()->user()->role . '.courses.materials.index', $course) }}" class="text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-xl transition">
                             Lihat Semua ({{ $course->materials->count() }}) →
                         </a>
@@ -107,11 +107,11 @@
                     <div class="py-8 text-center text-gray-400 bg-gray-50 rounded-xl">
                         <p class="text-3xl mb-1">📂</p>
                         <p class="text-sm font-medium text-gray-600">Belum ada materi pembelajaran yang diunggah.</p>
-                        @if(auth()->user()->role === 'dosen' && $course->lecturer_id === auth()->id())
-                            <a href="{{ route('dosen.courses.materials.create', $course) }}" class="mt-2 inline-block text-xs text-blue-600 font-semibold hover:underline">
+                        @can('create', [App\Models\Material::class, $course])
+                            <a href="{{ route(auth()->user()->role . '.courses.materials.create', $course) }}" class="mt-2 inline-block text-xs text-blue-600 font-semibold hover:underline">
                                 + Unggah materi pertama sekarang
                             </a>
-                        @endif
+                        @endcan
                     </div>
                 @endif
             </div>
@@ -128,11 +128,11 @@
                     </div>
 
                     <div class="flex items-center gap-2">
-                        @if(auth()->user()->role === 'dosen' && $course->lecturer_id === auth()->id())
-                            <a href="{{ route('dosen.courses.assignments.create', $course) }}" class="btn-primary text-xs px-4 py-2">
+                        @can('create', [App\Models\Assignment::class, $course])
+                            <a href="{{ route(auth()->user()->role . '.courses.assignments.create', $course) }}" class="btn-primary text-xs px-4 py-2">
                                 + Buat Tugas Baru
                             </a>
-                        @endif
+                        @endcan
                         <a href="{{ route(auth()->user()->role . '.courses.assignments.index', $course) }}" class="text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-xl transition">
                             Lihat Semua ({{ $course->assignments->count() }}) →
                         </a>
@@ -195,33 +195,33 @@
                     <div class="py-8 text-center text-gray-400 bg-gray-50 rounded-xl">
                         <p class="text-3xl mb-1">📝</p>
                         <p class="text-sm font-medium text-gray-600">Belum ada tugas yang dibuat pada mata kuliah ini.</p>
-                        @if(auth()->user()->role === 'dosen' && $course->lecturer_id === auth()->id())
-                            <a href="{{ route('dosen.courses.assignments.create', $course) }}" class="mt-2 inline-block text-xs text-blue-600 font-semibold hover:underline">
+                        @can('create', [App\Models\Assignment::class, $course])
+                            <a href="{{ route(auth()->user()->role . '.courses.assignments.create', $course) }}" class="mt-2 inline-block text-xs text-blue-600 font-semibold hover:underline">
                                 + Buat tugas pertama sekarang
                             </a>
-                        @endif
+                        @endcan
                     </div>
                 @endif
             </div>
 
             <div class="course-detail__actions gap-3">
                 {{-- Edit & Hapus: HANYA Admin --}}
-                @if(auth()->user()->role === 'admin')
+                @can('update', $course)
                     <a href="{{ route('admin.courses.edit', $course) }}" class="btn-primary">
                         ✎ Edit Mata Kuliah
                     </a>
-                @endif
+                @endcan
 
                 {{-- Kelola Peserta: Admin dan Dosen pengampu --}}
-                @if(auth()->user()->role === 'admin' || (auth()->user()->role === 'dosen' && $course->lecturer_id === auth()->id()))
+                @can('manageEnrollments', $course)
                     <a href="{{ route(auth()->user()->role . '.courses.enrollments', $course) }}"
                        class="px-5 py-2 rounded-full bg-indigo-100 text-indigo-700 font-semibold hover:bg-indigo-200 transition">
                         👥 Kelola Peserta
                     </a>
-                @endif
+                @endcan
 
                 {{-- Hapus: HANYA Admin --}}
-                @if(auth()->user()->role === 'admin')
+                @can('delete', $course)
                     <form action="{{ route('admin.courses.destroy', $course) }}" method="POST" class="inline">
                         @csrf
                         @method('DELETE')
@@ -230,7 +230,7 @@
                             🗑 Hapus
                         </button>
                     </form>
-                @endif
+                @endcan
             </div>
         </div>
     </div>

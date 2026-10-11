@@ -7,7 +7,7 @@
                     ← Kembali ke Riwayat Tugas
                 </a>
             @else
-                <a href="{{ route('dosen.assignments.show', $submission->assignment) }}" class="text-blue-600 hover:underline text-sm font-medium">
+                <a href="{{ route(auth()->user()->role . '.assignments.show', $submission->assignment) }}" class="text-blue-600 hover:underline text-sm font-medium">
                     ← Kembali ke Tugas {{ $submission->assignment->title ?? '' }}
                 </a>
             @endif
@@ -58,7 +58,7 @@
                     </div>
                 </div>
 
-                <a href="{{ asset('storage/' . $submission->file_path) }}" target="_blank" download
+                <a href="{{ route('submissions.download', $submission) }}" target="_blank" download
                     class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition flex items-center gap-2 shadow-sm">
                     ⬇ Unduh Berkas Tugas
                 </a>
@@ -102,13 +102,13 @@
             </div>
 
             {{-- Form Penilaian Dosen --}}
-            @if(auth()->user()->role === 'dosen' && $submission->assignment->course->lecturer_id === auth()->id())
+            @can('create', [App\Models\Grade::class, $submission])
                 <div class="mt-6 p-6 rounded-2xl border border-blue-100 bg-blue-50/40">
                     <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
                         <span>✏️</span> {{ $submission->grade ? 'Perbarui Nilai & Umpan Balik' : 'Beri Nilai untuk Mahasiswa' }}
                     </h3>
 
-                    <form action="{{ route('dosen.submissions.grade', $submission) }}" method="POST" class="space-y-4">
+                    <form action="{{ route(auth()->user()->role . '.submissions.grade', $submission) }}" method="POST" class="space-y-4">
                         @csrf
                         @method('PUT')
 
@@ -144,10 +144,10 @@
                         </div>
                     </form>
                 </div>
-            @endif
+            @endcan
 
             {{-- Batalkan Pengumpulan (Mahasiswa) --}}
-            @if(auth()->user()->role === 'mahasiswa' && $submission->user_id === auth()->id() && !$submission->grade)
+            @can('delete', $submission)
                 <div class="mt-8 pt-6 border-t border-gray-100 flex justify-end">
                     <form action="{{ route('mahasiswa.submissions.destroy', $submission) }}" method="POST">
                         @csrf
@@ -158,7 +158,7 @@
                         </button>
                     </form>
                 </div>
-            @endif
+            @endcan
         </div>
     </div>
 </x-layout>

@@ -5,13 +5,13 @@
                 ← Kembali ke Daftar Tugas
             </a>
 
-            @if(auth()->user()->role === 'dosen' && $assignment->course->lecturer_id === auth()->id())
+            @can('update', $assignment)
                 <div class="space-x-2">
-                    <a href="{{ route('dosen.assignments.edit', $assignment) }}" class="btn-secondary text-xs px-4 py-2">
+                    <a href="{{ route(auth()->user()->role . '.assignments.edit', $assignment) }}" class="btn-secondary text-xs px-4 py-2">
                         ✎ Edit Tugas
                     </a>
                 </div>
-            @endif
+            @endcan
         </div>
 
         {{-- Kartu Detail Tugas --}}
@@ -96,7 +96,7 @@
         @endif
 
         {{-- Area Dosen: Tabel Pengumpulan Tugas Mahasiswa --}}
-        @if(auth()->user()->role === 'dosen' && $assignment->course->lecturer_id === auth()->id())
+        @can('viewAny', [App\Models\Submission::class, $assignment])
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
                 <div class="flex flex-wrap justify-between items-center gap-4 mb-6 pb-4 border-b border-gray-100">
                     <div>
@@ -136,7 +136,7 @@
                                             @endif
                                         </td>
                                         <td class="py-3.5 px-4">
-                                            <a href="{{ asset('storage/' . $sub->file_path) }}" target="_blank" download class="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-800 font-semibold bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-md transition">
+                                            <a href="{{ route('submissions.download', $sub) }}" target="_blank" download class="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-800 font-semibold bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-md transition">
                                                 ⬇ {{ $sub->original_name ?? 'Berkas' }}
                                             </a>
                                             @if($sub->note)
@@ -155,7 +155,7 @@
                                             @endif
                                         </td>
                                         <td class="py-3.5 px-4 text-right">
-                                            <a href="{{ route('dosen.submissions.show', $sub) }}" class="btn-primary text-xs px-3 py-1.5 inline-flex items-center gap-1">
+                                            <a href="{{ route(auth()->user()->role . '.submissions.show', $sub) }}" class="btn-primary text-xs px-3 py-1.5 inline-flex items-center gap-1">
                                                 <span>{{ $sub->grade ? 'Ubah Nilai' : 'Beri Nilai' }}</span> →
                                             </a>
                                         </td>
@@ -171,6 +171,6 @@
                     </div>
                 @endif
             </div>
-        @endif
+        @endcan
     </div>
 </x-layout>

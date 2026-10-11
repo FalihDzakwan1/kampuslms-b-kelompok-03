@@ -6,11 +6,11 @@
                 ← Kembali ke Detail Mata Kuliah
             </a>
 
-            @if(auth()->user()->role === 'dosen' && $course->lecturer_id === auth()->id())
-                <a href="{{ route('dosen.courses.assignments.create', $course) }}" class="btn-primary">
+            @can('create', [App\Models\Assignment::class, $course])
+                <a href="{{ route(auth()->user()->role . '.courses.assignments.create', $course) }}" class="btn-primary">
                     + Buat Tugas Baru
                 </a>
-            @endif
+            @endcan
         </div>
 
         {{-- Header Kartu Mata Kuliah --}}
@@ -53,19 +53,19 @@
                                         Lihat Detail
                                     </a>
 
-                                    @if(auth()->user()->role === 'dosen' && $course->lecturer_id === auth()->id())
-                                        <a href="{{ route('dosen.assignments.edit', $assignment) }}" class="text-amber-600 hover:text-amber-800 font-medium text-xs">
+                                    @can('update', $assignment)
+                                        <a href="{{ route(auth()->user()->role . '.assignments.edit', $assignment) }}" class="text-amber-600 hover:text-amber-800 font-medium text-xs">
                                             Edit
                                         </a>
 
-                                        <form action="{{ route('dosen.assignments.destroy', $assignment) }}" method="POST" class="inline">
+                                        <form action="{{ route(auth()->user()->role . '.assignments.destroy', $assignment) }}" method="POST" class="inline">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="text-red-600 hover:text-red-800 font-medium text-xs" onclick="return confirm('Hapus tugas ini?')">
                                                 Hapus
                                             </button>
                                         </form>
-                                    @endif
+                                    @endcan
                                 </td>
                             </tr>
                         @endforeach
