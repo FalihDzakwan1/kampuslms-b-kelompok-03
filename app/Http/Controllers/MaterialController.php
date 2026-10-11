@@ -6,6 +6,7 @@ use App\Models\Course;
 use App\Models\Material;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 
 class MaterialController extends Controller
 {
@@ -19,7 +20,7 @@ class MaterialController extends Controller
 
         return view('materials.index', [
             'course'    => $course,
-            'materials' => $course->materials,
+            'materials' => $course->materials()->with('course')->get(),
         ]);
     }
 
@@ -70,7 +71,7 @@ class MaterialController extends Controller
         $course->materials()->create($data);
 
         return redirect()
-            ->route('dosen.courses.materials.index', $course)
+            ->route(auth()->user()->role . '.courses.materials.index', $course)
             ->with('success', 'Materi berhasil ditambahkan.');
     }
 
@@ -140,7 +141,7 @@ class MaterialController extends Controller
         $material->update($data);
 
         return redirect()
-            ->route('dosen.materials.show', $material)
+            ->route(auth()->user()->role . '.materials.show', $material)
             ->with('success', 'Materi berhasil diperbarui.');
     }
 
@@ -158,7 +159,27 @@ class MaterialController extends Controller
         $material->delete();
 
         return redirect()
-            ->route('dosen.courses.materials.index', $course)
+            ->route(auth()->user()->role . '.courses.materials.index', $course)
             ->with('success', 'Materi berhasil dihapus.');
+    }
+
+    /**
+     * Unduh berkas materi.
+     * Memakai MaterialPolicy@view: siapa pun yang boleh melihat materi boleh mengunduhnya.
+     * Berkas disimpan di disk privat (storage/app), tidak pernah lewat URL publik.
+     */
+    public function download(Material $material)
+    {
+        $material->loadMissing('course');
+
+        Gate::authorize('view', $material);
+
+        abort_unless(
+            $material->type === 'file' && $material->file_path && Storage::exists($material->file_path),
+            404,
+            'Berkas tidak ditemukan.'
+        );
+
+        return Storage::download($material->file_path, $material->original_name);
     }
 }

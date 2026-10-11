@@ -7,7 +7,10 @@ use App\Models\Course;
 use App\Http\Resources\CourseResource;
 use App\Http\Resources\MaterialResource;
 use App\Http\Resources\AssignmentResource;
+use App\Models\Assignment;
+use App\Models\Material;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class CourseController extends Controller
 {
@@ -42,7 +45,7 @@ class CourseController extends Controller
     public function show(Request $request, Course $course)
     {
         // Pengecekan Otorisasi Berdasarkan Policy
-        \Illuminate\Support\Facades\Gate::authorize('view', $course);
+        Gate::authorize('view', $course);
 
         $course->loadCount(['materials', 'assignments']);
         $course->load('lecturer');
@@ -57,14 +60,7 @@ class CourseController extends Controller
      */
     public function materials(Request $request, Course $course)
     {
-        $user = $request->user();
-
-        abort_unless(
-            $user->role === 'admin'
-            || $course->lecturer_id === $user->id
-            || $course->students()->where('users.id', $user->id)->exists(),
-            403, 'Anda tidak memiliki akses ke sumber daya ini.'
-        );
+        Gate::authorize('viewAny', [Material::class, $course]);
 
         $materials = $course->materials()
             ->with('uploader')
@@ -80,18 +76,16 @@ class CourseController extends Controller
      */
     public function assignments(Request $request, Course $course)
     {
-        $user = $request->user();
+        Gate::authorize('viewAny', [Assignment::class, $course]);
 
-        abort_unless(
-            $user->role === 'admin'
-            || $course->lecturer_id === $user->id
-            || $course->students()->where('users.id', $user->id)->exists(),
-            403, 'Anda tidak memiliki akses ke sumber daya ini.'
-        );
+        $user = $request->user();
 
         $query = $course->assignments()
             ->with('creator')
-            ->when($request->filled('status'), fn ($q) =>
+            ->when($user->role === 'mahasiswa', fn ($q) =>
+                $q->where('status', 'published')
+            )
+            ->when($user->role !== 'mahasiswa' && $request->filled('status'), fn ($q) =>
                 $q->where('status', $request->status)
             );
 

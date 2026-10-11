@@ -86,14 +86,14 @@
                     <option value="archived" {{ request('status') === 'archived' ? 'selected' : '' }}>Arsip</option>
                 </select>
 
-                @if(auth()->check() && auth()->user()->role === 'admin')
+                @can('create', App\Models\Course::class)
                     <a
                         href="{{ route('admin.courses.create') }}"
                         class="btn-primary"
                     >
                         + Tambah Mata Kuliah
                     </a>
-                @endif
+                @endcan
             </div>
         </form>
 
@@ -236,11 +236,11 @@
                     <div class="empty-icon">📚</div>
                     <h3 class="empty-title">Belum Ada Mata Kuliah</h3>
                     <p class="empty-description">Belum terdapat data mata kuliah yang tersedia.</p>
-                    @if(auth()->user()->role === 'admin')
+                    @can('create', App\Models\Course::class)
                         <a href="{{ route('admin.courses.create') }}" class="btn-primary">
                             + Tambah Mata Kuliah
                         </a>
-                    @endif
+                    @endcan
                 </div>
             @endif
         </section>

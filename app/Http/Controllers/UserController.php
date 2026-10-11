@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use Illuminate\Support\Facades\Gate;
 
 class UserController extends Controller
 {
@@ -14,6 +15,8 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
+        Gate::authorize('viewAny', User::class);
+
         $users = User::query()
             ->when($request->filled('q'), fn ($query) =>
                 $query->where(fn($q) => 
@@ -31,24 +34,24 @@ class UserController extends Controller
         return view('users.index', compact('users'));
     }
 
-
     public function create()
     {
+        Gate::authorize('create', User::class);
+
         $allowedRoles = ['dosen', 'mahasiswa'];
 
         return view('users.create', compact('allowedRoles'));
     }
 
-
     public function store(StoreUserRequest $request)
     {  
-        // Kita hanya mengambil data yang SUDAH divalidasi
+        // Otorisasi sudah ditangani di StoreUserRequest melalui UserPolicy@create
         $validated = $request->validated();
     
         $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'nim_nip' => $validated['nim_nip'],
+            'name'     => $validated['name'],
+            'email'    => $validated['email'],
+            'nim_nip'  => $validated['nim_nip'],
             'password' => \Illuminate\Support\Facades\Hash::make($validated['password']),
         ]);
 
@@ -61,51 +64,29 @@ class UserController extends Controller
 
     public function show(User $user)
     {
-        // TODO: Akan direfaktor menjadi UserPolicy@view di minggu 7
-        $authUser = auth()->user();
-        abort_unless(
-            $authUser->role === 'admin'
-            || $authUser->id === $user->id,
-            403,
-            'Anda tidak memiliki akses ke sumber daya ini.'
-        );
+        Gate::authorize('view', $user);
 
         return view('users.show', compact('user'));
     }
 
-
     public function edit(User $user)
     {
-        // TODO: Akan direfaktor menjadi UserPolicy@update di minggu 7
-        $authUser = auth()->user();
-        abort_unless(
-            $authUser->role === 'admin'
-            || $authUser->id === $user->id,
-            403,
-            'Anda tidak memiliki akses ke sumber daya ini.'
-        );
+        Gate::authorize('update', $user);
 
         $allowedRoles = ['admin', 'dosen', 'mahasiswa'];
 
         return view('users.edit', compact('user', 'allowedRoles'));
     }
 
-
     public function update(UpdateUserRequest $request, User $user)
     {
+        // Otorisasi sudah ditangani di UpdateUserRequest melalui UserPolicy@update
         $authUser = auth()->user();
-        abort_unless(
-            $authUser->role === 'admin'
-            || $authUser->id === $user->id,
-            403,
-            'Anda tidak memiliki akses ke sumber daya ini.'
-        );
 
-        // Hanya mengambil input yang sah melewati aturan UpdateUserRequest
         $validated = $request->validated();
 
-        $user->name = $validated['name'];
-        $user->email = $validated['email'];
+        $user->name    = $validated['name'];
+        $user->email   = $validated['email'];
         $user->nim_nip = $validated['nim_nip'];
 
         // CEGAH ELEVASI PRIVILEGE (PENGUBAHAN ROLE ILEGAL)
@@ -121,15 +102,9 @@ class UserController extends Controller
             ->with('success', 'Data profil berhasil diperbarui.');
     }
 
-
     public function destroy(User $user)
     {
-        // TODO: Akan direfaktor menjadi UserPolicy@delete di minggu 7
-        abort_unless(
-            auth()->user()->role === 'admin',
-            403,
-            'Hanya admin yang dapat menghapus pengguna.'
-        );
+        Gate::authorize('delete', $user);
 
         $user->delete();
 

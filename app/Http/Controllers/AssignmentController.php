@@ -13,14 +13,20 @@ class AssignmentController extends Controller
      * Daftar tugas dalam satu MK.
      * AssignmentPolicy@viewAny: Admin ✅ | Dosen MK sendiri ✅ | Mahasiswa terdaftar ✅
      */
-
     public function index(Course $course)
     {
         Gate::authorize('viewAny', [Assignment::class, $course]);
 
+        $assignments = $course->assignments()
+            ->with('course')
+            ->when(auth()->user()->role === 'mahasiswa', fn ($q) =>
+                $q->where('status', 'published')
+            )
+            ->get();
+
         return view('assignments.index', [
-            'course'        => $course,
-            'assignments'   => $course->assignments,
+            'course'      => $course,
+            'assignments' => $assignments,
         ]);
     }
 
@@ -28,7 +34,6 @@ class AssignmentController extends Controller
      * Form tambah tugas.
      * AssignmentPolicy@create: Admin ✅ | Dosen MK sendiri ✅ | Mahasiswa ❌
      */
-
     public function create(Course $course)
     {
         Gate::authorize('create', [Assignment::class, $course]);
@@ -40,7 +45,6 @@ class AssignmentController extends Controller
      * Simpan tugas baru.
      * AssignmentPolicy@create: sama seperti create().
      */
-
     public function store(Request $request, Course $course)
     {
         Gate::authorize('create', [Assignment::class, $course]);
@@ -59,7 +63,7 @@ class AssignmentController extends Controller
         $course->assignments()->create($validated);
 
         return redirect()
-            ->route('dosen.courses.assignments.index', $course)
+            ->route(auth()->user()->role . '.courses.assignments.index', $course)
             ->with('success', 'Tugas berhasil ditambahkan.');
     }
 
@@ -76,10 +80,9 @@ class AssignmentController extends Controller
 
         Gate::authorize('view', $assignment);
 
-        $assignment->load(['course.lecturer', 'submissions.student', 'submissions.grade']); 
-    
-    
-    return view('assignments.show', compact('assignment'));
+        $assignment->load(['course.lecturer', 'submissions.student', 'submissions.grade']);
+
+        return view('assignments.show', compact('assignment'));
     }
 
     /**
@@ -116,7 +119,7 @@ class AssignmentController extends Controller
         $assignment->update($validated);
 
         return redirect()
-            ->route('dosen.assignments.show', $assignment)
+            ->route(auth()->user()->role . '.assignments.show', $assignment)
             ->with('success', 'Tugas berhasil diperbarui.');
     }
 
@@ -134,7 +137,7 @@ class AssignmentController extends Controller
         $assignment->delete();
 
         return redirect()
-            ->route('dosen.courses.assignments.index', $course)
+            ->route(auth()->user()->role . '.courses.assignments.index', $course)
             ->with('success', 'Tugas berhasil dihapus.');
     }
 }

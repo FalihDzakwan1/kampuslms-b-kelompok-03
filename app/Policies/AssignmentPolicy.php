@@ -33,7 +33,8 @@ class AssignmentPolicy
         return match ($user->role) {
             'admin'     => true,
             'dosen'     => $assignment->course->lecturer_id === $user->id,
-            'mahasiswa' => $assignment->course
+            'mahasiswa' => $assignment->status === 'published'
+                           && $assignment->course
                                ->students()
                                ->where('users.id', $user->id)
                                ->exists(),

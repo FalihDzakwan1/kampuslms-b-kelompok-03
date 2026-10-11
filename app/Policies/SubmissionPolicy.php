@@ -57,6 +57,11 @@ class SubmissionPolicy
             return false;
         }
 
+        // Tidak boleh mengumpulkan jika tugas masih berstatus draft
+        if ($assignment->status !== 'published') {
+            return false;
+        }
+
         // Syarat 1: terdaftar di MK
         $isEnrolled = $assignment->course
             ->students()

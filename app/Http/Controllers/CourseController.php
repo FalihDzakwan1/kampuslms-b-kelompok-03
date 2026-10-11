@@ -98,7 +98,14 @@ class CourseController extends Controller
         // Pengecekan Otorisasi Berdasarkan Policy
         \Illuminate\Support\Facades\Gate::authorize('view', $course);
 
-        $course->load(['lecturer', 'materials.uploader', 'assignments.submissions']);
+        $course->load([
+            'lecturer',
+            'materials.uploader',
+            'assignments' => fn ($q) =>
+                auth()->user()?->role === 'mahasiswa'
+                    ? $q->where('status', 'published')->with('submissions')
+                    : $q->with('submissions'),
+        ]);
 
         $isEnrolled = true; // Ditambahkan agar view blade tidak error undefined variable
 

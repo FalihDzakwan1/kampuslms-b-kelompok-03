@@ -1,7 +1,7 @@
 <x-layout title="Edit Materi - {{ $material->title }} | KampusLMS">
     <div class="page-container max-w-3xl">
         <div class="mb-6">
-            <a href="{{ route('dosen.materials.show', $material) }}" class="text-blue-600 hover:underline text-sm font-medium">
+            <a href="{{ route(auth()->user()->role . '.materials.show', $material) }}" class="text-blue-600 hover:underline text-sm font-medium">
                 ← Kembali ke Detail Materi
             </a>
         </div>
@@ -12,7 +12,7 @@
                 <p class="text-gray-500 text-sm mt-1">Mata Kuliah: <strong class="text-gray-700">{{ $material->course->name }}</strong></p>
             </div>
 
-            <form action="{{ route('dosen.materials.update', $material) }}" method="POST" enctype="multipart/form-data" class="flex flex-col gap-5">
+            <form action="{{ route(auth()->user()->role . '.materials.update', $material) }}" method="POST" enctype="multipart/form-data" class="flex flex-col gap-5">
                 @csrf
                 @method('PUT')
 
@@ -74,7 +74,7 @@
 
                 {{-- Tombol Aksi --}}
                 <div class="pt-4 border-t border-gray-100 flex justify-end gap-3">
-                    <a href="{{ route('dosen.materials.show', $material) }}" class="px-5 py-2 rounded-xl bg-gray-100 text-gray-600 font-medium hover:bg-gray-200 transition">
+                    <a href="{{ route(auth()->user()->role . '.materials.show', $material) }}" class="px-5 py-2 rounded-xl bg-gray-100 text-gray-600 font-medium hover:bg-gray-200 transition">
                         Batal
                     </a>
                     <button type="submit" class="btn-primary">

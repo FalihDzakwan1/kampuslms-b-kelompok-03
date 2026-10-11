@@ -1,8 +1,6 @@
 <x-layout title="Daftar Pengguna | KampusLMS">
     <div class="page-container">
-        @if (session('success'))
-            <div class="success-alert">{{ session('success') }}</div>
-        @endif
+        {{-- Flash message ditangani oleh layout global --}}
 
         <section class="ocean-banner">
             <div class="ocean-banner-content">

@@ -9,7 +9,7 @@ class UpdateCourseRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // TODO: Akan diganti dengan pengecekan Policy di minggu 7
+        return $this->user()->can('update', $this->route('course'));
     }
 
     public function rules(): array

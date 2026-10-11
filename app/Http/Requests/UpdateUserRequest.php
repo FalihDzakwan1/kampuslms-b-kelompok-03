@@ -9,8 +9,7 @@ class UpdateUserRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // TODO: akan diganti dengan UserPolicy di minggu 7
-        return true;
+        return $this->user()?->can('update', $this->route('user')) ?? false;
     }
 
     public function rules(): array

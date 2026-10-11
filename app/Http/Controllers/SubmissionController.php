@@ -7,6 +7,7 @@ use App\Models\Assignment;
 use App\Models\Grade;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 
 class SubmissionController extends Controller
 {
@@ -126,5 +127,20 @@ class SubmissionController extends Controller
         );
 
         return back()->with('success', 'Nilai dan umpan balik berhasil disimpan.');
+    }
+
+    /**
+     * Unduh berkas jawaban mahasiswa.
+     * Memakai SubmissionPolicy@view: pemilik, dosen MK terkait, atau admin.
+     */
+    public function download(Submission $submission)
+    {
+        $submission->loadMissing('assignment.course');
+
+        Gate::authorize('view', $submission);
+
+        abort_unless(Storage::exists($submission->file_path), 404, 'Berkas tidak ditemukan.');
+
+        return Storage::download($submission->file_path, $submission->original_name);
     }
 }

@@ -2,13 +2,14 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Course;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreCourseRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // TODO: Akan diganti dengan pengecekan Policy di minggu 7
+        return $this->user()->can('create', Course::class);
     }
 
     public function rules(): array
