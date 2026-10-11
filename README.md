@@ -32,6 +32,47 @@ Kampus LMS merupakan aplikasi berbasis web yang dikembangkan untuk membantu peng
 
 Aplikasi dapat diakses melalui:
 
+---
+
+## Akun Demo
+
+Seluruh akun di bawah ini dibuat oleh seeder dengan kata sandi **`password`**.
+
+| Peran | Email | Kata Sandi |
+|-------|-------|------------|
+| Admin | `admin@kampuslms.test` | `password` |
+| Dosen | `dosen@kampuslms.test` | `password` |
+| Mahasiswa | `mahasiswa@kampuslms.test` | `password` |
+
+Data lengkap (1 admin, 3 dosen, 30 mahasiswa, 5 mata kuliah, tugas, submission, dan nilai):
+
+```bash
+php artisan migrate:fresh --seed
+```
+
+Hanya tiga akun demo (aman dijalankan berulang kali, tidak membuat duplikat):
+
+```bash
+php artisan db:seed --class=DemoAccountSeeder --force
+```
+
+---
+
+## Menjalankan Test
+
+Test memakai SQLite in-memory (diatur di `phpunit.xml`), sehingga **tidak menyentuh database pengembangan**.
+
+```bash
+php artisan test
+```
+
+Pengujian otorisasi lewat HTTP (aplikasi harus sedang berjalan):
+
+```bash
+chmod +x scripts/test-authz.sh
+./scripts/test-authz.sh
+```
+
 
 ---
 

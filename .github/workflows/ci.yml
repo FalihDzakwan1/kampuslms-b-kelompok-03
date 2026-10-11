@@ -54,3 +54,6 @@ jobs:
 
       - name: Migrate Refresh
         run: php artisan migrate:refresh
+
+      - name: Run Tests
+        run: php artisan test
