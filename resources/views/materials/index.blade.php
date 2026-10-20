@@ -50,9 +50,12 @@
                                             <span class="px-2.5 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold flex items-center gap-1">
                                                 @if($ext === 'PDF') 📕 PDF @elseif(in_array($ext, ['PPTX', 'PPT'])) 📊 PPTX @elseif(in_array($ext, ['DOCX', 'DOC'])) 📝 DOCX @else 📄 {{ $ext ?: 'Berkas' }} @endif
                                             </span>
-                                            @if($material->file_size)
+                                            @if($material->original_name)
+                                                <span class="text-[11px] text-gray-600 font-medium line-clamp-1 max-w-[220px]" title="{{ $material->original_name }}">{{ $material->original_name }}</span>
+                                            @endif
+                                            @if($material->formatted_file_size)
                                                 <span class="text-[11px] text-gray-400">
-                                                    {{ $material->file_size >= 1048576 ? number_format($material->file_size / (1024 * 1024), 2) . ' MB' : number_format($material->file_size / 1024, 1) . ' KB' }}
+                                                    {{ $material->formatted_file_size }}
                                                 </span>
                                             @endif
                                         </div>

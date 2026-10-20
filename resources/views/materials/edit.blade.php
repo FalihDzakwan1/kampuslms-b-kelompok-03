@@ -49,8 +49,8 @@
                         <div class="flex items-center gap-2 p-2.5 bg-white rounded-lg border border-purple-200 mb-3 text-xs text-gray-600">
                             <span class="text-base">📄</span>
                             <span>Berkas saat ini di disk privat: <strong class="text-gray-900 font-semibold">{{ $material->original_name ?? 'Berkas' }}</strong></span>
-                            @if($material->file_size)
-                                <span class="text-gray-400">({{ number_format($material->file_size / (1024 * 1024), 2) }} MB)</span>
+                            @if($material->formatted_file_size)
+                                <span class="text-gray-400">({{ $material->formatted_file_size }})</span>
                             @endif
                         </div>
                     @endif

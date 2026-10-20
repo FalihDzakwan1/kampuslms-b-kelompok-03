@@ -33,6 +33,14 @@
                                     <div class="text-xs text-blue-600 mt-0.5">
                                         {{ $sub->assignment->course->code ?? '' }} — {{ $sub->assignment->course->name ?? 'Mata Kuliah' }}
                                     </div>
+                                    @if($sub->original_name)
+                                        <div class="text-[11px] text-gray-500 mt-1 flex items-center gap-1.5">
+                                            <span>📄 {{ $sub->original_name }}</span>
+                                            @if($sub->formatted_file_size)
+                                                <span class="text-gray-400">({{ $sub->formatted_file_size }})</span>
+                                            @endif
+                                        </div>
+                                    @endif
                                 </td>
                                 <td class="py-4 px-6 text-xs text-gray-600">
                                     {{ $sub->submitted_at ? \Carbon\Carbon::parse($sub->submitted_at)->translatedFormat('d M Y, H:i') : '-' }}

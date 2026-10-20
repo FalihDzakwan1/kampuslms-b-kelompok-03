@@ -78,15 +78,7 @@
                                 <h4 class="text-base font-bold text-gray-800">{{ $material->original_name ?? 'Berkas Materi Perkuliahan' }}</h4>
                                 <div class="flex items-center gap-2 text-xs text-gray-500 mt-1">
                                     <span>
-                                        @if($material->file_size)
-                                            @if($material->file_size >= 1048576)
-                                                {{ number_format($material->file_size / (1024 * 1024), 2) }} MB
-                                            @else
-                                                {{ number_format($material->file_size / 1024, 1) }} KB
-                                            @endif
-                                        @else
-                                            Dokumen Perkuliahan
-                                        @endif
+                                        {{ $material->formatted_file_size ?? 'Dokumen Perkuliahan' }}
                                     </span>
                                     <span>•</span>
                                     <span class="text-purple-700 font-medium">Tersimpan di Disk Privat KampusLMS</span>
