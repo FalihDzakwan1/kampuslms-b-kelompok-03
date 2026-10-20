@@ -15,11 +15,11 @@ ADMIN_TOKEN=$(curl -s -X POST "$BASE_URL/auth/login" \
 
 DOSEN_TOKEN=$(curl -s -X POST "$BASE_URL/auth/login" \
   -H "Content-Type: application/json" -H "Accept: application/json" \
-  -d '{"email": "dosen1@kampuslms.test", "password": "password"}' | grep -oP '"token":"\K[^"]+')
+  -d '{"email": "dosen@kampuslms.test", "password": "password"}' | grep -oP '"token":"\K[^"]+')
 
 MHS_TOKEN=$(curl -s -X POST "$BASE_URL/auth/login" \
   -H "Content-Type: application/json" -H "Accept: application/json" \
-  -d '{"email": "mahasiswa1@kampuslms.test", "password": "password"}' | grep -oP '"token":"\K[^"]+')
+  -d '{"email": "mahasiswa@kampuslms.test", "password": "password"}' | grep -oP '"token":"\K[^"]+')
 
 echo "Token berhasil didapatkan."
 echo "========================================================"
