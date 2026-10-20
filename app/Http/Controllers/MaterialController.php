@@ -7,6 +7,7 @@ use App\Models\Material;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class MaterialController extends Controller
 {
@@ -20,7 +21,7 @@ class MaterialController extends Controller
 
         return view('materials.index', [
             'course'    => $course,
-            'materials' => $course->materials()->with('course')->get(),
+            'materials' => $course->materials()->with('course', 'uploader')->get(),
         ]);
     }
 
@@ -37,18 +38,46 @@ class MaterialController extends Controller
 
     /**
      * Simpan materi baru.
-     * MaterialPolicy@create: sama seperti create().
+     * Mendukung unggah berkas (PDF/PPTX/DOCX, maks 20 MB, disk privat)
+     * atau alternatif berupa tautan eksternal.
      */
     public function store(Request $request, Course $course)
     {
         Gate::authorize('create', [Material::class, $course]);
 
+        $isFile = $request->type === 'file';
+        $isLink = $request->type === 'link';
+
         $request->validate([
             'title'        => 'required|string|max:255',
             'description'  => 'nullable|string',
             'type'         => 'required|in:file,link',
-            'file'         => 'nullable|file|max:10240',
-            'external_url' => 'nullable|url|max:255',
+            'file'         => [
+                Rule::requiredIf($isFile),
+                Rule::excludeIf($isLink),
+                'file',
+                'mimes:pdf,pptx,docx',
+                'extensions:pdf,pptx,docx',
+                'max:20480',
+            ],
+            'external_url' => [
+                Rule::requiredIf($isLink),
+                Rule::excludeIf($isFile),
+                'url',
+                'max:2048',
+            ],
+        ], [
+            'title.required'        => 'Judul materi wajib diisi.',
+            'type.required'         => 'Tipe materi wajib dipilih.',
+            'type.in'               => 'Tipe materi harus berupa berkas atau tautan eksternal.',
+            'file.required'         => 'Berkas materi wajib diunggah untuk tipe berkas.',
+            'file.file'             => 'Berkas materi yang diunggah tidak valid.',
+            'file.mimes'            => 'Format berkas harus berupa PDF, PPTX, atau DOCX.',
+            'file.extensions'       => 'Ekstensi berkas harus berupa .pdf, .pptx, atau .docx.',
+            'file.max'              => 'Ukuran berkas materi maksimal 20 MB.',
+            'external_url.required' => 'Tautan eksternal wajib diisi untuk tipe tautan.',
+            'external_url.url'      => 'Format tautan eksternal harus berupa URL yang valid (contoh: https://...).',
+            'external_url.max'      => 'Tautan eksternal maksimal 2048 karakter.',
         ]);
 
         $data = [
@@ -57,12 +86,13 @@ class MaterialController extends Controller
             'title'        => $request->title,
             'description'  => $request->description ?? '',
             'type'         => $request->type,
-            'external_url' => $request->external_url,
+            'external_url' => $isFile ? null : $request->external_url,
         ];
 
-        if ($request->hasFile('file') && $request->type === 'file') {
+        if ($isFile && $request->hasFile('file')) {
             $file                  = $request->file('file');
-            $data['file_path']     = $file->store('materials');
+            // Simpan secara aman di disk privat ('local' -> storage/app/private)
+            $data['file_path']     = $file->store('materials', 'local');
             $data['original_name'] = $file->getClientOriginalName();
             $data['file_size']     = $file->getSize();
             $data['mime_type']     = $file->getMimeType();
@@ -78,8 +108,6 @@ class MaterialController extends Controller
     /**
      * Detail materi (juga dipakai sebagai otorisasi tombol Unduh).
      * MaterialPolicy@view: Admin ✅ | Dosen MK sendiri ✅ | Mahasiswa terdaftar ✅
-     *
-     * Eager-load 'course' terlebih dahulu agar Policy tidak memicu N+1.
      */
     public function show(Material $material)
     {
@@ -107,7 +135,8 @@ class MaterialController extends Controller
 
     /**
      * Simpan perubahan materi.
-     * MaterialPolicy@update: sama seperti edit().
+     * Mendukung pembaruan berkas (PDF/PPTX/DOCX, maks 20 MB, disk privat)
+     * atau beralih ke tautan eksternal.
      */
     public function update(Request $request, Material $material)
     {
@@ -115,27 +144,73 @@ class MaterialController extends Controller
 
         Gate::authorize('update', $material);
 
+        $isFile = $request->type === 'file';
+        $isLink = $request->type === 'link';
+        $hasExistingFile = !empty($material->file_path);
+
         $request->validate([
             'title'        => 'required|string|max:255',
             'description'  => 'nullable|string',
             'type'         => 'required|in:file,link',
-            'file'         => 'nullable|file|max:10240',
-            'external_url' => 'nullable|url|max:255',
+            'file'         => [
+                Rule::requiredIf($isFile && !$hasExistingFile),
+                Rule::excludeIf($isLink),
+                'nullable',
+                'file',
+                'mimes:pdf,pptx,docx',
+                'extensions:pdf,pptx,docx',
+                'max:20480',
+            ],
+            'external_url' => [
+                Rule::requiredIf($isLink),
+                Rule::excludeIf($isFile),
+                'url',
+                'max:2048',
+            ],
+        ], [
+            'title.required'        => 'Judul materi wajib diisi.',
+            'type.required'         => 'Tipe materi wajib dipilih.',
+            'type.in'               => 'Tipe materi harus berupa berkas atau tautan eksternal.',
+            'file.required'         => 'Berkas materi wajib diunggah untuk tipe berkas.',
+            'file.file'             => 'Berkas materi yang diunggah tidak valid.',
+            'file.mimes'            => 'Format berkas harus berupa PDF, PPTX, atau DOCX.',
+            'file.extensions'       => 'Ekstensi berkas harus berupa .pdf, .pptx, atau .docx.',
+            'file.max'              => 'Ukuran berkas materi maksimal 20 MB.',
+            'external_url.required' => 'Tautan eksternal wajib diisi untuk tipe tautan.',
+            'external_url.url'      => 'Format tautan eksternal harus berupa URL yang valid (contoh: https://...).',
+            'external_url.max'      => 'Tautan eksternal maksimal 2048 karakter.',
         ]);
 
         $data = [
             'title'        => $request->title,
             'description'  => $request->description ?? '',
             'type'         => $request->type,
-            'external_url' => $request->external_url,
         ];
 
-        if ($request->hasFile('file') && $request->type === 'file') {
-            $file                  = $request->file('file');
-            $data['file_path']     = $file->store('materials');
-            $data['original_name'] = $file->getClientOriginalName();
-            $data['file_size']     = $file->getSize();
-            $data['mime_type']     = $file->getMimeType();
+        if ($isFile) {
+            $data['external_url'] = null;
+            if ($request->hasFile('file')) {
+                // Hapus berkas lama dari disk privat jika ada
+                if ($material->file_path && Storage::disk('local')->exists($material->file_path)) {
+                    Storage::disk('local')->delete($material->file_path);
+                }
+
+                $file                  = $request->file('file');
+                $data['file_path']     = $file->store('materials', 'local');
+                $data['original_name'] = $file->getClientOriginalName();
+                $data['file_size']     = $file->getSize();
+                $data['mime_type']     = $file->getMimeType();
+            }
+        } else {
+            // Pengalihan ke tautan eksternal: bersihkan berkas di disk privat
+            if ($material->file_path && Storage::disk('local')->exists($material->file_path)) {
+                Storage::disk('local')->delete($material->file_path);
+            }
+            $data['file_path']     = null;
+            $data['original_name'] = null;
+            $data['file_size']     = null;
+            $data['mime_type']     = null;
+            $data['external_url']  = $request->external_url;
         }
 
         $material->update($data);
@@ -146,7 +221,7 @@ class MaterialController extends Controller
     }
 
     /**
-     * Hapus materi.
+     * Hapus materi beserta berkas fisiknya di disk privat.
      * MaterialPolicy@delete: Admin ✅ | Dosen MK sendiri ✅ | Mahasiswa ❌
      */
     public function destroy(Material $material)
@@ -154,6 +229,10 @@ class MaterialController extends Controller
         $material->loadMissing('course');
 
         Gate::authorize('delete', $material);
+
+        if ($material->file_path && Storage::disk('local')->exists($material->file_path)) {
+            Storage::disk('local')->delete($material->file_path);
+        }
 
         $course = $material->course;
         $material->delete();
@@ -164,22 +243,27 @@ class MaterialController extends Controller
     }
 
     /**
-     * Unduh berkas materi.
-     * Memakai MaterialPolicy@view: siapa pun yang boleh melihat materi boleh mengunduhnya.
-     * Berkas disimpan di disk privat (storage/app), tidak pernah lewat URL publik.
+     * Unduh berkas materi dari disk privat.
+     * Menggunakan otorisasi MaterialPolicy@download (atau @view):
+     * - Mahasiswa yang terdaftar pada MK: Boleh ✅
+     * - Mahasiswa di luar MK: Ditolak (403 Forbidden) ❌
+     * - Dosen pengampu MK: Boleh ✅
+     * - Dosen pengampu MK lain: Ditolak (403 Forbidden) ❌
+     * - Admin: Boleh ✅
+     * Berkas disimpan di disk privat (storage/app/private), tidak pernah lewat URL publik.
      */
     public function download(Material $material)
     {
         $material->loadMissing('course');
 
-        Gate::authorize('view', $material);
+        Gate::authorize('download', $material);
 
         abort_unless(
-            $material->type === 'file' && $material->file_path && Storage::exists($material->file_path),
+            $material->type === 'file' && $material->file_path && Storage::disk('local')->exists($material->file_path),
             404,
-            'Berkas tidak ditemukan.'
+            'Berkas materi tidak ditemukan di penyimpanan server.'
         );
 
-        return Storage::download($material->file_path, $material->original_name);
+        return Storage::disk('local')->download($material->file_path, $material->original_name);
     }
 }

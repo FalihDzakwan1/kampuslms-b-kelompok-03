@@ -27,11 +27,11 @@
 
                 {{-- Tipe Materi --}}
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Tipe Materi</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Tipe Materi Perkuliahan</label>
                     <select name="type" id="material-type" required
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                        <option value="file" {{ old('type', 'file') === 'file' ? 'selected' : '' }}>📄 Berkas Dokumen (PDF, PPT, DOCX, ZIP)</option>
-                        <option value="link" {{ old('type') === 'link' ? 'selected' : '' }}>🔗 Tautan / URL Eksternal (Website, Video, Docs)</option>
+                        <option value="file" {{ old('type', 'file') === 'file' ? 'selected' : '' }}>📄 Berkas Dokumen (PDF, PPTX, DOCX — Maks 20 MB)</option>
+                        <option value="link" {{ old('type') === 'link' ? 'selected' : '' }}>🔗 Alternatif Tautan Eksternal (Google Drive, YouTube, Docs, dll.)</option>
                     </select>
                     @error('type')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -39,29 +39,42 @@
                 </div>
 
                 {{-- Upload Berkas --}}
-                <div id="file-input-group">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Berkas Materi (Maks 10MB)</label>
-                    <input type="file" name="file"
-                        class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100">
+                <div id="file-input-group" class="p-4 bg-purple-50/50 rounded-xl border border-purple-100">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                        Unggah Berkas Materi
+                        <span class="text-xs text-purple-700 font-medium ml-1">(PDF, PPTX, DOCX — Maks. 20 MB)</span>
+                    </label>
+                    <input type="file" name="file" id="material-file-input"
+                        accept=".pdf,.pptx,.docx,application/pdf,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        class="w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-700 transition">
+                    <div class="mt-2 flex items-center gap-1.5 text-xs text-gray-500">
+                        <svg class="w-4 h-4 text-emerald-600 inline shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                        </svg>
+                        <span>Berkas disimpan secara aman di <strong>disk privat server</strong> dan dilindungi otorisasi kelas.</span>
+                    </div>
                     @error('file')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        <p class="text-red-500 text-xs mt-1 font-medium">{{ $message }}</p>
                     @enderror
                 </div>
 
                 {{-- Tautan URL --}}
-                <div id="link-input-group">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Tautan Eksternal (URL)</label>
-                    <input type="url" name="external_url" value="{{ old('external_url') }}" placeholder="https://contoh.com/materi-kuliah"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                <div id="link-input-group" class="p-4 bg-cyan-50/50 rounded-xl border border-cyan-100">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                        Alternatif Tautan Eksternal (URL)
+                    </label>
+                    <input type="url" name="external_url" value="{{ old('external_url') }}" placeholder="https://drive.google.com/... atau https://youtu.be/..."
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none bg-white">
+                    <p class="mt-1 text-xs text-gray-500">Gunakan tautan eksternal sebagai alternatif jika materi disimpan di cloud storage atau platform pembelajaran luar.</p>
                     @error('external_url')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        <p class="text-red-500 text-xs mt-1 font-medium">{{ $message }}</p>
                     @enderror
                 </div>
 
                 {{-- Deskripsi Materi --}}
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Deskripsi / Catatan Materi</label>
-                    <textarea name="description" rows="4" placeholder="Penjelasan singkat mengenai materi ini..."
+                    <textarea name="description" rows="4" placeholder="Penjelasan singkat mengenai materi ini, capaian pembelajaran, atau instruksi baca..."
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">{{ old('description') }}</textarea>
                     @error('description')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>

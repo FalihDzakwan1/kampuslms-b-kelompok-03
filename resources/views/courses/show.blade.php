@@ -73,17 +73,40 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         @foreach($course->materials->take(6) as $material)
                             <div class="p-4 rounded-xl border border-gray-100 bg-gray-50/60 hover:bg-gray-50 hover:border-blue-200 transition flex items-start justify-between gap-3">
+                                @php
+                                    $ext = strtoupper(pathinfo($material->original_name ?? '', PATHINFO_EXTENSION));
+                                @endphp
                                 <div class="flex items-start gap-3">
-                                    <span class="text-2xl mt-0.5">{{ $material->type === 'file' ? '📄' : '🔗' }}</span>
+                                    <span class="text-2xl mt-0.5">
+                                        @if($material->type === 'file')
+                                            @if($ext === 'PDF') 📕 @elseif(in_array($ext, ['PPTX', 'PPT'])) 📊 @elseif(in_array($ext, ['DOCX', 'DOC'])) 📝 @else 📄 @endif
+                                        @else
+                                            🔗
+                                        @endif
+                                    </span>
                                     <div>
-                                        <h4 class="font-bold text-sm text-gray-900 line-clamp-1">{{ $material->title }}</h4>
+                                        <div class="flex items-center gap-1.5 flex-wrap">
+                                            <h4 class="font-bold text-sm text-gray-900 line-clamp-1">{{ $material->title }}</h4>
+                                            @if($material->type === 'file' && $ext)
+                                                <span class="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-bold rounded">
+                                                    {{ $ext }}
+                                                </span>
+                                            @endif
+                                        </div>
                                         <p class="text-xs text-gray-500 mt-0.5 line-clamp-2">{{ $material->description ?? 'Tidak ada deskripsi.' }}</p>
                                         <span class="text-[11px] text-gray-400 mt-1 block">Oleh: {{ $material->uploader->name ?? 'Dosen' }}</span>
                                     </div>
                                 </div>
-                                <a href="{{ route(auth()->user()->role . '.materials.show', $material) }}" class="shrink-0 text-xs font-semibold text-blue-600 hover:underline bg-white border border-gray-200 px-3 py-1.5 rounded-lg shadow-2xs">
-                                    Buka
-                                </a>
+                                <div class="flex items-center gap-1.5 shrink-0">
+                                    @if($material->type === 'file')
+                                        <a href="{{ route('materials.download', $material) }}" class="text-xs font-semibold text-purple-600 hover:text-purple-800 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-2.5 py-1.5 rounded-lg transition">
+                                            ⬇ Unduh
+                                        </a>
+                                    @endif
+                                    <a href="{{ route(auth()->user()->role . '.materials.show', $material) }}" class="text-xs font-semibold text-blue-600 hover:underline bg-white border border-gray-200 px-3 py-1.5 rounded-lg shadow-2xs">
+                                        Buka
+                                    </a>
+                                </div>
                             </div>
                         @endforeach
                     </div>
