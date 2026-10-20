@@ -218,12 +218,7 @@ Route::middleware(['auth'])->group(function () {
                 'show'
             ]);
 
-            Route::post(
-                'courses/{course}/enroll',
-                [CourseController::class, 'enroll']
-            )->name('courses.enroll');
-
-
+            
             Route::scopeBindings()
                 ->resource(
                     'courses.assignments',
