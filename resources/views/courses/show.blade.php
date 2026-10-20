@@ -104,6 +104,11 @@
                                 </div>
                                 <div class="flex items-center gap-1.5 shrink-0">
                                     @if($material->type === 'file')
+                                        @if($ext === 'PDF')
+                                            <a href="{{ route('materials.preview', $material) }}" target="_blank" class="text-xs font-semibold text-emerald-600 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2.5 py-1.5 rounded-lg transition flex items-center gap-1">
+                                                👁 Pratinjau
+                                            </a>
+                                        @endif
                                         <a href="{{ route('materials.download', $material) }}" class="text-xs font-semibold text-purple-600 hover:text-purple-800 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-2.5 py-1.5 rounded-lg transition">
                                             ⬇ Unduh
                                         </a>

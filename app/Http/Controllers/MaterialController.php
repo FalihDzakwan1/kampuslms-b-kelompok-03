@@ -266,4 +266,37 @@ class MaterialController extends Controller
 
         return Storage::disk('local')->download($material->file_path, $material->original_name);
     }
+
+    /**
+     * Pratinjau berkas materi secara langsung di peramban (inline response).
+     * Otorisasi sama persis dengan unduh berkas:
+     * - Mahasiswa yang terdaftar pada MK: Boleh ✅
+     * - Mahasiswa di luar MK: Ditolak (403 Forbidden) ❌
+     * - Dosen pengampu MK: Boleh ✅
+     * - Dosen pengampu MK lain: Ditolak (403 Forbidden) ❌
+     * - Admin: Boleh ✅
+     */
+    public function preview(Material $material)
+    {
+        $material->loadMissing('course');
+
+        Gate::authorize('download', $material);
+
+        abort_unless(
+            $material->type === 'file' && $material->file_path && Storage::disk('local')->exists($material->file_path),
+            404,
+            'Berkas materi tidak ditemukan di penyimpanan server.'
+        );
+
+        $mimeType = $material->mime_type ?: Storage::disk('local')->mimeType($material->file_path) ?: 'application/octet-stream';
+
+        return Storage::disk('local')->response(
+            $material->file_path,
+            $material->original_name,
+            [
+                'Content-Type' => $mimeType,
+            ],
+            'inline'
+        );
+    }
 }
