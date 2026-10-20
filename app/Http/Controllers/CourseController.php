@@ -107,22 +107,7 @@ class CourseController extends Controller
                     : $q->with('submissions'),
         ]);
 
-        $isEnrolled = true; // Ditambahkan agar view blade tidak error undefined variable
-
-        return view('courses.show', compact('course', 'isEnrolled'));
-    }
-
-    public function enroll(Course $course)
-    {
-        $user = auth()->user();
-        abort_unless($user->role === 'mahasiswa', 403, 'Hanya mahasiswa yang dapat bergabung dengan mata kuliah.');
-
-        if (!$course->students()->where('users.id', $user->id)->exists()) {
-            $course->students()->attach($user->id, ['enrolled_at' => now()]);
-        }
-
-        return redirect()->route('mahasiswa.courses.show', $course)
-            ->with('success', 'Selamat! Anda berhasil terdaftar di mata kuliah ' . $course->name . '.');
+        return view('courses.show', compact('course'));
     }
 
     /*

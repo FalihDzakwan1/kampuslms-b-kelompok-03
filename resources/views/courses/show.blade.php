@@ -46,22 +46,6 @@
                 <p class="text-gray-600 leading-relaxed">{{ $course->description ?? 'Belum ada deskripsi untuk mata kuliah ini.' }}</p>
             </div>
 
-            @if(auth()->user()->role === 'mahasiswa' && !$isEnrolled)
-                <div class="mb-8 p-8 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-amber-200 text-center shadow-xs">
-                    <span class="text-4xl block mb-2">🎓</span>
-                    <h3 class="text-xl font-bold text-amber-900 mb-1">Anda Belum Terdaftar di Mata Kuliah Ini</h3>
-                    <p class="text-sm text-amber-700 max-w-lg mx-auto mb-5 leading-relaxed">
-                        Silakan bergabung dengan mata kuliah ini untuk mengunduh materi kuliah, melihat rincian tugas, dan mengumpulkan berkas tugas Anda.
-                    </p>
-                    <form action="{{ route('mahasiswa.courses.enroll', $course) }}" method="POST">
-                        @csrf
-                        <button type="submit" class="btn-primary px-8 py-3 text-sm font-bold shadow-md">
-                            + Gabung / Ikuti Mata Kuliah Ini Sekarang
-                        </button>
-                    </form>
-                </div>
-            @endif
-
             {{-- Section 1: Materi Pembelajaran --}}
             <div class="mb-10 bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
                 <div class="flex flex-wrap items-center justify-between gap-4 mb-4 pb-3 border-b border-gray-100">
