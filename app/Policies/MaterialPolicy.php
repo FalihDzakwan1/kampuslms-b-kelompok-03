@@ -50,6 +50,18 @@ class MaterialPolicy
     }
 
     /**
+     * Mengunduh berkas materi dari disk privat.
+     * Menggunakan aturan yang sama dengan view:
+     * - Admin      : selalu diizinkan
+     * - Dosen      : hanya pengampu mata kuliah terkait
+     * - Mahasiswa  : hanya mahasiswa yang terdaftar di mata kuliah tersebut
+     */
+    public function download(User $user, Material $material): bool
+    {
+        return $this->view($user, $material);
+    }
+
+    /**
      * Mengunggah materi baru ke dalam satu MK.
      *   Gate::authorize('create', [Material::class, $course])
      */

@@ -43,12 +43,22 @@
                                 </td>
                                 <td class="py-4 px-6">
                                     @if($material->type === 'file')
-                                        <span class="px-2.5 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold">
-                                            📄 Berkas File
-                                        </span>
+                                        @php
+                                            $ext = strtoupper(pathinfo($material->original_name ?? '', PATHINFO_EXTENSION));
+                                        @endphp
+                                        <div class="flex flex-col gap-1 items-start">
+                                            <span class="px-2.5 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold flex items-center gap-1">
+                                                @if($ext === 'PDF') 📕 PDF @elseif(in_array($ext, ['PPTX', 'PPT'])) 📊 PPTX @elseif(in_array($ext, ['DOCX', 'DOC'])) 📝 DOCX @else 📄 {{ $ext ?: 'Berkas' }} @endif
+                                            </span>
+                                            @if($material->file_size)
+                                                <span class="text-[11px] text-gray-400">
+                                                    {{ $material->file_size >= 1048576 ? number_format($material->file_size / (1024 * 1024), 2) . ' MB' : number_format($material->file_size / 1024, 1) . ' KB' }}
+                                                </span>
+                                            @endif
+                                        </div>
                                     @else
-                                        <span class="px-2.5 py-1 bg-cyan-100 text-cyan-700 rounded-full text-xs font-semibold">
-                                            🔗 Tautan Link
+                                        <span class="px-2.5 py-0.5 bg-cyan-100 text-cyan-700 rounded-full text-xs font-semibold flex items-center gap-1">
+                                            🔗 Tautan Eksternal
                                         </span>
                                     @endif
                                 </td>
@@ -59,6 +69,12 @@
                                     <a href="{{ route(auth()->user()->role . '.materials.show', $material) }}" class="text-blue-600 hover:text-blue-800 font-medium text-xs">
                                         Buka Materi
                                     </a>
+
+                                    @if($material->type === 'file')
+                                        <a href="{{ route('materials.download', $material) }}" class="text-purple-600 hover:text-purple-800 font-medium text-xs font-semibold">
+                                            ⬇ Unduh
+                                        </a>
+                                    @endif
 
                                     @can('update', $material)
                                         <a href="{{ route(auth()->user()->role . '.materials.edit', $material) }}" class="text-amber-600 hover:text-amber-800 font-medium text-xs">
