@@ -36,31 +36,49 @@ class SubmissionController extends Controller
         Gate::authorize('create', [Submission::class, $assignment]);
 
         $request->validate([
-            'file' => 'required|file|max:10240',
-            'note' => 'nullable|string|max:500',
+            'file' => ['required', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
+            'note' => ['nullable', 'string', 'max:500'],
         ]);
 
+        // 1. is_late dihitung di server menggunakan now()
         $isLate = $assignment->due_at ? now()->gt($assignment->due_at) : false;
 
+        // 2. Tolak jika allow_late bernilai false dan sudah lewat batas waktu
         if ($isLate && !$assignment->allow_late) {
             return back()->with('error', 'Batas waktu pengumpulan telah lewat dan tugas ini tidak mengizinkan keterlambatan.');
         }
 
         $uploadedFile = $request->file('file');
-        $path         = $uploadedFile->store('submissions');
 
-        Submission::create([
-            'assignment_id' => $assignment->id,
-            'user_id'       => auth()->id(),
-            'file_path'     => $path,
-            'original_name' => $uploadedFile->getClientOriginalName(),
-            'file_size'     => $uploadedFile->getSize(),
-            'note'          => $request->note,
-            'submitted_at'  => now(),
-            'is_late'       => $isLate,
-        ]);
+        // 3. Simpan ke folder privat 'local' dengan nama acak
+        $path = $uploadedFile->store("submissions/{$assignment->id}", 'local');
 
-        return back()->with('success', 'Tugas berhasil dikumpulkan!');
+        // 4. Hapus berkas fisik lama dari harddisk jika mahasiswa mengumpulkan ulang
+        $existing = Submission::where('assignment_id', $assignment->id)
+            ->where('user_id', auth()->id())
+            ->first();
+
+        if ($existing && $existing->file_path && Storage::disk('local')->exists($existing->file_path)) {
+            Storage::disk('local')->delete($existing->file_path);
+        }
+
+        // 5. updateOrCreate menegakkan unique composite (mencegah data dobel)
+        Submission::updateOrCreate(
+            [
+                'assignment_id' => $assignment->id,
+                'user_id'       => auth()->id(),
+            ],
+            [
+                'file_path'     => $path,
+                'original_name' => $uploadedFile->getClientOriginalName(),
+                'file_size'     => $uploadedFile->getSize(),
+                'note'          => $request->note,
+                'submitted_at'  => now(),
+                'is_late'       => $isLate,
+            ]
+        );
+
+        return back()->with('success', 'Tugas berhasil dikumpulkan.');
     }
 
     /**
