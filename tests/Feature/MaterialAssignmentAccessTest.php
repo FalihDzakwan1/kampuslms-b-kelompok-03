@@ -471,6 +471,50 @@ class MaterialAssignmentAccessTest extends TestCase
         $this->get(route('materials.download', $material))->assertRedirect('/login');
     }
 
+    /** @test */
+    public function pratinjau(): void
+    {
+        Storage::fake('local');
+        Storage::put('materials/slide.pdf', 'dummy pdf content');
+
+        $dosen       = $this->makeUser('dosen');
+        $dosenLain   = $this->makeUser('dosen');
+        $admin       = $this->makeUser('admin');
+        $mhsTerdaftar= $this->makeUser('mahasiswa');
+        $mhsLuar     = $this->makeUser('mahasiswa');
+
+        $course = $this->makeCourse($dosen);
+        $this->enroll($course, $mhsTerdaftar);
+
+        $material = $this->makeMaterial($course, [
+            'type'          => 'file',
+            'file_path'     => 'materials/slide.pdf',
+            'original_name' => 'slide.pdf',
+            'file_size'     => 1024,
+            'mime_type'     => 'application/pdf',
+        ]);
+
+        // 1. Mahasiswa terdaftar di MK: BERHASIL pratinjau (200 OK + inline header)
+        $response = $this->actingAs($mhsTerdaftar)->get(route('materials.preview', $material));
+        $response->assertOk();
+        $this->assertTrue(
+            str_contains($response->headers->get('content-disposition', ''), 'inline'),
+            'Header Content-Disposition harus inline untuk pratinjau.'
+        );
+
+        // 2. Mahasiswa luar MK: DITOLAK (403 Forbidden)
+        $this->actingAs($mhsLuar)->get(route('materials.preview', $material))->assertForbidden();
+
+        // 3. Dosen pengampu MK: BERHASIL pratinjau
+        $this->actingAs($dosen)->get(route('materials.preview', $material))->assertOk();
+
+        // 4. Dosen lain: DITOLAK (403 Forbidden)
+        $this->actingAs($dosenLain)->get(route('materials.preview', $material))->assertForbidden();
+
+        // 5. Admin: BERHASIL pratinjau
+        $this->actingAs($admin)->get(route('materials.preview', $material))->assertOk();
+    }
+
     public function test_unduh_materi_bertipe_link_mengembalikan_404(): void
     {
         $dosen = $this->makeUser('dosen');

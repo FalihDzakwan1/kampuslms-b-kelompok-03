@@ -90,8 +90,9 @@ Route::middleware(['auth'])->group(function () {
         return view('dashboard');
     })->name('dashboard');
 
-    // Unduh berkas: otorisasi lewat Policy@view (bukan lewat role di URL)
+    // Unduh & Pratinjau berkas materi: otorisasi lewat Policy@download / Policy@view
     Route::get('materials/{material}/download', [MaterialController::class, 'download'])->name('materials.download');
+    Route::get('materials/{material}/preview', [MaterialController::class, 'preview'])->name('materials.preview');
     Route::get('submissions/{submission}/download', [SubmissionController::class, 'download'])->name('submissions.download');
 
 
