@@ -157,8 +157,12 @@ class SubmissionController extends Controller
 
         Gate::authorize('view', $submission);
 
-        abort_unless(Storage::exists($submission->file_path), 404, 'Berkas tidak ditemukan.');
+        abort_unless(
+            $submission->file_path && Storage::disk('local')->exists($submission->file_path),
+            404,
+            'Berkas tidak ditemukan.'
+        );
 
-        return Storage::download($submission->file_path, $submission->original_name);
+        return Storage::disk('local')->download($submission->file_path, $submission->original_name);
     }
 }
