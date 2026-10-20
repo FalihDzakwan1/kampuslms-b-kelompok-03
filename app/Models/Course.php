@@ -46,4 +46,12 @@ class Course extends Model
     {
         return $this->hasMany(Assignment::class);
     }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (Course $course) {
+            $course->materials->each->delete();
+            $course->assignments->each->delete();
+        });
+    }
 }

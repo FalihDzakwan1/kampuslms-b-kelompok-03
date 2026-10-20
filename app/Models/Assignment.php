@@ -48,4 +48,11 @@ class Assignment extends Model
     {
         return $this->hasManyThrough(Grade::class, Submission::class);
     }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (Assignment $assignment) {
+            $assignment->submissions->each->delete();
+        });
+    }
 }

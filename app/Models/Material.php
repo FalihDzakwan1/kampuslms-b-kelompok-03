@@ -38,4 +38,13 @@ class Material extends Model
     {
         return $this->belongsTo(User::class, 'uploaded_by')->withTrashed();
     }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (Material $material) {
+            if ($material->file_path && \Illuminate\Support\Facades\Storage::exists($material->file_path)) {
+                \Illuminate\Support\Facades\Storage::delete($material->file_path);
+            }
+        });
+    }
 }

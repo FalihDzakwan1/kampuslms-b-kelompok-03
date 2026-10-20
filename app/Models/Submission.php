@@ -43,4 +43,13 @@ class Submission extends Model
     {
         return $this->hasOne(Grade::class);
     }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (Submission $submission) {
+            if ($submission->file_path && \Illuminate\Support\Facades\Storage::exists($submission->file_path)) {
+                \Illuminate\Support\Facades\Storage::delete($submission->file_path);
+            }
+        });
+    }
 }

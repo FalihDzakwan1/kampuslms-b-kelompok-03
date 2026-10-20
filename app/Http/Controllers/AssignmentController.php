@@ -80,7 +80,7 @@ class AssignmentController extends Controller
 
         Gate::authorize('view', $assignment);
 
-        $assignment->load(['course.lecturer', 'submissions.student', 'submissions.grade']);
+        $assignment->load(['course.lecturer', 'course.students', 'submissions.student', 'submissions.grade']);
 
         return view('assignments.show', compact('assignment'));
     }

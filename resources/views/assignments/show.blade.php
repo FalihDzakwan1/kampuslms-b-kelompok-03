@@ -108,7 +108,7 @@
                     </span>
                 </div>
 
-                @if($assignment->submissions->count())
+                @if($assignment->course->students->count())
                     <div class="overflow-x-auto rounded-xl border border-gray-100">
                         <table class="w-full text-left border-collapse">
                             <thead>
@@ -121,43 +121,69 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100 text-xs text-gray-700">
-                                @foreach($assignment->submissions as $sub)
+                                @php
+                                    $submissionsMap = $assignment->submissions->keyBy('user_id');
+                                @endphp
+
+                                @foreach($assignment->course->students as $student)
+                                    @php
+                                        $sub = $submissionsMap->get($student->id);
+                                    @endphp
                                     <tr class="hover:bg-gray-50/70 transition">
                                         <td class="py-3.5 px-4">
-                                            <div class="font-bold text-gray-900">{{ $sub->student->name ?? 'Mahasiswa' }}</div>
-                                            <div class="text-[11px] text-gray-400">NIM: {{ $sub->student->nim_nip ?? '-' }}</div>
+                                            <div class="font-bold text-gray-900">{{ $student->name }}</div>
+                                            <div class="text-[11px] text-gray-400">NIM: {{ $student->nim_nip ?? '-' }}</div>
                                         </td>
                                         <td class="py-3.5 px-4">
-                                            <div>{{ $sub->submitted_at ? \Carbon\Carbon::parse($sub->submitted_at)->translatedFormat('d M Y, H:i') : '-' }}</div>
-                                            @if($sub->is_late)
-                                                <span class="inline-block mt-0.5 px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-[10px] font-bold">Terlambat</span>
+                                            @if($sub)
+                                                <div>{{ \Carbon\Carbon::parse($sub->submitted_at)->translatedFormat('d M Y, H:i') }}</div>
+                                                @if($sub->is_late)
+                                                    <span class="inline-block mt-0.5 px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-[10px] font-bold">Terlambat</span>
+                                                @else
+                                                    <span class="inline-block mt-0.5 px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-[10px] font-bold">Tepat Waktu</span>
+                                                @endif
                                             @else
-                                                <span class="inline-block mt-0.5 px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-[10px] font-bold">Tepat Waktu</span>
+                                                <span class="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 rounded-full text-[10px] font-semibold">
+                                                    Belum Mengumpulkan
+                                                </span>
                                             @endif
                                         </td>
                                         <td class="py-3.5 px-4">
-                                            <a href="{{ route('submissions.download', $sub) }}" target="_blank" download class="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-800 font-semibold bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-md transition">
-                                                ⬇ {{ $sub->original_name ?? 'Berkas' }}
-                                            </a>
-                                            @if($sub->note)
-                                                <p class="text-[11px] text-gray-400 mt-1 italic line-clamp-1" title="{{ $sub->note }}">"{{ $sub->note }}"</p>
+                                            @if($sub)
+                                                <a href="{{ route('submissions.download', $sub) }}" target="_blank" download class="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-800 font-semibold bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-md transition">
+                                                    ⬇ {{ $sub->original_name ?? 'Berkas' }}
+                                                </a>
+                                                @if($sub->file_size)
+                                                    <span class="text-[10px] text-gray-400 block mt-0.5">{{ number_format($sub->file_size / 1024, 1) }} KB</span>
+                                                @endif
+                                                @if($sub->note)
+                                                    <p class="text-[11px] text-gray-400 mt-1 italic line-clamp-1" title="{{ $sub->note }}">"{{ $sub->note }}"</p>
+                                                @endif
+                                            @else
+                                                <span class="text-gray-400 text-xs">-</span>
                                             @endif
                                         </td>
                                         <td class="py-3.5 px-4">
-                                            @if($sub->grade)
+                                            @if($sub && $sub->grade)
                                                 <span class="px-2.5 py-1 bg-green-100 text-green-800 rounded-full font-bold">
                                                     ⭐ {{ $sub->grade->score }} / {{ $assignment->max_score ?? 100 }}
                                                 </span>
-                                            @else
+                                            @elseif($sub)
                                                 <span class="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full font-semibold">
                                                     ⏳ Belum Dinilai
                                                 </span>
+                                            @else
+                                                <span class="text-gray-400 text-xs">-</span>
                                             @endif
                                         </td>
                                         <td class="py-3.5 px-4 text-right">
-                                            <a href="{{ route(auth()->user()->role . '.submissions.show', $sub) }}" class="btn-primary text-xs px-3 py-1.5 inline-flex items-center gap-1">
-                                                <span>{{ $sub->grade ? 'Ubah Nilai' : 'Beri Nilai' }}</span> →
-                                            </a>
+                                            @if($sub)
+                                                <a href="{{ route(auth()->user()->role . '.submissions.show', $sub) }}" class="btn-primary text-xs px-3 py-1.5 inline-flex items-center gap-1">
+                                                    <span>{{ $sub->grade ? 'Ubah Nilai' : 'Beri Nilai' }}</span> →
+                                                </a>
+                                            @else
+                                                <span class="text-gray-400 text-xs italic">Menunggu pengumpulan</span>
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforeach
@@ -166,8 +192,8 @@
                     </div>
                 @else
                     <div class="p-8 text-center text-gray-400 bg-gray-50 rounded-xl">
-                        <p class="text-3xl mb-1">📥</p>
-                        <p class="text-sm font-medium text-gray-600">Belum ada mahasiswa yang mengumpulkan tugas ini.</p>
+                        <p class="text-3xl mb-1">👥</p>
+                        <p class="text-sm font-medium text-gray-600">Belum ada mahasiswa yang terdaftar di mata kuliah ini.</p>
                     </div>
                 @endif
             </div>
