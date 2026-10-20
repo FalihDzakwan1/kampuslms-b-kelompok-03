@@ -36,7 +36,7 @@ class SubmissionController extends Controller
         Gate::authorize('create', [Submission::class, $assignment]);
 
         $request->validate([
-            'file' => ['required', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
+            'file' => ['required', 'file', 'mimes:pdf,doc,docx', 'max:2048'],
             'note' => ['nullable', 'string', 'max:500'],
         ]);
 
