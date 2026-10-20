@@ -202,6 +202,59 @@ class AuthorizationTest extends TestCase
     }
 
     // ------------------------------------------------------------------
+    // Enrollment: hanya admin / dosen pengampu (temuan M2: self-enroll)
+    // ------------------------------------------------------------------
+
+    public function test_mahasiswa_tidak_dapat_mendaftarkan_dirinya_sendiri_ke_mata_kuliah(): void
+    {
+        $dosen  = $this->makeUser('dosen');
+        $mhs    = $this->makeUser('mahasiswa');
+        $course = $this->makeCourse($dosen);
+        $this->makeAssignment($course);
+
+        // Endpoint self-enroll lama sudah dihapus.
+        $this->actingAs($mhs)
+            ->post("/mahasiswa/courses/{$course->id}/enroll")
+            ->assertNotFound();
+
+        // Jalur resmi enrollment pun tertutup bagi mahasiswa (middleware role).
+        $this->actingAs($mhs)
+            ->post(route('dosen.courses.enrollments.store', $course), ['user_id' => $mhs->id])
+            ->assertForbidden();
+
+        $this->assertDatabaseMissing('course_user', [
+            'course_id' => $course->id,
+            'user_id'   => $mhs->id,
+        ]);
+
+        // Materi & tugas MK tersebut tetap tertutup.
+        $this->actingAs($mhs)->get(route('mahasiswa.courses.show', $course))->assertForbidden();
+        $this->actingAs($mhs)->get(route('mahasiswa.courses.assignments.index', $course))->assertForbidden();
+        $this->actingAs($mhs)->get(route('mahasiswa.courses.materials.index', $course))->assertForbidden();
+    }
+
+    public function test_dosen_pengampu_dapat_mendaftarkan_mahasiswa_tetapi_dosen_lain_tidak(): void
+    {
+        $dosenA = $this->makeUser('dosen');
+        $dosenB = $this->makeUser('dosen');
+        $mhs    = $this->makeUser('mahasiswa');
+        $course = $this->makeCourse($dosenA);
+
+        $this->actingAs($dosenB)
+            ->post(route('dosen.courses.enrollments.store', $course), ['user_id' => $mhs->id])
+            ->assertForbidden();
+        $this->assertDatabaseMissing('course_user', ['course_id' => $course->id, 'user_id' => $mhs->id]);
+
+        $this->actingAs($dosenA)
+            ->post(route('dosen.courses.enrollments.store', $course), ['user_id' => $mhs->id])
+            ->assertSessionHas('success');
+        $this->assertDatabaseHas('course_user', ['course_id' => $course->id, 'user_id' => $mhs->id]);
+
+        // Setelah didaftarkan dosen, barulah mahasiswa bisa membuka MK.
+        $this->actingAs($mhs)->get(route('mahasiswa.courses.show', $course))->assertOk();
+    }
+
+    // ------------------------------------------------------------------
     // Submission (IDOR antar mahasiswa) & aturan submit sekali
     // ------------------------------------------------------------------
 
