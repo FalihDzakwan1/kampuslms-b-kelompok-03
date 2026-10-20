@@ -94,6 +94,11 @@
                                             @endif
                                         </div>
                                         <p class="text-xs text-gray-500 mt-0.5 line-clamp-2">{{ $material->description ?? 'Tidak ada deskripsi.' }}</p>
+                                        @if($material->type === 'file' && $material->original_name)
+                                            <span class="text-[11px] text-gray-500 mt-1 block line-clamp-1" title="{{ $material->original_name }}">
+                                                {{ $material->original_name }}@if($material->formatted_file_size) · {{ $material->formatted_file_size }}@endif
+                                            </span>
+                                        @endif
                                         <span class="text-[11px] text-gray-400 mt-1 block">Oleh: {{ $material->uploader->name ?? 'Dosen' }}</span>
                                     </div>
                                 </div>

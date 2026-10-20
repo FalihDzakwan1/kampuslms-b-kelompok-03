@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasFormattedFileSize;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Material extends Model
 {
-    use HasFactory;
+    use HasFactory, HasFormattedFileSize;
 
     protected $fillable = [
         'course_id',
@@ -42,8 +43,8 @@ class Material extends Model
     protected static function booted(): void
     {
         static::deleting(function (Material $material) {
-            if ($material->file_path && \Illuminate\Support\Facades\Storage::exists($material->file_path)) {
-                \Illuminate\Support\Facades\Storage::delete($material->file_path);
+            if ($material->file_path && \Illuminate\Support\Facades\Storage::disk('local')->exists($material->file_path)) {
+                \Illuminate\Support\Facades\Storage::disk('local')->delete($material->file_path);
             }
         });
     }

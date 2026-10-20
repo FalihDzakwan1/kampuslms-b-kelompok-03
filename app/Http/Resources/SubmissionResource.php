@@ -16,6 +16,7 @@ class SubmissionResource extends JsonResource
             'file_path' => $this->file_path,
             'original_name' => $this->original_name,
             'file_size' => $this->file_size,
+            'formatted_file_size' => $this->formatted_file_size,
             'note' => $this->note,
             'submitted_at' => $this->submitted_at,
             'is_late' => $this->is_late,

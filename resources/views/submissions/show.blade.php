@@ -53,7 +53,7 @@
                     <div>
                         <h4 class="text-sm font-bold text-gray-800">{{ $submission->original_name ?? 'Berkas Tugas' }}</h4>
                         <p class="text-xs text-gray-500 mt-0.5">
-                            {{ $submission->file_size ? number_format($submission->file_size / 1024, 1) . ' KB' : 'Dokumen' }}
+                            {{ $submission->formatted_file_size ?? 'Dokumen' }}
                         </p>
                     </div>
                 </div>

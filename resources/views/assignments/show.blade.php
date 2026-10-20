@@ -64,7 +64,7 @@
                             <span class="text-green-800 font-bold text-sm">Tugas Sudah Dikumpulkan</span>
                         </div>
                         <p class="text-sm text-gray-700">Waktu submit: <strong>{{ \Carbon\Carbon::parse($mySubmission->submitted_at)->translatedFormat('d M Y, H:i') }}</strong></p>
-                        <p class="text-sm text-gray-700 mt-1">Berkas: <strong class="text-blue-600">{{ $mySubmission->original_name ?? 'Berkas Tugas' }}</strong></p>
+                        <p class="text-sm text-gray-700 mt-1">Berkas: <strong class="text-blue-600">{{ $mySubmission->original_name ?? 'Berkas Tugas' }}</strong>@if($mySubmission->formatted_file_size) <span class="text-xs text-gray-500">({{ $mySubmission->formatted_file_size }})</span>@endif</p>
                         @if($mySubmission->note)
                             <p class="text-sm text-gray-600 mt-2 italic">"{{ $mySubmission->note }}"</p>
                         @endif
@@ -153,8 +153,8 @@
                                                 <a href="{{ route('submissions.download', $sub) }}" target="_blank" download class="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-800 font-semibold bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-md transition">
                                                     ⬇ {{ $sub->original_name ?? 'Berkas' }}
                                                 </a>
-                                                @if($sub->file_size)
-                                                    <span class="text-[10px] text-gray-400 block mt-0.5">{{ number_format($sub->file_size / 1024, 1) }} KB</span>
+                                                @if($sub->formatted_file_size)
+                                                    <span class="text-[10px] text-gray-400 block mt-0.5">{{ $sub->formatted_file_size }}</span>
                                                 @endif
                                                 @if($sub->note)
                                                     <p class="text-[11px] text-gray-400 mt-1 italic line-clamp-1" title="{{ $sub->note }}">"{{ $sub->note }}"</p>
