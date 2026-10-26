@@ -19,6 +19,7 @@ use Throwable;
  */
 class SendAssignmentNotification implements ShouldQueue
 {
+    // [ACCPT-LISTENER-TRIES-BACKOFF]
     /** Jumlah percobaan sebelum job dicatat di tabel failed_jobs. */
     public int $tries = 3;
 
@@ -40,6 +41,7 @@ class SendAssignmentNotification implements ShouldQueue
         Notification::send($students, new NewAssignmentNotification($assignment));
     }
 
+    // [ACCPT-LISTENER-FAILED-LOG]
     public function failed(AssignmentPublished $event, Throwable $exception): void
     {
         Log::error('Gagal mengirim notifikasi tugas baru.', [
