@@ -140,14 +140,20 @@
                                 <button
                                     type="button"
                                     id="notif-mark-all-btn"
-                                    class="text-xs text-sky-400 hover:text-sky-300 font-medium transition"
+                                    class="text-xs text-sky-400 hover:text-sky-300 font-medium transition cursor-pointer"
                                 >
                                     Tandai dibaca
                                 </button>
                             </div>
 
                             <div id="notif-list" class="max-h-72 overflow-y-auto divide-y divide-slate-800/80">
-                                <div class="p-4 text-center text-xs text-slate-400">Memuat notifikasi...</div>
+                                <div class="p-4 text-center text-xs text-slate-400">Tidak ada notifikasi baru.</div>
+                            </div>
+
+                            <div class="px-4 py-2 border-t border-slate-700/60 text-center bg-slate-900/40 rounded-b-2xl">
+                                <a href="{{ route('notifications.index') }}" class="text-xs text-sky-400 hover:text-sky-300 font-semibold block py-1 transition">
+                                    Lihat Semua Notifikasi →
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -352,19 +358,33 @@
                 notifList.innerHTML = items.map(item => {
                     const isUnread = !item.read_at;
                     const bg = isUnread ? 'bg-white/5 border-l-2 border-sky-400' : 'bg-transparent';
+                    const isGrade = item.data.type === 'grade_given';
+                    const isUpdate = item.data.is_update;
+                    
+                    let badgeLabel = 'PEMBERITAHUAN';
+                    if (isGrade) {
+                        badgeLabel = isUpdate ? 'NILAI DIPERBARUI' : 'NILAI KELUAR';
+                    } else if (item.data.type === 'assignment_published') {
+                        badgeLabel = 'TUGAS BARU';
+                    }
+
+                    const badgeHtml = `<span style="font-size: 11px; font-weight: 800; letter-spacing: 0.05em;" class="uppercase text-white">${badgeLabel}</span>`;
+                    const courseHtml = item.data.course_name ? `<span style="font-size: 11px;" class="text-slate-300">${item.data.course_name}</span>` : '';
                     const title = item.data.title || 'Pemberitahuan';
-                    const course = item.data.course_name ? `<span class="text-[11px] text-sky-300 font-medium block">${item.data.course_name}</span>` : '';
-                    const url = item.data.url || '#';
+                    const url = '/notifications/' + item.id + '/open';
 
                     return `
                         <a href="${url}" class="block px-4 py-3 hover:bg-white/10 transition ${bg}">
                             <div class="flex items-start justify-between gap-2">
                                 <div class="flex-1">
-                                    ${course}
-                                    <p class="text-xs font-semibold text-slate-100">${title}</p>
-                                    <span class="text-[10px] text-slate-400 mt-1 block">${item.created_at}</span>
+                                    <div class="flex items-center gap-2 mb-0.5">
+                                        ${badgeHtml}
+                                        ${courseHtml}
+                                    </div>
+                                    <p style="font-size: 12px; font-weight: 600;" class="text-white mt-0.5 leading-snug">${title}</p>
+                                    <span style="font-size: 10px;" class="text-slate-400 mt-1 block">${item.created_at}</span>
                                 </div>
-                                ${isUnread ? '<span class="w-2 h-2 rounded-full bg-sky-400 mt-1 flex-shrink-0"></span>' : ''}
+                                ${isUnread ? '<span style="width: 7px; height: 7px;" class="rounded-full bg-sky-400 mt-1.5 flex-shrink-0"></span>' : ''}
                             </div>
                         </a>
                     `;

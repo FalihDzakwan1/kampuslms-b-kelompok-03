@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\DatabaseNotification;
 use App\Http\Resources\NotificationResource;
 
 class NotificationController extends Controller
@@ -24,11 +25,19 @@ class NotificationController extends Controller
     /**
      * POST /api/v1/notifications/{id}/read
      * Menandai notifikasi sebagai telah dibaca.
+     * Dilengkapi pemeriksaan kepemilikan untuk mencegah IDOR.
      */
     public function read(Request $request, $id)
     {
-        $notification = $request->user()->notifications()->findOrFail($id);
-        
+        $notification = DatabaseNotification::findOrFail($id);
+
+        abort_unless(
+            $notification->notifiable_type === get_class($request->user())
+            && (string) $notification->notifiable_id === (string) $request->user()->id,
+            403,
+            'Anda tidak memiliki akses ke sumber daya ini.'
+        );
+
         $notification->markAsRead();
 
         return response()->json([

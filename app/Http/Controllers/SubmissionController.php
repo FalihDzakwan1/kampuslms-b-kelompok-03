@@ -94,7 +94,7 @@ class SubmissionController extends Controller
 
         Gate::authorize('view', $submission);
 
-        $submission->load(['assignment.course', 'student']);
+        $submission->load(['assignment.course', 'student', 'grade.grader']);
 
         return view('submissions.show', compact('submission'));
     }
@@ -146,7 +146,7 @@ class SubmissionController extends Controller
         );
 
         // Beri tahu mahasiswa pemilik submission (diproses di latar lewat queue).
-        GradeGiven::dispatch($grade, isUpdate: ! $grade->wasRecentlyCreated);
+        GradeGiven::dispatch($grade, isUpdate: (bool) $existingGrade);
 
         return back()->with('success', 'Nilai dan umpan balik berhasil disimpan.');
     }

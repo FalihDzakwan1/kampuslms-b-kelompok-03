@@ -95,6 +95,9 @@
 
                     <p class="text-xs text-gray-400 mt-3">
                         Dinilai pada: {{ \Carbon\Carbon::parse($submission->grade->graded_at)->translatedFormat('d M Y, H:i') }}
+                        @if($submission->grade->grader)
+                            • Oleh: <span class="text-gray-600 font-semibold">{{ $submission->grade->grader->name }}</span>
+                        @endif
                     </p>
                 @else
                     <p class="text-sm text-yellow-700">Tugas ini belum dinilai oleh dosen pengampu.</p>
@@ -102,7 +105,7 @@
             </div>
 
             {{-- Form Penilaian Dosen --}}
-            @can('create', [App\Models\Grade::class, $submission])
+            @if(auth()->user()->role === 'dosen' && $submission->assignment->course->lecturer_id === auth()->id())
                 <div class="mt-6 p-6 rounded-2xl border border-blue-100 bg-blue-50/40">
                     <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
                         <span>✏️</span> {{ $submission->grade ? 'Perbarui Nilai & Umpan Balik' : 'Beri Nilai untuk Mahasiswa' }}
