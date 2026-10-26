@@ -71,6 +71,23 @@
                     </div>
                 </div>
 
+                {{-- Izinkan Pengumpulan Terlambat (allow_late) --}}
+                <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                    <input type="hidden" name="allow_late" value="0">
+                    <label class="inline-flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" name="allow_late" value="1"
+                            {{ old('allow_late', $assignment->allow_late) ? 'checked' : '' }}
+                            class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                        <div>
+                            <span class="text-sm font-semibold text-gray-800 block">Izinkan pengumpulan terlambat</span>
+                            <span class="text-xs text-gray-500">Jika tidak dicentang, mahasiswa tidak dapat mengumpulkan tugas setelah batas waktu berakhir.</span>
+                        </div>
+                    </label>
+                    @error('allow_late')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 {{-- Tombol Aksi --}}
                 <div class="pt-4 border-t border-gray-100 flex justify-end gap-3">
                     <a href="{{ route(auth()->user()->role . '.assignments.show', $assignment) }}" class="px-5 py-2 rounded-xl bg-gray-100 text-gray-600 font-medium hover:bg-gray-200 transition">

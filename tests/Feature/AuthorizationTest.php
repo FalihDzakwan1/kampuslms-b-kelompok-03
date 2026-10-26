@@ -309,7 +309,7 @@ class AuthorizationTest extends TestCase
         ]);
     }
 
-    public function test_mahasiswa_tidak_dapat_mengumpulkan_tugas_untuk_kedua_kalinya(): void
+    public function test_mahasiswa_dapat_mengumpulkan_ulang_sebelum_dinilai_tetapi_tidak_setelah_dinilai(): void
     {
         Storage::fake('local');
 
@@ -318,15 +318,35 @@ class AuthorizationTest extends TestCase
         $course     = $this->makeCourse($dosen);
         $this->enroll($course, $mhs);
         $assignment = $this->makeAssignment($course);
-        $this->makeSubmission($assignment, $mhs);
+        $submission = $this->makeSubmission($assignment, $mhs);
 
+        // Belum dinilai: submit ulang diizinkan (updateOrCreate menimpa, tidak menumpuk baris).
         $this->actingAs($mhs)
             ->post(
                 route('mahasiswa.assignments.submissions.store', $assignment),
                 ['file' => UploadedFile::fake()->create('revisi.pdf', 100, 'application/pdf')]
             )
+            ->assertSessionHas('success');
+
+        $this->assertSame(1, Submission::where('assignment_id', $assignment->id)->count());
+        $this->assertSame('revisi.pdf', $submission->fresh()->original_name);
+
+        // Sudah dinilai dosen: submission dikunci, submit ulang ditolak.
+        \App\Models\Grade::create([
+            'submission_id' => $submission->id,
+            'graded_by'     => $dosen->id,
+            'score'         => 90,
+            'graded_at'     => now(),
+        ]);
+
+        $this->actingAs($mhs)
+            ->post(
+                route('mahasiswa.assignments.submissions.store', $assignment),
+                ['file' => UploadedFile::fake()->create('revisi-lagi.pdf', 100, 'application/pdf')]
+            )
             ->assertForbidden();
 
+        $this->assertSame('revisi.pdf', $submission->fresh()->original_name);
         $this->assertSame(1, Submission::where('assignment_id', $assignment->id)->count());
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\GradeGiven;
 use App\Models\Submission;
 use App\Models\Assignment;
 use App\Models\Grade;
@@ -134,7 +135,7 @@ class SubmissionController extends Controller
             'feedback' => 'nullable|string|max:1000',
         ]);
 
-        Grade::updateOrCreate(
+        $grade = Grade::updateOrCreate(
             ['submission_id' => $submission->id],
             [
                 'graded_by' => auth()->id(),
@@ -143,6 +144,9 @@ class SubmissionController extends Controller
                 'graded_at' => now(),
             ]
         );
+
+        // Beri tahu mahasiswa pemilik submission (diproses di latar lewat queue).
+        GradeGiven::dispatch($grade, isUpdate: ! $grade->wasRecentlyCreated);
 
         return back()->with('success', 'Nilai dan umpan balik berhasil disimpan.');
     }
