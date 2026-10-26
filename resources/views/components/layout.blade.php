@@ -106,6 +106,52 @@
             @auth
                 <div class="flex items-center gap-3 sm:gap-4">
 
+                    {{-- [ACCPT-NAVBAR-BELL] Lonceng Notifikasi & Dropdown --}}
+                    <div class="relative" id="notif-wrapper">
+                        <button
+                            type="button"
+                            id="notif-bell-btn"
+                            class="relative p-2 text-slate-300 hover:text-white hover:bg-white/10 rounded-xl transition focus:outline-none"
+                            title="Notifikasi"
+                        >
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+
+                            {{-- Badge Counter Unread --}}
+                            <span
+                                id="notif-badge"
+                                class="hidden absolute top-1 right-1 items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white bg-rose-500 rounded-full min-w-4.5 h-4.5 shadow-sm ring-2 ring-[#0a2540]"
+                            >
+                                0
+                            </span>
+                        </button>
+
+                        {{-- Dropdown Notifikasi --}}
+                        <div
+                            id="notif-dropdown"
+                            class="hidden absolute right-0 mt-2 w-80 sm:w-96 bg-[#0a2540] border border-slate-700 rounded-2xl shadow-2xl py-2 z-50 text-slate-200"
+                        >
+                            <div class="px-4 py-2.5 border-b border-slate-700/60 flex items-center justify-between">
+                                <span class="font-bold text-sm text-white flex items-center gap-2">
+                                    Notifikasi
+                                    <span id="notif-count-tag" class="text-xs bg-sky-500/20 text-sky-300 px-2 py-0.5 rounded-full font-semibold">0</span>
+                                </span>
+                                <button
+                                    type="button"
+                                    id="notif-mark-all-btn"
+                                    class="text-xs text-sky-400 hover:text-sky-300 font-medium transition"
+                                >
+                                    Tandai dibaca
+                                </button>
+                            </div>
+
+                            <div id="notif-list" class="max-h-72 overflow-y-auto divide-y divide-slate-800/80">
+                                <div class="p-4 text-center text-xs text-slate-400">Memuat notifikasi...</div>
+                            </div>
+                        </div>
+                    </div>
+
                     {{-- Role --}}
                     <span class="px-3.5 py-1 text-xs font-bold uppercase tracking-wider bg-blue-500/20 text-cyan-300 border border-blue-400/40 rounded-full">
                         {{ auth()->user()->role }}
@@ -270,6 +316,111 @@
             });
         });
     </script>
+
+    {{-- [ACCPT-NOTIF-POLLING] Script Polling Notifikasi Navbar --}}
+    @auth
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const bellBtn = document.getElementById('notif-bell-btn');
+            const badge = document.getElementById('notif-badge');
+            const dropdown = document.getElementById('notif-dropdown');
+            const notifList = document.getElementById('notif-list');
+            const countTag = document.getElementById('notif-count-tag');
+            const markAllBtn = document.getElementById('notif-mark-all-btn');
+
+            if (!bellBtn) return;
+
+            // Toggle dropdown buka/tutup
+            bellBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.classList.toggle('hidden');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!dropdown.contains(e.target) && !bellBtn.contains(e.target)) {
+                    dropdown.classList.add('hidden');
+                }
+            });
+
+            // Render list notifikasi
+            function renderNotifs(items) {
+                if (!items || items.length === 0) {
+                    notifList.innerHTML = '<div class="p-4 text-center text-xs text-slate-400">Tidak ada notifikasi baru.</div>';
+                    return;
+                }
+
+                notifList.innerHTML = items.map(item => {
+                    const isUnread = !item.read_at;
+                    const bg = isUnread ? 'bg-white/5 border-l-2 border-sky-400' : 'bg-transparent';
+                    const title = item.data.title || 'Pemberitahuan';
+                    const course = item.data.course_name ? `<span class="text-[11px] text-sky-300 font-medium block">${item.data.course_name}</span>` : '';
+                    const url = item.data.url || '#';
+
+                    return `
+                        <a href="${url}" class="block px-4 py-3 hover:bg-white/10 transition ${bg}">
+                            <div class="flex items-start justify-between gap-2">
+                                <div class="flex-1">
+                                    ${course}
+                                    <p class="text-xs font-semibold text-slate-100">${title}</p>
+                                    <span class="text-[10px] text-slate-400 mt-1 block">${item.created_at}</span>
+                                </div>
+                                ${isUnread ? '<span class="w-2 h-2 rounded-full bg-sky-400 mt-1 flex-shrink-0"></span>' : ''}
+                            </div>
+                        </a>
+                    `;
+                }).join('');
+            }
+
+            // Polling notifikasi setiap 8 detik
+            async function fetchNotifs() {
+                try {
+                    const res = await fetch('{{ route("notifications.poll") }}', {
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    if (!res.ok) return;
+                    const data = await res.json();
+
+                    if (data.unread_count > 0) {
+                        badge.textContent = data.unread_count > 99 ? '99+' : data.unread_count;
+                        badge.classList.remove('hidden');
+                        badge.classList.add('inline-flex');
+                    } else {
+                        badge.classList.add('hidden');
+                        badge.classList.remove('inline-flex');
+                    }
+
+                    if (countTag) countTag.textContent = data.unread_count;
+                    renderNotifs(data.notifications);
+                } catch (e) {
+                    console.error('Gagal polling notifikasi:', e);
+                }
+            }
+
+            // Tandai semua dibaca
+            markAllBtn?.addEventListener('click', async () => {
+                try {
+                    const res = await fetch('{{ route("notifications.mark-as-read", "all") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        }
+                    });
+                    if (res.ok) fetchNotifs();
+                } catch (e) {
+                    console.error('Error:', e);
+                }
+            });
+
+            // Panggil saat halaman dibuka
+            fetchNotifs();
+
+            // Polling interval 8 detik
+            setInterval(fetchNotifs, 8000);
+        });
+    </script>
+    @endauth
 
 </body>
 
