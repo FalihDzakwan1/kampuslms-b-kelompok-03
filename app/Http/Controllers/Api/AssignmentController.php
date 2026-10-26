@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\AssignmentPublished;
 use App\Http\Controllers\Controller;
 use App\Models\Assignment;
 use App\Models\Course;
@@ -28,6 +29,7 @@ class AssignmentController extends Controller
             'due_at' => 'nullable|date',
             'max_score' => 'nullable|integer|min:0',
             'allow_late' => 'nullable|boolean',
+            'status' => 'nullable|string|in:draft,published',
         ]);
 
         $course = Course::findOrFail($validated['course_id']);
@@ -37,7 +39,14 @@ class AssignmentController extends Controller
         );
 
         $validated['created_by'] = $user->id;
+        // Kolom assignments.status wajib terisi. Default 'draft' agar tugas tidak
+        // otomatis disiarkan ke seluruh mahasiswa sebelum dosen mempublikasikannya.
+        $validated['status'] = $validated['status'] ?? 'draft';
         $assignment = Assignment::create($validated);
+
+        if ($assignment->status === 'published') {
+            AssignmentPublished::dispatch($assignment);
+        }
 
         return (new AssignmentResource($assignment))
             ->response()
@@ -69,6 +78,11 @@ class AssignmentController extends Controller
         ]);
 
         $assignment->update($validated);
+
+        // Notifikasi hanya saat tugas baru dipublikasikan (draft -> published).
+        if ($assignment->wasChanged('status') && $assignment->status === 'published') {
+            AssignmentPublished::dispatch($assignment);
+        }
 
         return new AssignmentResource($assignment->fresh());
     }

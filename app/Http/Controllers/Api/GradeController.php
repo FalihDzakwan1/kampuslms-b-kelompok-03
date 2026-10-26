@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\GradeGiven;
 use App\Http\Controllers\Controller;
 use App\Models\Submission;
 use App\Models\Grade;
@@ -44,6 +45,9 @@ class GradeController extends Controller
                 'graded_at' => now(),
             ]
         );
+
+        // Beri tahu mahasiswa pemilik submission (diproses di latar lewat queue).
+        GradeGiven::dispatch($grade, isUpdate: $exists);
 
         $statusCode = $exists ? 200 : 201;
 

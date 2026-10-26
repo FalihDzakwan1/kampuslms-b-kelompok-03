@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\AssignmentPublished;
 use App\Models\Assignment;
 use App\Models\Course;
 use Illuminate\Http\Request;
@@ -54,13 +55,20 @@ class AssignmentController extends Controller
             'instructions' => 'required|string',
             'due_at'       => 'required|date',
             'max_score'    => 'nullable|integer|between:1,100',
+            'allow_late'   => 'nullable|boolean',
             'status'       => 'required|in:draft,published',
         ]);
 
         $validated['created_by'] = auth()->id();
         $validated['max_score']  = $validated['max_score'] ?? 100;
+        $validated['allow_late'] = $request->has('allow_late') ? $request->boolean('allow_late') : true;
 
-        $course->assignments()->create($validated);
+        $assignment = $course->assignments()->create($validated);
+
+        // Umumkan ke seluruh mahasiswa MK (diproses di latar lewat queue).
+        if ($assignment->status === 'published') {
+            AssignmentPublished::dispatch($assignment);
+        }
 
         return redirect()
             ->route(auth()->user()->role . '.courses.assignments.index', $course)
@@ -113,10 +121,21 @@ class AssignmentController extends Controller
             'instructions' => 'required|string',
             'due_at'       => 'required|date',
             'max_score'    => 'nullable|integer|between:1,100',
+            'allow_late'   => 'nullable|boolean',
             'status'       => 'required|in:draft,published',
         ]);
 
+        if ($request->has('allow_late')) {
+            $validated['allow_late'] = $request->boolean('allow_late');
+        }
+
         $assignment->update($validated);
+
+        // Notifikasi hanya saat tugas BARU dipublikasikan (draft -> published),
+        // bukan setiap kali tugas yang sudah published diedit.
+        if ($assignment->wasChanged('status') && $assignment->status === 'published') {
+            AssignmentPublished::dispatch($assignment);
+        }
 
         return redirect()
             ->route(auth()->user()->role . '.assignments.show', $assignment)
