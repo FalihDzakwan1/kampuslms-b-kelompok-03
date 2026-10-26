@@ -90,6 +90,10 @@ Route::middleware(['auth'])->group(function () {
         return view('dashboard');
     })->name('dashboard');
 
+    // [ACCPT-NOTIF-ROUTES] Polling Notifikasi Web Navbar
+    Route::get('/notifications/poll', [\App\Http\Controllers\NotificationController::class, 'poll'])->name('notifications.poll');
+    Route::post('/notifications/mark-as-read/{id?}', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.mark-as-read');
+
     // Unduh & Pratinjau berkas materi: otorisasi lewat Policy@download / Policy@view
     Route::get('materials/{material}/download', [MaterialController::class, 'download'])->name('materials.download');
     Route::get('materials/{material}/preview', [MaterialController::class, 'preview'])->name('materials.preview');
