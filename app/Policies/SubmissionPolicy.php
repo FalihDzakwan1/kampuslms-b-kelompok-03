@@ -43,10 +43,11 @@ class SubmissionPolicy
     }
 
     /**
-     * Mengumpulkan tugas (submit pertama kali).
-     * Dua syarat HARUS terpenuhi sekaligus:
+     * Mengumpulkan tugas (submit baru atau submit ulang sebelum dinilai).
+     * Syarat:
      *   1. Mahasiswa sudah terdaftar di MK tempat tugas berada.
-     *   2. Mahasiswa belum pernah submit di tugas ini sebelumnya.
+     *   2. Tugas berstatus published.
+     *   3. Pengumpulan ulang (updateOrCreate) diizinkan selama submission belum dinilai dosen.
      *
      *   Gate::authorize('create', [Submission::class, $assignment])
      * Eager-load 'course' pada $assignment di Controller.
@@ -72,12 +73,13 @@ class SubmissionPolicy
             return false;
         }
 
-        // Syarat 2: belum pernah submit di tugas ini
-        $alreadySubmitted = $assignment->submissions()
+        // Syarat 2: belum dinilai oleh dosen (boleh submit ulang/updateOrCreate sebelum dinilai)
+        $alreadyGraded = $assignment->submissions()
             ->where('user_id', $user->id)
+            ->whereHas('grade')
             ->exists();
 
-        return ! $alreadySubmitted;
+        return ! $alreadyGraded;
     }
 
     /**

@@ -29,7 +29,7 @@
 
             <h1 class="text-3xl font-bold text-gray-900 mb-4">{{ $assignment->title }}</h1>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-xl text-sm mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-xl text-sm mb-6">
                 <div>
                     <span class="text-gray-500 block">Batas Waktu:</span>
                     <strong class="text-gray-800">{{ $assignment->due_at ? \Carbon\Carbon::parse($assignment->due_at)->translatedFormat('l, d F Y - H:i') : 'Tidak ditentukan' }}</strong>
@@ -37,6 +37,14 @@
                 <div>
                     <span class="text-gray-500 block">Nilai Maksimal:</span>
                     <strong class="text-gray-800">{{ $assignment->max_score ?? 100 }} Poin</strong>
+                </div>
+                <div>
+                    <span class="text-gray-500 block">Pengumpulan Terlambat:</span>
+                    @if($assignment->allow_late)
+                        <strong class="text-amber-700">Diizinkan (Ditandai Terlambat)</strong>
+                    @else
+                        <strong class="text-red-600">Ditolak Setelah Deadline</strong>
+                    @endif
                 </div>
             </div>
 
@@ -51,29 +59,53 @@
         {{-- Area Mahasiswa: Pengumpulan Tugas --}}
         @if(auth()->user()->role === 'mahasiswa')
             @php
-                $mySubmission = $assignment->submissions()->where('user_id', auth()->id())->first();
+                $mySubmission = $assignment->submissions->firstWhere('user_id', auth()->id());
             @endphp
 
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
                 <h2 class="text-xl font-bold text-gray-800 mb-4">Pengumpulan Tugas Anda</h2>
 
                 @if($mySubmission)
-                    <div class="p-5 bg-green-50 border border-green-200 rounded-xl">
-                        <div class="flex items-center gap-2 mb-2">
-                            <span class="w-3 h-3 rounded-full bg-green-500"></span>
-                            <span class="text-green-800 font-bold text-sm">Tugas Sudah Dikumpulkan</span>
+                    <div class="p-5 bg-green-50 border border-green-200 rounded-xl mb-6">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-green-500"></span>
+                                <span class="text-green-800 font-bold text-sm">Tugas Sudah Dikumpulkan</span>
+                                @if($mySubmission->is_late)
+                                    <span class="px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-xs font-semibold">Terlambat</span>
+                                @else
+                                    <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-semibold">Tepat Waktu</span>
+                                @endif
+                            </div>
+                            <a href="{{ route('mahasiswa.submissions.show', $mySubmission) }}" class="text-xs font-semibold text-blue-600 hover:underline">
+                                Lihat Detail & Nilai →
+                            </a>
                         </div>
                         <p class="text-sm text-gray-700">Waktu submit: <strong>{{ \Carbon\Carbon::parse($mySubmission->submitted_at)->translatedFormat('d M Y, H:i') }}</strong></p>
-                        <p class="text-sm text-gray-700 mt-1">Berkas: <strong class="text-blue-600">{{ $mySubmission->original_name ?? 'Berkas Tugas' }}</strong>@if($mySubmission->formatted_file_size) <span class="text-xs text-gray-500">({{ $mySubmission->formatted_file_size }})</span>@endif</p>
+                        <p class="text-sm text-gray-700 mt-1">
+                            Berkas:
+                            <a href="{{ route('submissions.download', $mySubmission) }}" target="_blank" download class="font-bold text-blue-600 hover:underline">
+                                {{ $mySubmission->original_name ?? 'Berkas Tugas' }}
+                            </a>
+                            @if($mySubmission->formatted_file_size)
+                                <span class="text-xs text-gray-500">({{ $mySubmission->formatted_file_size }})</span>
+                            @endif
+                        </p>
                         @if($mySubmission->note)
                             <p class="text-sm text-gray-600 mt-2 italic">"{{ $mySubmission->note }}"</p>
                         @endif
                     </div>
-                @else
-                    <form action="{{ route('mahasiswa.assignments.submissions.store', $assignment) }}" method="POST" enctype="multipart/form-data" class="flex flex-col gap-4">
+                @endif
+
+                @can('create', [App\Models\Submission::class, $assignment])
+                    <form action="{{ route('mahasiswa.assignments.submissions.store', $assignment) }}" method="POST" enctype="multipart/form-data" class="flex flex-col gap-4 {{ $mySubmission ? 'pt-4 border-t border-gray-100' : '' }}">
                         @csrf
+                        @if($mySubmission)
+                            <h3 class="text-sm font-bold text-gray-700">🔄 Perbarui / Kumpulkan Ulang Berkas Tugas</h3>
+                            <p class="text-xs text-gray-500 -mt-2">Mengunggah berkas baru akan menggantikan berkas pengumpulan Anda sebelumnya.</p>
+                        @endif
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Unggah Berkas Tugas (Maks 2MB)</label>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Unggah Berkas Tugas (PDF/DOC/DOCX, Maks 2MB)</label>
                             <input type="file" name="file" required class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
                             @error('file')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -82,16 +114,20 @@
 
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1">Catatan Tambahan (Opsional)</label>
-                            <input type="text" name="note" value="{{ old('note') }}" placeholder="Contoh: Tugas sudah disesuaikan dengan instruksi pertemuan 5" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                            <input type="text" name="note" value="{{ old('note', $mySubmission->note ?? '') }}" placeholder="Contoh: Tugas sudah disesuaikan dengan instruksi pertemuan 5" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm">
                         </div>
 
                         <div class="pt-2">
                             <button type="submit" class="btn-primary">
-                                📤 Kumpulkan Tugas
+                                📤 {{ $mySubmission ? 'Kumpulkan Ulang Tugas' : 'Kumpulkan Tugas' }}
                             </button>
                         </div>
                     </form>
-                @endif
+                @else
+                    @if($mySubmission && $mySubmission->grade)
+                        <p class="text-xs text-gray-500 italic">Tugas ini sudah dinilai oleh dosen sehingga berkas pengumpulan tidak dapat diperbarui lagi.</p>
+                    @endif
+                @endcan
             </div>
         @endif
 
