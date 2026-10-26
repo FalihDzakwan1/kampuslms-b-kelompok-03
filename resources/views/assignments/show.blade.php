@@ -94,6 +94,31 @@
                         @if($mySubmission->note)
                             <p class="text-sm text-gray-600 mt-2 italic">"{{ $mySubmission->note }}"</p>
                         @endif
+
+                        @if($mySubmission->grade)
+                            <div class="mt-4 p-4 bg-white border border-green-200 rounded-xl shadow-xs">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold uppercase tracking-wider text-green-700">Hasil Penilaian Dosen</span>
+                                    <span class="text-xs text-gray-400">
+                                        {{ \Carbon\Carbon::parse($mySubmission->grade->graded_at)->translatedFormat('d M Y, H:i') }}
+                                    </span>
+                                </div>
+                                <div class="flex items-baseline gap-2 mt-2">
+                                    <span class="text-3xl font-extrabold text-green-700">{{ $mySubmission->grade->score }}</span>
+                                    <span class="text-xs text-gray-500 font-semibold">/ {{ $assignment->max_score ?? 100 }} Poin</span>
+                                </div>
+                                @if($mySubmission->grade->feedback)
+                                    <div class="mt-2 text-xs text-gray-700 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
+                                        <strong class="text-gray-900 block text-[11px] mb-0.5">Umpan Balik Dosen:</strong>
+                                        {{ $mySubmission->grade->feedback }}
+                                    </div>
+                                @endif
+                            </div>
+                        @else
+                            <div class="mt-3 text-xs text-amber-700 font-medium flex items-center gap-1.5">
+                                <span>⏳</span> Menunggu penilaian dari dosen pengampu.
+                            </div>
+                        @endif
                     </div>
                 @endif
 
@@ -140,7 +165,7 @@
                         <p class="text-xs text-gray-500 mt-0.5">Periksa berkas jawaban tugas mahasiswa dan berikan nilai.</p>
                     </div>
                     <span class="px-3.5 py-1.5 bg-blue-50 text-blue-700 rounded-full text-xs font-bold border border-blue-100">
-                        📥 {{ $assignment->submissions->count() }} dari {{ $assignment->course->students()->count() }} Mahasiswa Mengumpulkan
+                        📥 {{ $assignment->submissions->count() }} dari {{ $assignment->course->students->count() }} Mahasiswa Mengumpulkan
                     </span>
                 </div>
 
