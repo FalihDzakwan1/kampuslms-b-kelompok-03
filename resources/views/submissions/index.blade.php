@@ -12,6 +12,24 @@
             </a>
         </div>
 
+        {{-- Card Statistik Rekap Nilai (No. 7) --}}
+        @if($totalCollected > 0)
+            <div class="grid grid-cols-3 gap-4 mb-6">
+                <div class="p-5 bg-blue-50 rounded-2xl border border-blue-100 text-center shadow-sm">
+                    <p class="text-3xl font-extrabold text-blue-700">{{ $totalCollected }}</p>
+                    <p class="text-xs text-blue-500 mt-1 font-semibold uppercase tracking-wide">Tugas Dikumpulkan</p>
+                </div>
+                <div class="p-5 bg-green-50 rounded-2xl border border-green-100 text-center shadow-sm">
+                    <p class="text-3xl font-extrabold text-green-700">{{ $totalGraded }}</p>
+                    <p class="text-xs text-green-500 mt-1 font-semibold uppercase tracking-wide">Sudah Dinilai</p>
+                </div>
+                <div class="p-5 bg-indigo-50 rounded-2xl border border-indigo-100 text-center shadow-sm">
+                    <p class="text-3xl font-extrabold text-indigo-700">{{ $avgScore !== null ? $avgScore : '—' }}</p>
+                    <p class="text-xs text-indigo-500 mt-1 font-semibold uppercase tracking-wide">Rata-rata Nilai</p>
+                </div>
+            </div>
+        @endif
+
         {{-- Tabel Riwayat Submissions --}}
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             @if($submissions->count())

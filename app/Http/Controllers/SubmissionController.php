@@ -15,15 +15,27 @@ class SubmissionController extends Controller
     /**
      * Daftar submission milik mahasiswa yang sedang login.
      * Query sudah disaring — mahasiswa HANYA melihat miliknya sendiri.
+     * No. 7: load relasi grade sekaligus, hitung statistik rekap untuk view.
      */
     public function index()
     {
-        $submissions = Submission::with(['assignment.course'])
+        $submissions = Submission::with(['assignment.course', 'grade'])
             ->where('user_id', auth()->id())
             ->latest()
             ->get();
 
-        return view('submissions.index', compact('submissions'));
+        // Statistik ringkas untuk card rekap di atas tabel (No. 7)
+        $totalCollected = $submissions->count();
+        $totalGraded    = $submissions->filter(fn ($s) => $s->grade !== null)->count();
+        $avgScore       = $totalGraded > 0
+            ? round(
+                $submissions->filter(fn ($s) => $s->grade !== null)
+                    ->avg(fn ($s) => $s->grade->score),
+                1
+            )
+            : null;
+
+        return view('submissions.index', compact('submissions', 'totalCollected', 'totalGraded', 'avgScore'));
     }
 
     /**
