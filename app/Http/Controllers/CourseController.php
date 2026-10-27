@@ -101,13 +101,75 @@ class CourseController extends Controller
         $course->load([
             'lecturer',
             'materials.uploader',
+            // No. 7: sertakan relasi grade sekaligus agar rekap tidak lazy-load
             'assignments' => fn ($q) =>
                 auth()->user()?->role === 'mahasiswa'
-                    ? $q->where('status', 'published')->with('submissions')
-                    : $q->with('submissions'),
+                    ? $q->where('status', 'published')->with(['submissions.grade'])
+                    : $q->with(['submissions.grade']),
         ]);
 
-        return view('courses.show', compact('course'));
+        $isEnrolled = true;
+
+        // No. 7: Rekap nilai per mata kuliah.
+        // Performanya belum dioptimasi — eager load sudah cukup untuk minggu ini.
+        $rekap = null;
+        $user  = auth()->user();
+
+        if ($user->role === 'dosen') {
+            // Dosen: rekap semua submission tiap tugas di MK ini
+            $rekap = $course->assignments->map(function ($assignment) {
+                $submissions = $assignment->submissions;
+                $graded      = $submissions->filter(fn ($s) => $s->grade !== null);
+                $avgScore    = $graded->isNotEmpty()
+                    ? round($graded->avg(fn ($s) => $s->grade->score), 1)
+                    : null;
+
+                return [
+                    'assignment' => $assignment,
+                    'total'      => $submissions->count(),
+                    'graded'     => $graded->count(),
+                    'avg_score'  => $avgScore,
+                    'max_score'  => $assignment->max_score ?? 100,
+                ];
+            });
+        } elseif ($user->role === 'mahasiswa') {
+            // Mahasiswa: rekap submission miliknya di MK ini
+            $mySubmissions = $course->assignments->map(function ($assignment) use ($user) {
+                $sub = $assignment->submissions->firstWhere('user_id', $user->id);
+                return [
+                    'assignment' => $assignment,
+                    'submission' => $sub,
+                    'grade'      => $sub?->grade,
+                ];
+            })->filter(fn ($row) => $row['submission'] !== null)->values();
+
+            $totalCollected = $mySubmissions->count();
+            $totalGraded    = $mySubmissions->filter(fn ($r) => $r['grade'] !== null)->count();
+            $avgScore       = $totalGraded > 0
+                ? round(
+                    $mySubmissions->filter(fn ($r) => $r['grade'] !== null)
+                        ->avg(fn ($r) => $r['grade']->score),
+                    1
+                )
+                : null;
+
+            $rekap = compact('mySubmissions', 'totalCollected', 'totalGraded', 'avgScore');
+        }
+
+        return view('courses.show', compact('course', 'isEnrolled', 'rekap'));
+    }
+
+    public function enroll(Course $course)
+    {
+        $user = auth()->user();
+        abort_unless($user->role === 'mahasiswa', 403, 'Hanya mahasiswa yang dapat bergabung dengan mata kuliah.');
+
+        if (!$course->students()->where('users.id', $user->id)->exists()) {
+            $course->students()->attach($user->id, ['enrolled_at' => now()]);
+        }
+
+        return redirect()->route('mahasiswa.courses.show', $course)
+            ->with('success', 'Selamat! Anda berhasil terdaftar di mata kuliah ' . $course->name . '.');
     }
 
     /*
