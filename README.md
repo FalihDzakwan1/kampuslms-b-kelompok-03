@@ -175,7 +175,7 @@ Setiap Listener dan Notification memakai `tries = 3` dan `backoff = 10` detik. J
 ---
 
 ## Jalur Frontend (Minggu 7–16)
-Kelompok memilih dan mendaftarkan jalur **Blade Template + Tailwind CSS v4 + Vanilla JS / Axios (Hybrid Monolith & REST API Consumer)**.  
+Kelompok kami memilih dan mendaftarkan jalur **Blade**.  
 Detail dokumen pendaftaran resmi dan roadmap pengerjaan dapat dilihat di:  
 📄 **[Dokumen Pendaftaran Jalur Frontend](docs/jalur-frontend.md)**
 
