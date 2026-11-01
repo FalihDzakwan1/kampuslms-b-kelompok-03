@@ -145,12 +145,13 @@
                                                 {{ $course->name }}
                                             </a>
                                         </div>
+                                        {{-- [ACCPT-PERF-COUNT] Gunakan properti withCount agar tidak memicu N+1 query --}}
                                         <div class="course-badges">
                                             <a href="{{ route(auth()->user()->role . '.courses.materials.index', $course->id) }}" class="badge-materi">
-                                                <span>📂</span> {{ $course->materials()->count() }} Materi
+                                                <span>📂</span> {{ $course->materials_count ?? $course->materials()->count() }} Materi
                                             </a>
                                             <a href="{{ route(auth()->user()->role . '.courses.assignments.index', $course->id) }}" class="badge-tugas">
-                                                <span>✏️</span> {{ $course->assignments()->count() }} Tugas
+                                                <span>✏️</span> {{ $course->assignments_count ?? $course->assignments()->count() }} Tugas
                                             </a>
                                         </div>
                                     </td>

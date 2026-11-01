@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Gate;
@@ -25,6 +26,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // [ACCPT-PERF-LAZY-LOADING] Cegah N+1 query / lazy loading di lingkungan non-produksi
+        Model::preventLazyLoading(! $this->app->isProduction());
+
         // Daftarkan policy untuk notifikasi database
         Gate::policy(DatabaseNotification::class, NotificationPolicy::class);
 
