@@ -47,5 +47,9 @@ class Material extends Model
                 \Illuminate\Support\Facades\Storage::disk('local')->delete($material->file_path);
             }
         });
+
+        // [ACCPT-PERF-CACHE] Pembersihan otomatis cache dashboard saat materi baru diunggah atau dihapus
+        static::saved(fn () => \App\Services\DashboardCacheService::clearGlobalStats());
+        static::deleted(fn () => \App\Services\DashboardCacheService::clearGlobalStats());
     }
 }

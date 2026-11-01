@@ -19,12 +19,16 @@ class MaterialController extends Controller
     {
         Gate::authorize('viewAny', [Material::class, $course]);
 
-        // BUILD 11.3 — hapus with('course') yang mubazir karena $course sudah
-        // tersedia dari Route Model Binding. Tambah uploader agar nama pengunggah
-        // tidak lazy-load per baris di view.
+        // [ACCPT-PERF-PAGINATION] Paginasi daftar materi untuk mencegah pemuatan seluruh tabel sekaligus
+        $materials = $course->materials()
+            ->with('uploader')
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
+
         return view('materials.index', [
             'course'    => $course,
-            'materials' => $course->materials()->with('uploader')->get(),
+            'materials' => $materials,
         ]);
     }
 

@@ -61,4 +61,11 @@ class User extends Authenticatable
     {
         return $this->hasMany(Grade::class, 'graded_by');
     }
+
+    protected static function booted(): void
+    {
+        // [ACCPT-PERF-CACHE] Pembersihan otomatis cache dashboard saat data pengguna berubah
+        static::saved(fn () => \App\Services\DashboardCacheService::clearGlobalStats());
+        static::deleted(fn () => \App\Services\DashboardCacheService::clearGlobalStats());
+    }
 }

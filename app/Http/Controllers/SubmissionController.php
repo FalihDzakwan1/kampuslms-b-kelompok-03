@@ -19,21 +19,27 @@ class SubmissionController extends Controller
      */
     public function index()
     {
-        $submissions = Submission::with(['assignment.course', 'grade'])
-            ->where('user_id', auth()->id())
-            ->latest()
-            ->get();
+        $userId = auth()->id();
+        $baseQuery = Submission::where('user_id', $userId);
 
-        // Statistik ringkas untuk card rekap di atas tabel (No. 7)
-        $totalCollected = $submissions->count();
-        $totalGraded    = $submissions->filter(fn ($s) => $s->grade !== null)->count();
+        // [ACCPT-PERF-STATS] Agregasi database untuk statistik rekap tanpa memuat seluruh tabel ke memori
+        $totalCollected = (clone $baseQuery)->count();
+        $totalGraded    = (clone $baseQuery)->whereHas('grade')->count();
         $avgScore       = $totalGraded > 0
             ? round(
-                $submissions->filter(fn ($s) => $s->grade !== null)
-                    ->avg(fn ($s) => $s->grade->score),
+                (clone $baseQuery)
+                    ->join('grades', 'submissions.id', '=', 'grades.submission_id')
+                    ->avg('grades.score'),
                 1
             )
             : null;
+
+        // [ACCPT-PERF-PAGINATION] Paginasi riwayat pengumpulan tugas mahasiswa
+        $submissions = (clone $baseQuery)
+            ->with(['assignment.course', 'grade'])
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
 
         return view('submissions.index', compact('submissions', 'totalCollected', 'totalGraded', 'avgScore'));
     }

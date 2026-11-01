@@ -168,6 +168,7 @@ class CourseController extends Controller
 
         if (!$course->students()->where('users.id', $user->id)->exists()) {
             $course->students()->attach($user->id, ['enrolled_at' => now()]);
+            \App\Services\DashboardCacheService::clearGlobalStats();
         }
 
         return redirect()->route('mahasiswa.courses.show', $course)
@@ -187,16 +188,20 @@ class CourseController extends Controller
         // Menggunakan method khusus manageEnrollments di CoursePolicy
         Gate::authorize('manageEnrollments', $course);
 
-        $course->load('students');
+        // [ACCPT-PERF-PAGINATION] Paginasi daftar mahasiswa yang terdaftar di kelas
+        $students = $course->students()
+            ->orderBy('name')
+            ->paginate(15)
+            ->withQueryString();
 
         // Semua mahasiswa yang belum terdaftar (untuk form tambah)
-        $enrolledIds = $course->students->pluck('id');
+        $enrolledIds = $course->students()->pluck('users.id');
         $available = User::where('role', 'mahasiswa')
             ->whereNotIn('id', $enrolledIds)
             ->orderBy('name')
             ->get();
 
-        return view('courses.enrollments', compact('course', 'available'));
+        return view('courses.enrollments', compact('course', 'available', 'students'));
     }
 
     public function enrollStore(Request $request, Course $course)
@@ -214,6 +219,7 @@ class CourseController extends Controller
 
         if (!$course->students()->where('users.id', $student->id)->exists()) {
             $course->students()->attach($student->id, ['enrolled_at' => now()]);
+            \App\Services\DashboardCacheService::clearGlobalStats();
         }
 
         return back()->with('success', $student->name . ' berhasil ditambahkan ke mata kuliah ' . $course->name . '.');
@@ -226,6 +232,7 @@ class CourseController extends Controller
         Gate::authorize('manageEnrollments', $course);
 
         $course->students()->detach($student->id);
+        \App\Services\DashboardCacheService::clearGlobalStats();
 
         return back()->with('success', $student->name . ' berhasil dikeluarkan dari mata kuliah.');
     }

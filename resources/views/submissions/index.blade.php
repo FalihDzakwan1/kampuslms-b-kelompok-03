@@ -94,6 +94,12 @@
                         @endforeach
                     </tbody>
                 </table>
+
+                @if(method_exists($submissions, 'hasPages') && $submissions->hasPages())
+                    <div class="p-4 sm:p-6 border-t border-gray-100">
+                        {{ $submissions->appends(request()->query())->links() }}
+                    </div>
+                @endif
             @else
                 <div class="p-12 text-center text-gray-500">
                     <p class="text-4xl mb-2">📥</p>
