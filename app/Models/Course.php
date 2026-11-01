@@ -53,5 +53,9 @@ class Course extends Model
             $course->materials->each->delete();
             $course->assignments->each->delete();
         });
+
+        // [ACCPT-PERF-CACHE] Pembersihan otomatis cache dashboard saat data mata kuliah bertambah, berubah, atau dihapus
+        static::saved(fn () => \App\Services\DashboardCacheService::clearGlobalStats());
+        static::deleted(fn () => \App\Services\DashboardCacheService::clearGlobalStats());
     }
 }

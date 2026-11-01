@@ -18,14 +18,15 @@ class AssignmentController extends Controller
     {
         Gate::authorize('viewAny', [Assignment::class, $course]);
 
-        // BUILD 11.3 — hapus with('course') mubazir ($course sudah ada dari Route Model Binding).
-        // Tambah withCount('submissions') agar jumlah pengumpulan tidak lazy-load per baris di view.
+        // [ACCPT-PERF-PAGINATION] Paginasi daftar tugas untuk mencegah pemuatan seluruh tabel sekaligus
         $assignments = $course->assignments()
             ->withCount('submissions')
             ->when(auth()->user()->role === 'mahasiswa', fn ($q) =>
                 $q->where('status', 'published')
             )
-            ->get();
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
 
         return view('assignments.index', [
             'course'      => $course,

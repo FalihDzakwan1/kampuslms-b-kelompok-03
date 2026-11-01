@@ -13,6 +13,71 @@
             </div>
         </section>
 
+        {{-- [ACCPT-PERF-CACHE] Bagian Metrik & Statistik Dashboard Ter-Cache --}}
+        @if(isset($stats))
+            <section class="mt-6 mb-2">
+                <div class="flex items-center justify-between mb-3 px-1">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Ringkasan Sistem Akademik</span>
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            Cached • Ringkasan Cepat
+                        </span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+                    <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between hover:border-blue-200 transition">
+                        <div class="text-xs text-slate-500 font-medium">Mata Kuliah Aktif</div>
+                        <div class="mt-2 flex items-baseline justify-between">
+                            <span class="text-2xl font-black text-slate-800">{{ $stats['active_courses'] ?? 0 }}</span>
+                            <span class="text-lg">📚</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between hover:border-blue-200 transition">
+                        <div class="text-xs text-slate-500 font-medium">Total Mahasiswa</div>
+                        <div class="mt-2 flex items-baseline justify-between">
+                            <span class="text-2xl font-black text-slate-800">{{ $stats['total_students'] ?? 0 }}</span>
+                            <span class="text-lg">🎓</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between hover:border-blue-200 transition">
+                        <div class="text-xs text-slate-500 font-medium">Total Dosen</div>
+                        <div class="mt-2 flex items-baseline justify-between">
+                            <span class="text-2xl font-black text-slate-800">{{ $stats['total_lecturers'] ?? 0 }}</span>
+                            <span class="text-lg">👨‍🏫</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between hover:border-blue-200 transition">
+                        <div class="text-xs text-slate-500 font-medium">Materi Kuliah</div>
+                        <div class="mt-2 flex items-baseline justify-between">
+                            <span class="text-2xl font-black text-slate-800">{{ $stats['total_materials'] ?? 0 }}</span>
+                            <span class="text-lg">📂</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between hover:border-blue-200 transition">
+                        <div class="text-xs text-slate-500 font-medium">Tugas Terjadwal</div>
+                        <div class="mt-2 flex items-baseline justify-between">
+                            <span class="text-2xl font-black text-slate-800">{{ $stats['total_assignments'] ?? 0 }}</span>
+                            <span class="text-lg">📝</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between hover:border-blue-200 transition">
+                        <div class="text-xs text-slate-500 font-medium">Total Kurikulum</div>
+                        <div class="mt-2 flex items-baseline justify-between">
+                            <span class="text-2xl font-black text-slate-800">{{ $stats['total_courses'] ?? 0 }}</span>
+                            <span class="text-lg">🏛️</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        @endif
+
         <div class="grid grid-cols-1 {{ auth()->check() && auth()->user()->role === 'admin' ? 'md:grid-cols-2 max-w-4xl mx-auto' : 'md:grid-cols-3' }} gap-6 mt-8">
             @auth
                 @if(auth()->user()->role === 'admin')

@@ -47,15 +47,20 @@
         </section>
 
         {{-- Daftar Mahasiswa Terdaftar --}}
+        @php
+            $studentList = $students ?? $course->students;
+            $studentTotal = method_exists($studentList, 'total') ? $studentList->total() : $studentList->count();
+        @endphp
+
         <section class="course-card">
             <div class="border-b border-gray-200 pb-4 mb-5 flex justify-between items-center">
                 <div>
                     <h2 class="text-lg font-bold text-gray-700">Mahasiswa Terdaftar</h2>
-                    <p class="text-sm text-gray-500 mt-0.5">Total {{ $course->students->count() }} mahasiswa</p>
+                    <p class="text-sm text-gray-500 mt-0.5">Total {{ $studentTotal }} mahasiswa</p>
                 </div>
             </div>
 
-            @if($course->students->count() > 0)
+            @if($studentList->count() > 0)
                 <div class="overflow-x-auto rounded-xl border border-gray-100">
                     <table class="w-full text-sm">
                         <thead class="bg-gray-800 text-white text-xs uppercase tracking-wide">
@@ -69,9 +74,11 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 text-gray-700">
-                            @foreach($course->students as $index => $student)
+                            @foreach($studentList as $index => $student)
                                 <tr class="hover:bg-gray-50 transition">
-                                    <td class="py-3 px-4 text-gray-400">{{ $index + 1 }}</td>
+                                    <td class="py-3 px-4 text-gray-400">
+                                        {{ method_exists($studentList, 'firstItem') ? ($studentList->firstItem() + $index) : ($index + 1) }}
+                                    </td>
                                     <td class="py-3 px-4 font-semibold">{{ $student->name }}</td>
                                     <td class="py-3 px-4 text-gray-500">{{ $student->nim_nip ?? '-' }}</td>
                                     <td class="py-3 px-4 text-gray-500">{{ $student->email }}</td>
@@ -97,6 +104,12 @@
                         </tbody>
                     </table>
                 </div>
+
+                @if(method_exists($studentList, 'hasPages') && $studentList->hasPages())
+                    <div class="p-4 sm:p-6 border-t border-gray-100">
+                        {{ $studentList->appends(request()->query())->links() }}
+                    </div>
+                @endif
             @else
                 <div class="p-12 text-center text-gray-400">
                     <div class="text-5xl mb-3">👥</div>

@@ -54,5 +54,9 @@ class Assignment extends Model
         static::deleting(function (Assignment $assignment) {
             $assignment->submissions->each->delete();
         });
+
+        // [ACCPT-PERF-CACHE] Pembersihan otomatis cache dashboard saat penugasan dibuat, diubah, atau dihapus
+        static::saved(fn () => \App\Services\DashboardCacheService::clearGlobalStats());
+        static::deleted(fn () => \App\Services\DashboardCacheService::clearGlobalStats());
     }
 }
