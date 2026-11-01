@@ -23,8 +23,10 @@ class CourseController extends Controller
     {
         $authUser = auth()->user();
 
+        // [ACCPT-PERF-EAGER-LOAD] Eager load relasi lecturer & hitung aggregate materials/assignments tanpa N+1 query
         $courses = Course::query()
             ->with('lecturer')
+            ->withCount(['materials', 'assignments'])
             
             // Filter Keamanan Berdasarkan Peran (Collection-Level IDOR Protection)
             ->when($authUser->role === 'dosen', function ($query) use ($authUser) {
