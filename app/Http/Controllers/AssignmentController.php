@@ -18,8 +18,10 @@ class AssignmentController extends Controller
     {
         Gate::authorize('viewAny', [Assignment::class, $course]);
 
+        // BUILD 11.3 — hapus with('course') mubazir ($course sudah ada dari Route Model Binding).
+        // Tambah withCount('submissions') agar jumlah pengumpulan tidak lazy-load per baris di view.
         $assignments = $course->assignments()
-            ->with('course')
+            ->withCount('submissions')
             ->when(auth()->user()->role === 'mahasiswa', fn ($q) =>
                 $q->where('status', 'published')
             )
