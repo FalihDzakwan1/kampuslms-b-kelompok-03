@@ -188,4 +188,112 @@ class PerformanceOptimizationTest extends TestCase
             "Query courses.index melebihi batas toleransi N+1 (tercatat: {$queryCount} query)."
         );
     }
+
+    /**
+     * [ACCPT-PERF-REKAP-NILAI]
+     * Target Checkpoint: Halaman rekap nilai turun menjadi di bawah 15 query.
+     */
+    public function test_halaman_rekap_nilai_berjalan_di_bawah_15_query(): void
+    {
+        $dosen = User::factory()->create(['role' => 'dosen']);
+        $mhs   = User::factory()->create(['role' => 'mahasiswa']);
+
+        $course = Course::factory()->create(['lecturer_id' => $dosen->id]);
+        $course->students()->attach($mhs->id, ['enrolled_at' => now()]);
+
+        // Buat 5 tugas beserta submission dan nilai
+        for ($i = 1; $i <= 5; $i++) {
+            $assignment = Assignment::create([
+                'course_id'   => $course->id,
+                'created_by'  => $dosen->id,
+                'title'       => "Tugas $i",
+                'instructions'=> "Instruksi pengerjaan tugas $i",
+                'due_at'      => now()->addDays(3),
+                'max_score'   => 100,
+                'status'      => 'published',
+            ]);
+
+            $submission = Submission::create([
+                'assignment_id' => $assignment->id,
+                'user_id'       => $mhs->id,
+                'file_path'     => "submissions/test_$i.pdf",
+                'original_name' => "test_$i.pdf",
+                'file_size'     => 1024,
+                'submitted_at'  => now(),
+                'is_late'       => false,
+            ]);
+
+            Grade::create([
+                'submission_id' => $submission->id,
+                'graded_by'     => $dosen->id,
+                'score'         => 80 + ($i * 2),
+                'graded_at'     => now(),
+            ]);
+        }
+
+        // 1. Pengujian Rekap Nilai untuk Dosen (Target: < 15 Query)
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+
+        $responseDosen = $this->actingAs($dosen)->get(route('dosen.courses.show', $course));
+        $responseDosen->assertStatus(200);
+
+        $dosenQueryCount = count(DB::getQueryLog());
+        $this->assertLessThan(
+            15,
+            $dosenQueryCount,
+            "Query rekap nilai dosen melebihi batas target 15 query (tercatat: {$dosenQueryCount} query)."
+        );
+
+        // 2. Pengujian Rekap Nilai untuk Mahasiswa (Target: < 15 Query)
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+
+        $responseMhs = $this->actingAs($mhs)->get(route('mahasiswa.courses.show', $course));
+        $responseMhs->assertStatus(200);
+
+        $mhsQueryCount = count(DB::getQueryLog());
+        $this->assertLessThan(
+            15,
+            $mhsQueryCount,
+            "Query rekap nilai mahasiswa melebihi batas target 15 query (tercatat: {$mhsQueryCount} query)."
+        );
+    }
+
+    /**
+     * [ACCPT-PERF-NO-ENV-OUTSIDE-CONFIG]
+     * Target Checkpoint: Seluruh pemanggilan env() di luar config/ dihapus, diganti config().
+     */
+    public function test_tidak_ada_pemanggilan_env_di_luar_direktori_config(): void
+    {
+        $scanPaths = [
+            app_path(),
+            base_path('routes'),
+            resource_path('views'),
+            database_path(),
+        ];
+
+        $violations = [];
+
+        foreach ($scanPaths as $baseDir) {
+            $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($baseDir));
+            foreach ($iterator as $file) {
+                if (! $file->isFile() || $file->getExtension() !== 'php') {
+                    continue;
+                }
+                $content = file_get_contents($file->getPathname());
+                if (preg_match_all('/(?:\b|\\\\)env\s*\(/i', $content, $matches, PREG_OFFSET_CAPTURE)) {
+                    foreach ($matches[0] as $match) {
+                        $line = substr_count(substr($content, 0, $match[1]), "\n") + 1;
+                        $violations[] = $file->getPathname() . ':' . $line;
+                    }
+                }
+            }
+        }
+
+        $this->assertEmpty(
+            $violations,
+            "Ditemukan pemanggilan env() di luar direktori config/: \n" . implode("\n", $violations)
+        );
+    }
 }

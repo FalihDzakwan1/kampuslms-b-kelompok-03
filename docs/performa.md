@@ -145,8 +145,9 @@ Pengukuran dilakukan menggunakan lingkungan pengujian standar dengan **15 mata k
   ```
 * **Hasil & Penjelasan Teknis:**
   Pada halaman detail mata kuliah, dosen dan mahasiswa melihat rekapitulasi nilai dan daftar materi. Dengan memuat `materials.uploader` dan `assignments.submissions.grade` sekaligus di controller:
-  1. Penghitungan rata-rata nilai (`$graded->avg(fn ($s) => $s->grade->score)`) berjalan seluruhnya di dalam memori PHP (*collection pipeline*), **0 query tambahan**.
-  2. Blade tidak pernah memicu *lazy loading* saat membaca nama pengunggah materi atau skor penilaian mahasiswa.
+  1. **Target Checkpoint Terpenuhi:** Jumlah query halaman rekap nilai berhasil ditekan **jauh di bawah batas 15 query**, yaitu turun dari **28 query** menjadi hanya **9 query** (reduksi 67.8%), bahkan hanya **6–7 query** pada pencatatan query database murni.
+  2. Penghitungan rata-rata nilai (`$graded->avg(fn ($s) => $s->grade->score)`) berjalan seluruhnya di dalam memori PHP (*collection pipeline*), **0 query tambahan**.
+  3. Blade tidak pernah memicu *lazy loading* saat membaca nama pengunggah materi atau skor penilaian mahasiswa.
 
 ---
 
