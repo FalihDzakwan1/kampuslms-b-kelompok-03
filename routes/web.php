@@ -273,9 +273,22 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::get('/cookie-debug', function () {
+<<<<<<< HEAD
     return response()->json([
         'message' => 'Cookie test',
         'session_driver' => config('session.driver'),
+=======
+    $sent = headers_sent($file, $line);
+
+    return response()->json([
+        'message' => 'Cookie diagnostic',
+        'session_driver' => config('session.driver'),
+        'headers_sent' => $sent,
+        'output_started_at' => $sent
+            ? $file . ':' . $line
+            : null,
+        'headers_list' => headers_list(),
+>>>>>>> main
     ])->cookie(
         'cookie_test',
         'berhasil',
