@@ -10,35 +10,30 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         // Admin
-        $admin = User::create([
-            'name' => 'Admin',
-            'email' => 'admin@test.com',
-            'password' => '123456',
-        ]);
-
-        $admin->role = 'admin';
-        $admin->save();
-
+        $admin = User::withTrashed()->firstOrNew(['email' => 'admin@test.com']);
+        $admin->forceFill([
+            'name'       => 'Admin',
+            'role'       => 'admin',
+            'password'   => '123456',
+            'deleted_at' => null,
+        ])->save();
 
         // Dosen
-        $dosen = User::create([
-            'name' => 'Dosen Demo',
-            'email' => 'dosen@test.com',
-            'password' => '123456',
-        ]);
-
-        $dosen->role = 'dosen';
-        $dosen->save();
-
+        $dosen = User::withTrashed()->firstOrNew(['email' => 'dosen@test.com']);
+        $dosen->forceFill([
+            'name'       => 'Dosen Demo',
+            'role'       => 'dosen',
+            'password'   => '123456',
+            'deleted_at' => null,
+        ])->save();
 
         // Mahasiswa
-        $mahasiswa = User::create([
-            'name' => 'Mahasiswa Demo',
-            'email' => 'mhs@test.com',
-            'password' => '123456',
-        ]);
-
-        $mahasiswa->role = 'mahasiswa';
-        $mahasiswa->save();
+        $mahasiswa = User::withTrashed()->firstOrNew(['email' => 'mhs@test.com']);
+        $mahasiswa->forceFill([
+            'name'       => 'Mahasiswa Demo',
+            'role'       => 'mahasiswa',
+            'password'   => '123456',
+            'deleted_at' => null,
+        ])->save();
     }
 }
