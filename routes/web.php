@@ -271,3 +271,20 @@ Route::middleware(['auth'])->group(function () {
 
 
 });
+
+Route::get('/cookie-debug', function () {
+    return response()->json([
+        'message' => 'Cookie test',
+        'session_driver' => config('session.driver'),
+    ])->cookie(
+        'cookie_test',
+        'berhasil',
+        10,
+        '/',
+        null,
+        true,
+        true,
+        false,
+        'lax'
+    );
+});
