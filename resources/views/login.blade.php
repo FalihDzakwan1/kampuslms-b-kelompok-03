@@ -406,7 +406,7 @@
                         LOGIN FORM
                     ================================================== --}}
                     <form
-                        action="{{ url('/login') }}"
+                        action="{{ route('login') }}"
                         method="POST"
                         class="mt-8 space-y-5">
 

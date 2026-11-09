@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use App\Policies\NotificationPolicy;
 
@@ -26,6 +27,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Paksa skema HTTPS di lingkungan produksi atau saat di balik reverse proxy SSL (seperti Railway)
+        if ($this->app->environment('production') || request()->header('x-forwarded-proto') === 'https' || str_contains((string) config('app.url'), 'https://')) {
+            URL::forceScheme('https');
+            request()->server->set('HTTPS', 'on');
+        }
+
         // [ACCPT-PERF-LAZY-LOADING] Cegah N+1 query / lazy loading di lingkungan non-produksi
         Model::preventLazyLoading(! $this->app->isProduction());
 
