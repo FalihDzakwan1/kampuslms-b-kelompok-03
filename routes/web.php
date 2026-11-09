@@ -271,3 +271,27 @@ Route::middleware(['auth'])->group(function () {
 
 
 });
+
+Route::get('/cookie-debug', function () {
+    $sent = headers_sent($file, $line);
+
+    return response()->json([
+        'message' => 'Cookie diagnostic',
+        'session_driver' => config('session.driver'),
+        'headers_sent' => $sent,
+        'output_started_at' => $sent
+            ? $file . ':' . $line
+            : null,
+        'headers_list' => headers_list(),
+    ])->cookie(
+        'cookie_test',
+        'berhasil',
+        10,
+        '/',
+        null,
+        true,
+        true,
+        false,
+        'lax'
+    );
+});
