@@ -36,7 +36,7 @@ Kampus LMS merupakan aplikasi berbasis web yang dikembangkan untuk membantu peng
 
 Aplikasi KampusLMS telah aktif dan dideploy pada lingkungan produksi Railway.app dengan proteksi HTTPS penuh:
 
-* **Tautan Produksi:** [https://kampuslms-b-kelompok-03.up.railway.app](https://kampuslms-b-kelompok-03.up.railway.app)
+* **Tautan Produksi:** [https://kampuslms-b-kelompok-03-production-03.up.railway.app](https://kampuslms-b-kelompok-03-production-03.up.railway.app)
 * **Status Deployment:** 🟢 Live & Terverifikasi (HTTPS / SSL Aktif)
 * **Dokumentasi Deployment:** Lihat [`docs/deployment.md`](docs/deployment.md) untuk rincian spesifikasi server, panduan deployment ulang, dan daftar pemeriksaan keamanan.
 
