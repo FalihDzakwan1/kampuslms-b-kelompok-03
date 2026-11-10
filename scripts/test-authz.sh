@@ -5,21 +5,22 @@
 # Tujuan: Menguji IDOR dan Bypass Otorisasi sesuai rancangan Role & Policy
 # ==============================================================================
 
-# Ganti domain/port ini jika berbeda di lingkungan Anda
-BASE_URL="http://kampuslms-b-kelompok-03.test/api/v1"
+# Ganti domain/port ini atau teruskan sebagai argumen: ./scripts/test-authz.sh "https://domain-anda.com/api/v1"
+BASE_URL="${1:-${BASE_URL:-https://kampuslms-b-kelompok-03.up.railway.app/api/v1}}"
 
+echo "Target Endpoint: $BASE_URL"
 echo "--- MENDAPATKAN TOKEN ---"
 ADMIN_TOKEN=$(curl -s -X POST "$BASE_URL/auth/login" \
   -H "Content-Type: application/json" -H "Accept: application/json" \
-  -d '{"email": "admin@kampuslms.test", "password": "password"}' | grep -oP '"token":"\K[^"]+')
+  -d '{"email": "admin@kampuslms.test", "password": "password"}' | sed -E 's/.*"token":"([^"]+)".*/\1/')
 
 DOSEN_TOKEN=$(curl -s -X POST "$BASE_URL/auth/login" \
   -H "Content-Type: application/json" -H "Accept: application/json" \
-  -d '{"email": "dosen@kampuslms.test", "password": "password"}' | grep -oP '"token":"\K[^"]+')
+  -d '{"email": "dosen@kampuslms.test", "password": "password"}' | sed -E 's/.*"token":"([^"]+)".*/\1/')
 
 MHS_TOKEN=$(curl -s -X POST "$BASE_URL/auth/login" \
   -H "Content-Type: application/json" -H "Accept: application/json" \
-  -d '{"email": "mahasiswa@kampuslms.test", "password": "password"}' | grep -oP '"token":"\K[^"]+')
+  -d '{"email": "mahasiswa@kampuslms.test", "password": "password"}' | sed -E 's/.*"token":"([^"]+)".*/\1/')
 
 echo "Token berhasil didapatkan."
 echo "========================================================"
