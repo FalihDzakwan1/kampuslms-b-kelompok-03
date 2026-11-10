@@ -72,5 +72,4 @@ CMD ["sh", "-c", "set -e && \
     php artisan view:clear && \
     php artisan migrate --force && \
     php artisan db:seed --class=DemoAccountSeeder --force && \
-    exec /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf"
-]
+    exec /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf"]
