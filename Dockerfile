@@ -62,14 +62,4 @@ RUN mkdir -p /var/log/supervisor && cp supervisord.conf /etc/supervisor/conf.d/s
 
 # 10. Startup container
 # Migrasi dijalankan sebelum Supervisor mengelola Apache dan queue worker.
-CMD ["sh", "-c", "set -e && \
-    rm -f /etc/apache2/mods-enabled/mpm_event.* /etc/apache2/mods-enabled/mpm_worker.* && \
-    export PORT=\"${PORT:-8080}\" && \
-    sed -i \"s/Listen .*/Listen $PORT/\" /etc/apache2/ports.conf && \
-    sed -i \"s/<VirtualHost \\*:.*>/<VirtualHost *:$PORT>/\" /etc/apache2/sites-available/000-default.conf && \
-    php artisan config:clear && \
-    php artisan route:clear && \
-    php artisan view:clear && \
-    php artisan migrate --force && \
-    php artisan db:seed --class=DemoAccountSeeder --force && \
-    exec /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf"]
+CMD ["sh", "-c", "set -e && rm -f /etc/apache2/mods-enabled/mpm_event.* /etc/apache2/mods-enabled/mpm_worker.* && export PORT=\"${PORT:-8080}\" && sed -i \"s/Listen .*/Listen $PORT/\" /etc/apache2/ports.conf && sed -i \"s/<VirtualHost \\*:.*>/<VirtualHost *:$PORT>/\" /etc/apache2/sites-available/000-default.conf && php artisan config:clear && php artisan route:clear && php artisan view:clear && php artisan migrate --force && php artisan db:seed --class=DemoAccountSeeder --force && exec /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf"]
