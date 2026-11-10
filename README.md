@@ -30,10 +30,15 @@ Kampus LMS merupakan aplikasi berbasis web yang dikembangkan untuk membantu peng
 | 5 | Menjalankan migration database | `php artisan migrate` |
 | 6 | Menjalankan aplikasi | `php artisan serve` |
 
-Aplikasi dapat diakses secara publik melalui tautan produksi berikut:
+---
 
-* **Tautan Aplikasi (Live HTTPS):** [https://kampuslms-b-kelompok-03-production-03.up.railway.app](https://kampuslms-b-kelompok-03-production-03.up.railway.app)
-* **Dokumentasi Audit Keamanan Deployment:** [docs/deployment.md](docs/deployment.md)
+## Akses Aplikasi Live (Server Produksi)
+
+Aplikasi KampusLMS telah aktif dan dideploy pada lingkungan produksi Railway.app dengan proteksi HTTPS penuh:
+
+* **Tautan Produksi:** [https://kampuslms-b-kelompok-03.up.railway.app](https://kampuslms-b-kelompok-03.up.railway.app)
+* **Status Deployment:** 🟢 Live & Terverifikasi (HTTPS / SSL Aktif)
+* **Dokumentasi Deployment:** Lihat [`docs/deployment.md`](docs/deployment.md) untuk rincian spesifikasi server, panduan deployment ulang, dan daftar pemeriksaan keamanan.
 
 ---
 

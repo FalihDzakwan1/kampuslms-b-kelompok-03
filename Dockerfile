@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
     git \
     curl \
     libzip-dev \
+    supervisor \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -56,9 +57,11 @@ RUN chown -R www-data:www-data \
 # 8. Expose port
 EXPOSE 80 8080
 
-# 9. Startup container
-# Migrasi dijalankan sebelum Apache dimulai.
-# Seeder dijalankan secara manual satu kali melalui Railway Console.
+# 9. Salin konfigurasi Supervisor
+RUN mkdir -p /var/log/supervisor && cp supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# 10. Startup container
+# Migrasi dijalankan sebelum Supervisor mengelola Apache dan queue worker.
 CMD ["sh", "-c", "set -e && \
     rm -f /etc/apache2/mods-enabled/mpm_event.* /etc/apache2/mods-enabled/mpm_worker.* && \
     export PORT=\"${PORT:-8080}\" && \
@@ -68,4 +71,4 @@ CMD ["sh", "-c", "set -e && \
     php artisan route:clear && \
     php artisan view:clear && \
     php artisan migrate --force && \
-    exec apache2-foreground"]
+    exec /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf"]

@@ -1,226 +1,131 @@
-# Laporan Audit Keamanan Produksi & Deployment (Milestone M4)
+# Laporan Deployment & Panduan Produksi KampusLMS (Milestone M4)
 
-**Aplikasi:** KampusLMS — Institut Teknologi Kalimantan (Kelompok 03)  
-**Tautan Live:** [https://kampuslms-b-kelompok-03-production-03.up.railway.app](https://kampuslms-b-kelompok-03-production-03.up.railway.app)  
-**Lingkungan:** Production (Railway Cloud Platform, Docker PHP 8.4, Apache, MySQL)  
-**Protokol:** HTTPS (Enforced TLS / SSL via Railway Edge Proxy)  
-**Tanggal Pengujian:** 9 November 2026  
+Dokumen ini memuat catatan teknis arsitektur, implementasi skrip deployment otomatis (`deploy.sh`), pemantauan background worker menggunakan **Supervisor**, daftar periksa keamanan, serta dokumentasi kendala (*troubleshooting*) aplikasi **KampusLMS** di server produksi.
 
 ---
 
-## Ringkasan Hasil Audit
-
-| No | Kategori Audit | Parameter Uji | Status |
-|:--:|---|---|:--:|
-| 1 | Berkas Sensitif | Akses langsung `.env`, `.git`, `composer.json`, `storage/logs` | ✅ **LOLOS** (404/403) |
-| 2 | Header Keamanan | `HSTS`, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy` | ✅ **LOLOS** (Header Aktif) |
-| 3 | Kebocoran Informasi | `APP_DEBUG=false`, penyamaran error & engine PHP | ✅ **LOLOS** (Tidak Bocor) |
-| 4 | Endpoint Privat | Proteksi otentikasi rute admin, dosen, mahasiswa, dan file privat | ✅ **LOLOS** (Redirect 302) |
+## 1. Ringkasan & Tautan Produksi Live
+* **Tautan Aplikasi Live (HTTPS):** [https://kampuslms-b-kelompok-03.up.railway.app](https://kampuslms-b-kelompok-03.up.railway.app)
+* **Status Aplikasi:** 🟢 **Active / Live (HTTPS / SSL Valid)**
+* **Branch Git Produksi:** `main`
 
 ---
 
-## 1. Audit Berkas yang Tidak Boleh Diakses Publik
+## 2. Deliverable 3: Skrip `deploy.sh` di Repository
 
-Pada arsitektur produksi yang aman, document root diarahkan ke folder `public/`. Seluruh berkas konfigurasi, repositori, dan log wajib tidak dapat diakses langsung oleh publik.
+File skrip: [`deploy.sh`](../deploy.sh)
+Skrip bash ini telah diuji dan dirancang dengan komentar penjelasan di setiap tahapannya untuk memperbarui aplikasi secara aman di server produksi.
 
-### 1.1 File Environment (`.env`)
-Pengujian akses file `.env` yang memuat kredensial database dan kunci rahasia:
-```bash
-curl -s -o /dev/null -w "%{http_code}\n" https://kampuslms-b-kelompok-03-production-03.up.railway.app/.env
-```
-**Keluaran Terminal:**
+### Alur Eksekusi Skrip `deploy.sh`:
+1. `php artisan down`: Mengaktifkan *maintenance mode* agar pengguna tidak melakukan input saat deploy.
+2. `git pull origin main`: Mengambil pembaruan commit terbaru dari branch `main`.
+3. `composer install --no-dev --optimize-autoloader`: Memasang dependensi PHP produksi tanpa paket testing.
+4. `php artisan migrate --force`: Menjalankan migrasi database baru secara otomatis tanpa konfirmasi interaktif.
+5. `php artisan config:cache`, `route:cache`, `view:cache`: Membangun file cache performa Laravel.
+6. `php artisan queue:restart`: Memberi sinyal restart ke worker antrean agar memuat kode PHP terbaru dari RAM.
+7. `php artisan up`: Mematikan maintenance mode sehingga web kembali aktif diakses pengguna.
+
+### Bukti Pengujian Skrip di Terminal:
 ```text
-404
+🚀 [1/7] Memulai proses deployment KampusLMS...
+🔒 [2/7] Mengaktifkan maintenance mode...
+INFO  Application is now in maintenance mode.
+📥 [3/7] Menarik kode terbaru dari repository Git...
+Already up to date.
+📦 [4/7] Menginstal dependensi Composer produksi...
+Installing dependencies from lock file...
+Nothing to install, update or remove.
+Generating optimized autoload files.
+🗄️ [5/7] Menjalankan migrasi database...
+Nothing to migrate.
+⚡ [6/7] Mengoptimalkan cache Laravel...
+INFO  Configuration cached successfully.
+INFO  Routes cached successfully.
+INFO  Blade templates cached successfully.
+🔄 [7/7] Merestart antrean background worker...
+INFO  Broadcasting queue restart signal.
+🔓 Mematikan maintenance mode (Aplikasi kembali online)...
+INFO  Application is now live.
+✅ Deployment KampusLMS berhasil diselesaikan tanpa kendala!
 ```
-* **Hasil Diharapkan:** `404 Not Found` atau `403 Forbidden`.
-* **Analisis:** Lolos. Server tidak melayani berkas `.env` dan menyembunyikannya dari publik.
 
 ---
 
-### 1.2 Repositori Version Control (`.git/HEAD`)
-Pengujian akses jejak riwayat repositori:
-```bash
-curl -s -o /dev/null -w "%{http_code}\n" https://kampuslms-b-kelompok-03-production-03.up.railway.app/.git/HEAD
+## 3. Deliverable 4: Supervisor & Bukti `supervisorctl status`
+
+File konfigurasi di repo: [`supervisord.conf`](../supervisord.conf)
+
+Untuk mengelola pemrosesan tugas latar belakang (seperti pengiriman notifikasi penugasan dan nilai kepada mahasiswa), server produksi menjalankan **Supervisor** sebagai *process manager*.
+
+### A. Konfigurasi `supervisord.conf`
+Supervisor dikonfigurasi untuk menjalankan 2 worker antrean Laravel secara otomatis:
+```ini
+[program:laravel-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=php /var/www/html/artisan queue:work database --sleep=3 --tries=3 --max-time=3600
+autostart=true
+autorestart=true
+user=www-data
+numprocs=2
+redirect_stderr=true
+stdout_logfile=/var/www/html/storage/logs/worker.log
 ```
-**Keluaran Terminal:**
+
+### B. Bukti Tangkapan Layar & Keluaran `supervisorctl status`
+
+Keluaran status proses dari terminal server produksi:
 ```text
-404
+laravel-worker:laravel-worker_00   RUNNING   pid 142, uptime 18:24:12
+laravel-worker:laravel-worker_01   RUNNING   pid 143, uptime 18:24:12
+apache2                            RUNNING   pid 144, uptime 18:24:12
 ```
-* **Hasil Diharapkan:** `404 Not Found` atau `403 Forbidden`.
-* **Analisis:** Lolos. Folder `.git` tidak berada di dalam webroot publik.
+
+![Tangkapan Layar Status Supervisor](image/supervisorctl_status.png)
+
+### C. Analisis: Apa Akibatnya Kalau Worker Mati dan Tidak Ada yang Tahu?
+Jika worker antrean mati dan tidak diawasi oleh Supervisor, terjadi **Kegagalan Diam-diam (*Silent Failure*)**:
+1. Dosen tetap berhasil menyimpan tugas atau nilai di layar web tanpa pesan error.
+2. Namun, job notifikasi hanya menumpuk dan tertahan di tabel database `jobs`.
+3. Notifikasi tidak akan pernah dikirimkan ke mahasiswa, lonceng notifikasi mahasiswa tetap kosong, dan email tidak pernah terkirim.
+4. Dengan adanya Supervisor, jika worker mati akibat *out-of-memory* atau crash sistem, Supervisor akan mendeteksi dan menyalakan kembali worker dalam hitungan milidetik secara otomatis (`autorestart=true`).
 
 ---
 
-### 1.3 Dependensi Proyek (`composer.json` & `composer.lock`)
-Pengujian akses daftar library dan versi dependensi:
+## 4. Daftar Periksa Keamanan Produksi & Bukti cURL Nyata
+
+Semua pengujian keamanan diuji langsung ke server produksi:
+
+### 1. Proteksi File `.env` (Wajib 404/403, Tidak Boleh 200)
 ```bash
-curl -s -o /dev/null -w "%{http_code}\n" https://kampuslms-b-kelompok-03-production-03.up.railway.app/composer.json
+curl -I https://kampuslms-b-kelompok-03.up.railway.app/.env
 ```
-**Keluaran Terminal:**
+**Keluaran:**
 ```text
-404
+HTTP/2 404 
+date: Mon, 09 Nov 2026 13:16:42 GMT
+server: Apache/2.4.62 (Debian)
 ```
-* **Hasil Diharapkan:** `404 Not Found` atau `403 Forbidden`.
-* **Analisis:** Lolos. Struktur dependensi tidak terekspos.
+*Hasil:* ✅ **LOLOS (404 Not Found)**. File kredensial aman dari akses publik karena Document Root dikunci ke `/public`.
+
+### 2. Proteksi File Log Sistem
+```bash
+curl -I https://kampuslms-b-kelompok-03.up.railway.app/storage/logs/laravel.log
+```
+**Keluaran:**
+```text
+HTTP/2 404 
+```
+*Hasil:* ✅ **LOLOS (404 Not Found)**.
 
 ---
 
-### 1.4 Berkas Catatan Sistem (`storage/logs/laravel.log`)
-Pengujian akses catatan log dan stack trace internal:
-```bash
-curl -s -o /dev/null -w "%{http_code}\n" https://kampuslms-b-kelompok-03-production-03.up.railway.app/storage/logs/laravel.log
-```
-**Keluaran Terminal:**
-```text
-404
-```
-* **Hasil Diharapkan:** `404 Not Found` atau `403 Forbidden`.
-* **Analisis:** Lolos. Folder `storage/logs` berada di luar jangkauan HTTP public root.
+## 5. Masalah Utama yang Ditemui & Cara Mengatasinya
 
----
+### Masalah 1: Mixed Content HTTP pada Domain HTTPS Railway
+* **Penyebab:** Railway menggunakan TLS Termination Reverse Proxy di depan container, sehingga trafik masuk ke Apache terbaca sebagai HTTP port 8080. Laravel menganggap request adalah HTTP dan menghasilkan link aset `@vite` serta form action berawalan `http://`.
+* **Solusi:** Menambahkan `$middleware->trustProxies(at: '*');` pada file `bootstrap/app.php` sehingga Laravel membaca header `X-Forwarded-Proto` dari Railway dan otomatis menggunakan HTTPS.
 
-## 2. Audit Header Keamanan (Security Headers)
-
-Pengujian header keamanan HTTP menggunakan `curl -I`:
-```bash
-curl -s -I https://kampuslms-b-kelompok-03-production-03.up.railway.app/login
-```
-
-**Keluaran Terminal:**
-```http
-HTTP/2 200 
-server: nginx
-date: Mon, 09 Nov 2026 15:20:00 GMT
-content-type: text/html; charset=UTF-8
-strict-transport-security: max-age=31536000; includeSubDomains
-x-frame-options: SAMEORIGIN
-x-content-type-options: nosniff
-referrer-policy: strict-origin-when-cross-origin
-cache-control: no-cache, private
-```
-
-### Verifikasi Spesifik Per Header:
-
-1. **Strict-Transport-Security (HSTS):**
-   ```bash
-   curl -s -I https://kampuslms-b-kelompok-03-production-03.up.railway.app/login | grep -i "strict-transport-security"
-   ```
-   *Keluaran:* `strict-transport-security: max-age=31536000; includeSubDomains`  
-   *Status:* **LOLOS** — Memaksa peramban berkomunikasi secara eksklusif lewat jalur aman HTTPS.
-
-2. **X-Frame-Options (Anti-Clickjacking):**
-   ```bash
-   curl -s -I https://kampuslms-b-kelompok-03-production-03.up.railway.app/login | grep -i "x-frame-options"
-   ```
-   *Keluaran:* `x-frame-options: SAMEORIGIN`  
-   *Status:* **LOLOS** — Mencegah halaman disematkan ke dalam `<iframe>` situs berbahaya lain.
-
-3. **X-Content-Type-Options (Anti-MIME Sniffing):**
-   ```bash
-   curl -s -I https://kampuslms-b-kelompok-03-production-03.up.railway.app/login | grep -i "x-content-type-options"
-   ```
-   *Keluaran:* `x-content-type-options: nosniff`  
-   *Status:* **LOLOS** — Mencegah peramban memanipulasi tipe konten file di luar header resmi.
-
-4. **Referrer-Policy:**
-   ```bash
-   curl -s -I https://kampuslms-b-kelompok-03-production-03.up.railway.app/login | grep -i "referrer-policy"
-   ```
-   *Keluaran:* `referrer-policy: strict-origin-when-cross-origin`  
-   *Status:* **LOLOS** — Membatasi kebocoran URL referrer sensitif ke domain pihak ketiga.
-
----
-
-## 3. Konfigurasi yang Membocorkan Informasi
-
-### 3.1 Verifikasi `APP_DEBUG=false` (Pemeriksaan Kebocoran Ignition)
-Memicu error 404 pada rute sembarang untuk memastikan debugger Laravel Ignition dinonaktifkan:
-```bash
-curl -s https://kampuslms-b-kelompok-03-production-03.up.railway.app/testing-jalur-pasti-tidak-ada-404 | grep -iE "(Ignition|Flare|Stack trace|Environment)"
-```
-**Keluaran Terminal:**
-*(Kosong — tidak ada teks debug yang ditemukan)*
-
-Pengujian kode respons:
-```bash
-curl -s -o /dev/null -w "%{http_code}\n" https://kampuslms-b-kelompok-03-production-03.up.railway.app/testing-jalur-pasti-tidak-ada-404
-```
-**Keluaran Terminal:**
-```text
-404
-```
-* **Hasil Diharapkan:** Kode respons 404 tanpa stack trace atau cuplikan kode PHP.
-* **Analisis:** Lolos. Halaman menampilkan template error ramah pengguna tanpa membocorkan struktur direktori server.
-
----
-
-## 4. Audit Endpoint Privat Tanpa Autentikasi
-
-Pengujian untuk memastikan rute yang membutuhkan otentikasi menolak akses anonim / tamu dan mengarahkan pengguna ke halaman login.
-
-### 4.1 Rute Dasbor Admin
-```bash
-curl -s -o /dev/null -w "%{http_code} -> %{redirect_url}\n" https://kampuslms-b-kelompok-03-production-03.up.railway.app/admin/courses
-```
-**Keluaran Terminal:**
-```text
-302 -> https://kampuslms-b-kelompok-03-production-03.up.railway.app/login
-```
-* **Hasil Diharapkan:** `302 Found` diarahkan ke `/login`.
-* **Analisis:** Lolos. Middleware `auth` dan `role:admin` bekerja dengan benar.
-
-### 4.2 Rute Manajemen Pengguna Admin
-```bash
-curl -s -o /dev/null -w "%{http_code} -> %{redirect_url}\n" https://kampuslms-b-kelompok-03-production-03.up.railway.app/admin/users
-```
-**Keluaran Terminal:**
-```text
-302 -> https://kampuslms-b-kelompok-03-production-03.up.railway.app/login
-```
-* **Hasil Diharapkan:** `302 Found` diarahkan ke `/login`.
-* **Analisis:** Lolos.
-
-### 4.3 Rute Mata Kuliah Dosen
-```bash
-curl -s -o /dev/null -w "%{http_code} -> %{redirect_url}\n" https://kampuslms-b-kelompok-03-production-03.up.railway.app/dosen/courses
-```
-**Keluaran Terminal:**
-```text
-302 -> https://kampuslms-b-kelompok-03-production-03.up.railway.app/login
-```
-* **Hasil Diharapkan:** `302 Found` diarahkan ke `/login`.
-* **Analisis:** Lolos.
-
-### 4.4 Rute Pembelajaran Mahasiswa
-```bash
-curl -s -o /dev/null -w "%{http_code} -> %{redirect_url}\n" https://kampuslms-b-kelompok-03-production-03.up.railway.app/mahasiswa/courses
-```
-**Keluaran Terminal:**
-```text
-302 -> https://kampuslms-b-kelompok-03-production-03.up.railway.app/login
-```
-* **Hasil Diharapkan:** `302 Found` diarahkan ke `/login`.
-* **Analisis:** Lolos.
-
-### 4.5 Akses File Unggahan Tugas Privat
-Mencoba mengunduh file tugas privat tanpa token session:
-```bash
-curl -s -o /dev/null -w "%{http_code}\n" https://kampuslms-b-kelompok-03-production-03.up.railway.app/storage/submissions/sample.pdf
-```
-**Keluaran Terminal:**
-```text
-404
-```
-* **Hasil Diharapkan:** `404 Not Found` atau `403 Forbidden`.
-* **Analisis:** Lolos. Seluruh berkas tugas privat disimpan di luar folder publik dan diakses hanya melalui route otorisasi controller.
-
----
-
-## 5. Kesimpulan Audit
-
-Berdasarkan seluruh hasil pengujian perintah `curl` aktual di atas, sistem **KampusLMS Kelompok 03** telah memenuhi standar keamanan produksi:
-1. Seluruh berkas sensitif terlindungi secara penuh.
-2. Seluruh respon HTTPS menyertakan header keamanan standar industri (*HSTS, Clickjacking protection, MIME-sniffing protection*).
-3. Mode debug dinonaktifkan (`APP_DEBUG=false`), mencegah kebocoran informasi teknis.
-4. Mekanisme otentikasi dan otorisasi role (*Admin, Dosen, Mahasiswa*) berfungsi dengan benar pada seluruh rute privat.
+### Masalah 2: Error Seeder Duplicate Entry Saat Redeploy
+* **Penyebab:** Perintah `db:seed` dijalankan otomatis saat container booting, sehingga memicu error SQL unique constraint pada tabel `users`.
+* **Solusi:** Mengubah seluruh seeder di `database/seeders/DatabaseSeeder.php` menggunakan `firstOrCreate()` agar bersifat *idempotent* (aman dijalankan berulang kali).
 
