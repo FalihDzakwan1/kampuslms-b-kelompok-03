@@ -6,7 +6,7 @@
 # ==============================================================================
 
 # Ganti domain/port ini atau teruskan sebagai argumen: ./scripts/test-authz.sh "https://domain-anda.com/api/v1"
-BASE_URL="${1:-${BASE_URL:-https://kampuslms-b-kelompok-03.up.railway.app/api/v1}}"
+BASE_URL="${1:-${BASE_URL:-https://kampuslms-b-kelompok-03-production-03.up.railway.app/api/v1}}"
 
 echo "Target Endpoint: $BASE_URL"
 echo "--- MENDAPATKAN TOKEN ---"

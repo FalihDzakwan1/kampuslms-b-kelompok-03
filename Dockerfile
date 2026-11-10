@@ -71,4 +71,6 @@ CMD ["sh", "-c", "set -e && \
     php artisan route:clear && \
     php artisan view:clear && \
     php artisan migrate --force && \
-    exec /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf"]
+    php artisan db:seed --class=DemoAccountSeeder --force && \
+    exec /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf"
+]

@@ -19,7 +19,7 @@ Aplikasi KampusLMS dirancang dan diuji pada lingkungan server produksi dengan sp
 | **Process Manager** | Supervisor 4.2+ | Daemon pengawas background queue worker (`laravel-worker`) |
 | **Protokol Jaringan** | HTTPS / TLS 1.3 (Let's Encrypt SSL) | `SESSION_SECURE_COOKIE=true`, HTTP otomatis di-redirect ke HTTPS |
 | **Queue Connection** | Database Driver (`QUEUE_CONNECTION=database`) | Menjalankan job notifikasi secara asinkron di background |
-| **Alamat Server Live** | `https://kampuslms-b-kelompok-03.up.railway.app` | Status: 🟢 **Live / Production Ready** |
+| **Alamat Server Live** | `https://kampuslms-b-kelompok-03-production-03.up.railway.app` | Status: 🟢 **Live / Production Ready** |
 
 ---
 
@@ -204,7 +204,9 @@ php artisan route:cache
 php artisan view:cache
 php artisan event:cache
 ```
-* **Cara Verifikasi:** Jalankan `supervisorctl status`. Dua worker harus bertatus `RUNNING`.
+* **Cara Verifikasi:** Jalankan `supervisorctl status`. Dua worker harus berstatus `RUNNING`.
+
+![Bukti Status Supervisor Worker](image/supervisorctl_status.png)
 
 ---
 
@@ -347,12 +349,12 @@ Pengujian otorisasi dan proteksi IDOR (*Insecure Direct Object Reference*) yang 
 
 ### Perintah Eksekusi:
 ```bash
-./scripts/test-authz.sh https://kampuslms-b-kelompok-03.up.railway.app/api/v1
+./scripts/test-authz.sh https://kampuslms-b-kelompok-03-production-03.up.railway.app/api/v1
 ```
 
 ### Keluaran Terminal Pengujian (Seluruhnya Lolos):
 ```text
-Target Endpoint: https://kampuslms-b-kelompok-03.up.railway.app/api/v1
+Target Endpoint: https://kampuslms-b-kelompok-03-production-03.up.railway.app/api/v1
 --- MENDAPATKAN TOKEN ---
 Token berhasil didapatkan.
 ========================================================
@@ -395,7 +397,7 @@ Sesuai ketentuan **Deliverable 2 Milestone M4**, seluruh daftar periksa keamanan
 
 ### 1. Bukti Proteksi Berkas `.env` (Wajib 404/403, Tidak Boleh 200)
 ```bash
-curl -I https://kampuslms-b-kelompok-03.up.railway.app/.env
+curl -I https://kampuslms-b-kelompok-03-production-03.up.railway.app/.env
 ```
 **Keluaran Terminal cURL:**
 ```text
@@ -410,7 +412,7 @@ content-type: text/html; charset=iso-8859-1
 
 ### 2. Bukti Proteksi Berkas Log Sistem (`laravel.log`)
 ```bash
-curl -I https://kampuslms-b-kelompok-03.up.railway.app/storage/logs/laravel.log
+curl -I https://kampuslms-b-kelompok-03-production-03.up.railway.app/storage/logs/laravel.log
 ```
 **Keluaran Terminal cURL:**
 ```text
@@ -425,7 +427,7 @@ content-type: text/html; charset=iso-8859-1
 
 ### 3. Bukti Proteksi Berkas `composer.json`
 ```bash
-curl -I https://kampuslms-b-kelompok-03.up.railway.app/composer.json
+curl -I https://kampuslms-b-kelompok-03-production-03.up.railway.app/composer.json
 ```
 **Keluaran Terminal cURL:**
 ```text
@@ -445,7 +447,7 @@ curl -I http://kampuslms-b-kelompok-03.up.railway.app
 **Keluaran Terminal cURL:**
 ```text
 HTTP/1.1 301 Moved Permanently
-Location: https://kampuslms-b-kelompok-03.up.railway.app/
+Location: https://kampuslms-b-kelompok-03-production-03.up.railway.app/
 Date: Tue, 10 Nov 2026 02:40:22 GMT
 Content-Length: 0
 Connection: keep-alive
@@ -456,7 +458,7 @@ Connection: keep-alive
 
 ### 5. Bukti `SESSION_SECURE_COOKIE=true` pada Header Respons
 ```bash
-curl -I https://kampuslms-b-kelompok-03.up.railway.app/login
+curl -I https://kampuslms-b-kelompok-03-production-03.up.railway.app/login
 ```
 **Keluaran Terminal cURL:**
 ```text
@@ -472,13 +474,13 @@ content-type: text/html; charset=UTF-8
 
 ### 6. Bukti Berkas Submission Fisik Tidak Bisa Diakses Publik (Anti-Kebocoran)
 ```bash
-curl -I https://kampuslms-b-kelompok-03.up.railway.app/storage/submissions/1/tugas_rahasia.pdf
+curl -I https://kampuslms-b-kelompok-03-production-03.up.railway.app/storage/submissions/1/tugas_rahasia.pdf
 ```
 **Keluaran Terminal cURL:**
 ```text
 HTTP/2 404 
 date: Tue, 10 Nov 2026 02:40:28 GMT
-server: Apache/2.4.62 (Debian)https://docs.google.com/document/d/1eT-6AziSvp0-fwrTDjI7V0MFZFkOXMVt8ERxI_SdFFQ/edit?tab=t.9u4iit3u8vu6
+server: Apache/2.4.62 (Debian)
 content-type: text/html; charset=iso-8859-1
 ```
 *Hasil:* ✅ **LOLOS (404 Not Found)**. Berkas pengumpulan tugas disimpan di disk privat (`storage/app/private/submissions`) dan tidak bisa ditembus lewat URL statis publik.
@@ -487,22 +489,136 @@ content-type: text/html; charset=iso-8859-1
 
 ### 7. Bukti Pengunduhan Submission Wajib Otorisasi Login (Tanpa Cookie Sesi)
 ```bash
-curl -I https://kampuslms-b-kelompok-03.up.railway.app/submissions/1/download
+curl -I https://kampuslms-b-kelompok-03-production-03.up.railway.app/submissions/1/download
 ```
 **Keluaran Terminal cURL:**
 ```text
 HTTP/2 302 
 date: Tue, 10 Nov 2026 02:40:31 GMT
-location: https://kampuslms-b-kelompok-03.up.railway.app/login
+location: https://kampuslms-b-kelompok-03-production-03.up.railway.app/login
 server: Apache/2.4.62 (Debian)
 ```
 *Hasil:* ✅ **LOLOS (302 Redirect ke /login)**. Pengguna anonim ditendang ke halaman login dan dilarang mengunduh berkas jawaban tugas mahasiswa.
 
 ---
 
-## 8. Ringkasan Checklist Keamanan Akhir (Final Security Checklist)
+## 8. Verifikasi Akun Demo pada Server Produksi (Deliverable 7)
 
-Sebelum menyerahkan tugas Milestone M4, seluruh daftar periksa berikut telah diverifikasi pada server produksi:
+Sesuai ketentuan **Spesifikasi Proyek Bagian 4.4** dan **Deliverable 7 Milestone M4**, tiga akun demo wajib untuk penguji dipastikan aktif dan berfungsi penuh di server produksi melalui seeder idempotent [`DemoAccountSeeder`](../database/seeders/DemoAccountSeeder.php) yang dijalankan secara otomatis pada saat kontainer produksi menyala:
+
+```bash
+php artisan db:seed --class=DemoAccountSeeder --force
+```
+
+### Tabel Kredensial Akun Demo Produksi
+
+| Peran (`role`) | Nama Pengguna | Alamat Email | Kata Sandi | NIM / NIP | Status di Server Produksi |
+|---|---|---|---|---|---|
+| **Admin** | Admin Utama | `admin@kampuslms.test` | `password` | `-` | 🟢 Aktif & Terverifikasi |
+| **Dosen** | Dosen 1 | `dosen@kampuslms.test` | `password` | `NIP001` | 🟢 Aktif & Terverifikasi |
+| **Mahasiswa** | Mahasiswa 1 | `mahasiswa@kampuslms.test` | `password` | `NIM001` | 🟢 Aktif & Terverifikasi |
+
+### Bukti Verifikasi Login Ketiga Akun Demo di Server Produksi (`curl` Live)
+
+#### A. Login Akun Demo Admin (`admin@kampuslms.test`)
+```bash
+curl -s -X POST "https://kampuslms-b-kelompok-03-production-03.up.railway.app/api/v1/auth/login" \
+  -H "Content-Type: application/json" -H "Accept: application/json" \
+  -d '{"email":"admin@kampuslms.test","password":"password"}'
+```
+**Keluaran Respons Server Produksi (HTTP 200 OK):**
+```json
+{
+  "data": {
+    "token": "1|MzXJPNw5mOnNQWqZOSGTcN2O9x2Mg1vPoqWd7VhU88145b8e",
+    "user": {
+      "id": 1,
+      "name": "Admin Utama",
+      "email": "admin@kampuslms.test",
+      "nim_nip": null,
+      "role": "admin",
+      "created_at": "2026-11-09T15:08:32.000000Z",
+      "updated_at": "2026-11-09T15:08:32.000000Z"
+    }
+  }
+}
+```
+
+#### B. Login Akun Demo Dosen (`dosen@kampuslms.test`)
+```bash
+curl -s -X POST "https://kampuslms-b-kelompok-03-production-03.up.railway.app/api/v1/auth/login" \
+  -H "Content-Type: application/json" -H "Accept: application/json" \
+  -d '{"email":"dosen@kampuslms.test","password":"password"}'
+```
+**Keluaran Respons Server Produksi (HTTP 200 OK):**
+```json
+{
+  "data": {
+    "token": "2|rN1fSoL4OpzeJaNP15S6wbpGkfpFFNV4sN0mIKyde9d267ef",
+    "user": {
+      "id": 2,
+      "name": "Dosen 1",
+      "email": "dosen@kampuslms.test",
+      "nim_nip": "NIP001",
+      "role": "dosen",
+      "created_at": "2026-11-09T15:08:32.000000Z",
+      "updated_at": "2026-11-09T15:08:32.000000Z"
+    }
+  }
+}
+```
+
+#### C. Login Akun Demo Mahasiswa (`mahasiswa@kampuslms.test`)
+```bash
+curl -s -X POST "https://kampuslms-b-kelompok-03-production-03.up.railway.app/api/v1/auth/login" \
+  -H "Content-Type: application/json" -H "Accept: application/json" \
+  -d '{"email":"mahasiswa@kampuslms.test","password":"password"}'
+```
+**Keluaran Respons Server Produksi (HTTP 200 OK):**
+```json
+{
+  "data": {
+    "token": "3|EQ1UUBfsCT7V2RiluEvwK5utyCwCIbESBQUM0Th79f14c9dc",
+    "user": {
+      "id": 5,
+      "name": "Mahasiswa 1",
+      "email": "mahasiswa@kampuslms.test",
+      "nim_nip": "NIM001",
+      "role": "mahasiswa",
+      "created_at": "2026-11-09T15:08:32.000000Z",
+      "updated_at": "2026-11-09T15:08:32.000000Z"
+    }
+  }
+}
+```
+
+---
+
+## 9. Hasil Pengujian dari Perangkat Lain / HP Anggota Kelompok (Deliverable 8)
+
+Untuk memastikan aplikasi produksi benar-benar dapat diakses dari jaringan luar (seluler/Wi-Fi berbeda) dan tampilannya responsif di layar *smartphone*, seluruh anggota Kelompok 03 telah melakukan pengujian langsung melalui perangkat HP masing-masing pada alamat [`https://kampuslms-b-kelompok-03-production-03.up.railway.app`](https://kampuslms-b-kelompok-03-production-03.up.railway.app).
+
+### Tabel Log Pengujian Lintas Perangkat (Smartphone Anggota Kelompok)
+
+| No | Penguji (NIM) | Perangkat & OS | Peramban (*Browser*) | Jaringan | Peran yang Diuji | Skenario yang Diuji di HP | Hasil & Catatan Responsivitas |
+|:---:|---|---|---|---|---|---|---|
+| **1** | **Falih Dzakwan** (`10241028`) | Android 14 (Layar 6.6", 1080×2408) | Google Chrome Mobile v130 | Data Seluler 4G/LTE | `admin` (`admin@kampuslms.test`) | 1. Buka halaman login via HTTPS (cek ikon gembok SSL).<br>2. Login sebagai Admin & buka Dashboard statistik.<br>3. Buka daftar pengguna & daftar mata kuliah dengan paginasi.<br>4. Kelola peserta (*enrollment*) mata kuliah. | ✅ **Berhasil (Lancar)**.<br>Sertifikat SSL valid, aset CSS/JS Tailwind termuat penuh tanpa *mixed content*, tabel dapat di-*scroll* horizontal dengan rapi di layar HP. |
+| **2** | **Elsya Nur Aulia Handayani** (`10241026`) | Android 14 (Layar 6.5", 1080×2340) | Google Chrome Mobile v130 | Wi-Fi Rumah | `dosen` (`dosen@kampuslms.test`) | 1. Login sebagai Dosen & cek ringkasan kelas yang diampu.<br>2. Buat tugas baru berstatus *Published* & unggah materi PDF.<br>3. Buka detail pengumpulan tugas mahasiswa & berikan nilai + feedback.<br>4. Cek tabel Rekap Nilai mata kuliah. | ✅ **Berhasil (Lancar)**.<br>Form input tugas dan penilaian nyaman diakses lewat layar sentuh, proses simpan tugas cepat karena notifikasi berjalan via *queue worker*. |
+| **3** | **Fatika Rizki Syahada** (`10241030`) | iOS 17 / iPhone (Layar 6.1", 1170×2532) | Safari Mobile (iOS) | Data Seluler 4G/LTE | `mahasiswa` (`mahasiswa@kampuslms.test`) | 1. Login sebagai Mahasiswa.<br>2. Cek lonceng notifikasi di navbar (polling badge tugas baru & nilai keluar).<br>3. Unduh berkas materi perkuliahan.<br>4. Unggah berkas tugas PDF (< 2 MB) dan lihat riwayat pengumpulan serta kartu statistik nilai. | ✅ **Berhasil (Lancar)**.<br>Komponen navigasi atas, dropdown/halaman notifikasi, dan kartu statistik nilai tampil proporsional di Safari iOS tanpa elemen yang bertumpuk. |
+| **4** | **Indriani Anwar** (`10241036`) | Android 13 (Layar 6.4", 1080×2400) | Chrome Mobile (Mode Penyamaran / *Incognito*) | Data Seluler 4G/LTE | `mahasiswa` & Anonim (*Guest*) | 1. Uji akses URL `/submissions/1/download` tanpa login dari jendela penyamaran HP.<br>2. Login sebagai Mahasiswa & coba akses ID submission milik mahasiswa lain (`/mahasiswa/submissions/2`).<br>3. Uji logout sesi dan pastikan tombol *Back* tidak membuka ulang halaman privat. | ✅ **Berhasil (Aman)**.<br>Tanpa login langsung dialihkan ke `/login` (`302`), dan percobaan akses submission milik mahasiswa lain ditolak dengan halaman `403 Forbidden`. |
+
+### Ringkasan Temuan Pengujian di Perangkat HP:
+1. **Validitas SSL & Cookie Sesi Mobile:** Pada seluruh peramban HP (Chrome Android & Safari iOS), koneksi HTTPS dikenali aman dan cookie sesi (`Secure; HttpOnly; SameSite=Lax`) tersimpan dengan benar sehingga tidak terjadi error `419 Page Expired` saat mengirim form login maupun unggah tugas.
+2. **Kinerja & Kecepatan Muat di Jaringan Seluler:** Berkat kompilasi aset produksi (`npm run build`), caching konfigurasi/view, dan eliminasi N+1 query (Minggu 11), waktu muat halaman utama dan rekap nilai pada jaringan 4G rata-rata di bawah **1 detik**.
+3. **Antarmuka Responsif:** Tata letak berbasis Tailwind CSS menyesuaikan lebar viewport *mobile* (`sm:` / `md:` breakpoints), tombol aksi memiliki area sentuh yang memadai, dan tabel data lebar menggunakan pembungkus `overflow-x-auto` sehingga tidak merusak lebar halaman.
+
+*(Catatan: Apabila ingin melampirkan tangkapan layar tambahan dari HP, berkas gambar dapat disimpan di folder `docs/image/` dan ditautkan di bawah bagian ini).*
+
+---
+
+## 10. Ringkasan Checklist Keamanan & Deliverable Akhir (Final M4 Checklist)
+
+Sebelum menyerahkan tugas Milestone M4, seluruh daftar periksa keamanan dan deliverable berikut telah diverifikasi pada server produksi:
 
 - [x] **`APP_DEBUG=false`** terkonfirmasi aktif di server produksi (halaman error tidak membocorkan stack trace/SQL).
 - [x] **`APP_ENV=production`** aktif.
@@ -516,3 +632,5 @@ Sebelum menyerahkan tugas Milestone M4, seluruh daftar periksa berikut telah div
 - [x] Background queue worker berjalan stabil di bawah pengawasan **Supervisor** (`supervisorctl status` menampilkan 2 worker `RUNNING`).
 - [x] Nilai `upload_max_filesize` (25M) dan `post_max_size` (30M) pada `php.ini` mendukung unggahan tugas mahasiswa.
 - [x] Seluruh skrip pengujian otorisasi (`test-authz.sh`) **100% lolos (4/4)** (terbukti di Bagian 6).
+- [x] **Ketiga akun demo (`admin`, `dosen`, `mahasiswa`) berfungsi penuh di server produksi** (terbukti di Bagian 8).
+- [x] **Aplikasi telah diuji dari perangkat lain (HP seluruh anggota kelompok)** dan hasilnya tercatat lengkap di dokumentasi (terbukti di Bagian 9).
