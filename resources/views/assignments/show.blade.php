@@ -130,7 +130,7 @@
                             <p class="text-xs text-gray-500 -mt-2">Mengunggah berkas baru akan menggantikan berkas pengumpulan Anda sebelumnya.</p>
                         @endif
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Unggah Berkas Tugas (PDF/DOC/DOCX, Maks 2MB)</label>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Unggah Berkas Tugas (PDF/DOC/DOCX, Maks 5MB)</label>
                             <input type="file" name="file" required class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
                             @error('file')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>

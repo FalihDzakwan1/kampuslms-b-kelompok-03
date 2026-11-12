@@ -57,9 +57,14 @@ RUN chown -R www-data:www-data \
 # 8. Expose port
 EXPOSE 80 8080
 
-# 9. Salin konfigurasi Supervisor
-RUN mkdir -p /var/log/supervisor && cp supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+# 9. Salin konfigurasi Supervisor, php.ini kustom, dan skrip start
+# - custom.ini: batas unggah 25M/30M dan expose_php=Off (lihat docker/php/custom.ini)
+# - start.sh: migrasi, seeder akun demo, cache produksi, lalu Supervisor
+RUN mkdir -p /var/log/supervisor \
+    && cp supervisord.conf /etc/supervisor/conf.d/supervisord.conf \
+    && cp docker/php/custom.ini /usr/local/etc/php/conf.d/zz-custom.ini \
+    && cp docker/start.sh /usr/local/bin/start.sh \
+    && chmod +x /usr/local/bin/start.sh
 
 # 10. Startup container
-# Migrasi dijalankan sebelum Supervisor mengelola Apache dan queue worker.
-CMD ["sh", "-c", "set -e && rm -f /etc/apache2/mods-enabled/mpm_event.* /etc/apache2/mods-enabled/mpm_worker.* && export PORT=\"${PORT:-8080}\" && sed -i \"s/Listen .*/Listen $PORT/\" /etc/apache2/ports.conf && sed -i \"s/<VirtualHost \\*:.*>/<VirtualHost *:$PORT>/\" /etc/apache2/sites-available/000-default.conf && php artisan config:clear && php artisan route:clear && php artisan view:clear && php artisan migrate --force && php artisan db:seed --class=DemoAccountSeeder --force && exec /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf"]
+CMD ["/usr/local/bin/start.sh"]

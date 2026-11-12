@@ -1,52 +1,59 @@
 #!/bin/bash
 # ==============================================================================
-# SCRIPT DEPLOYMENT OTOMATIS PRODUKSI (deploy.sh) - KAMPUSLMS
-# Digunakan untuk memperbarui aplikasi di server produksi dengan aman & teruji.
+# SCRIPT DEPLOYMENT ULANG (deploy.sh) - KAMPUSLMS
+# Untuk memperbarui aplikasi di server Linux/VPS yang diakses lewat SSH.
+#
+# Catatan: di Railway skrip ini TIDAK dipakai. Railway membangun ulang kontainer
+# dari Dockerfile, dan langkah setara (migrate, cache, worker) ada di
+# docker/start.sh.
 # ==============================================================================
 
-# Hentikan eksekusi script jika ada perintah yang gagal (error handling)
+# Hentikan eksekusi pada kesalahan pertama. Lebih baik berhenti di tengah
+# daripada melanjutkan dengan keadaan setengah jadi.
 set -e
 
-echo "🚀 [1/7] Memulai proses deployment KampusLMS..."
+# Apa pun hasil skrip (sukses atau gagal), situs harus keluar dari mode
+# maintenance. Tanpa ini, skrip yang gagal meninggalkan situs terkunci.
+trap 'php artisan up' EXIT
 
-# 1. Aktifkan Mode Pemeliharaan (Maintenance Mode)
-# Mencegah pengguna mengakses atau submit data saat kode & database sedang diperbarui.
-echo "🔒 [2/7] Mengaktifkan maintenance mode..."
-php artisan down || true
+echo "🚀 [1/8] Memulai proses deployment KampusLMS..."
 
-# 2. Ambil perubahan kode terbaru dari branch produksi (main)
-echo "📥 [3/7] Menarik kode terbaru dari repository Git..."
-git pull origin main || true
+# 1. Maintenance mode: mencegah pengguna submit data saat kode/database diubah.
+echo "🔒 [2/8] Mengaktifkan maintenance mode..."
+php artisan down
 
-# 3. Pasang & optimalkan dependensi Composer untuk lingkungan produksi
-# --no-dev: lewati library testing untuk menghemat RAM dan disk.
-# --optimize-autoloader: buat classmap statis agar respon aplikasi lebih kencang.
-echo "📦 [4/7] Menginstal dependensi Composer produksi..."
+# 2. Ambil kode terbaru. Tanpa '|| true' agar set -e menghentikan skrip bila gagal.
+echo "📥 [3/8] Menarik kode terbaru dari repository Git..."
+git pull origin main
+
+# 3. Dependensi PHP produksi.
+# --no-dev: lewati paket testing. --optimize-autoloader: classmap statis.
+echo "📦 [4/8] Menginstal dependensi Composer produksi..."
 composer install --no-dev --optimize-autoloader --no-interaction
 
-# 4. Jalankan migrasi database
-# --force: wajib di mode produksi agar tidak berhenti meminta konfirmasi manual.
-echo "🗄️ [5/7] Menjalankan migrasi database..."
+# 4. Aset frontend (Vite). Dilewati bila Node.js tidak terpasang di server.
+echo "🎨 [5/8] Membangun aset frontend..."
+if command -v npm >/dev/null 2>&1; then
+  npm ci
+  npm run build
+else
+  echo "   npm tidak ditemukan, memakai public/build yang ada di repository."
+fi
+
+# 5. Migrasi database. --force wajib di produksi (tanpa itu Laravel meminta konfirmasi).
+echo "🗄️ [6/8] Menjalankan migrasi database..."
 php artisan migrate --force
 
-# 5. Bangun cache performa Laravel produksi
-# Menggabungkan seluruh config, route, dan view blade menjadi file statis siap saji.
-echo "⚡ [6/7] Mengoptimalkan cache Laravel..."
+# 6. Cache produksi. env() di luar config/ akan bernilai null setelah config:cache.
+echo "⚡ [7/8] Membangun cache Laravel..."
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
-
-# Pastikan symbolic link storage terpasang untuk file upload materi & submission
+php artisan event:cache
 php artisan storage:link || true
 
-# 6. Restart Background Worker Antrean
-# Memaksa worker yang sedang standby di memori RAM memuat kode PHP versi terbaru.
-echo "🔄 [7/7] Merestart antrean background worker..."
+# 7. Restart worker: worker lama masih memegang kode versi lama di memori.
+echo "🔄 [8/8] Merestart antrean background worker..."
 php artisan queue:restart
 
-# 7. Matikan Mode Pemeliharaan (Aplikasi Kembali Online)
-echo "🔓 Mematikan maintenance mode (Aplikasi kembali online)..."
-php artisan up
-
-echo "✅ Deployment KampusLMS berhasil diselesaikan tanpa kendala!"
-
+echo "✅ Deployment KampusLMS selesai. Maintenance mode dimatikan otomatis (trap)."
