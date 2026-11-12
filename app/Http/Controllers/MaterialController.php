@@ -20,8 +20,9 @@ class MaterialController extends Controller
         Gate::authorize('viewAny', [Material::class, $course]);
 
         // [ACCPT-PERF-PAGINATION] Paginasi daftar materi untuk mencegah pemuatan seluruh tabel sekaligus
+        // Eager-load 'course' dan 'uploader' agar evaluasi Policy @can('update', $material) di Blade tidak memicu lazy loading
         $materials = $course->materials()
-            ->with('uploader')
+            ->with(['course', 'uploader'])
             ->latest()
             ->paginate(15)
             ->withQueryString();

@@ -19,7 +19,9 @@ class AssignmentController extends Controller
         Gate::authorize('viewAny', [Assignment::class, $course]);
 
         // [ACCPT-PERF-PAGINATION] Paginasi daftar tugas untuk mencegah pemuatan seluruh tabel sekaligus
+        // Eager-load 'course' agar evaluasi Policy @can('update', $assignment) di Blade tidak memicu lazy loading
         $assignments = $course->assignments()
+            ->with('course')
             ->withCount('submissions')
             ->when(auth()->user()->role === 'mahasiswa', fn ($q) =>
                 $q->where('status', 'published')
