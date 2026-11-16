@@ -160,14 +160,16 @@ Setiap Listener dan Notification memakai `tries = 3` dan `backoff = 10` detik. J
 
 ---
 
-## Pembagian Peran Anggota
+## Pembagian Peran dan Kontribusi Anggota
 
-| No | Nama Anggota | Peran | Tanggung Jawab |
-|----|--------------|-------|----------------|
-| 1 | Fatika Rizki Syahada | Frontend Developer | Mengembangkan tampilan antarmuka aplikasi menggunakan Blade, HTML, CSS, dan JavaScript |
-| 2 | Elsya Nur Aulia Handayani | Database Developer | Mengelola struktur database, membuat migration, seeder, dan memastikan pengelolaan data aplikasi |
-| 3 | Falih Dzakwan | Backend Developer | Mengembangkan logika aplikasi, controller, model, routing, dan integrasi sistem Laravel |
-| 4 | Indriani Anwar | Backend Developer | Membantu pengembangan backend, pengelolaan fitur aplikasi, dan implementasi fungsi Laravel |
+Tabel berikut mencerminkan pembagian peran nyata berdasarkan rekam jejak repositori (`git shortlog -sn --all`):
+
+| No | Nama & NIM | Akun Git / GitHub | Jumlah Commit | Peran Utama | Rincian Tanggung Jawab & Kontribusi Nyata |
+|:--:|---|---|:---:|---|---|
+| 1 | **Indriani Anwar**<br>`10241036` | `Indri6` | 126 | Backend, Security & DevOps Engineer | • Optimasi performa sistem (paginasi seluruh daftar, agregasi query SQL, eliminasi N+1, caching dashboard dengan auto-invalidation).<br>• Keamanan aplikasi (implementasi `SecurityHeadersMiddleware`, proteksi HSTS, CSP, XSS, sanitasi pemanggilan `env()` di luar config).<br>• Setup deployment Railway & Dockerfile (HTTPS enforcement, penanganan cookie/CSRF 419, seeder idempoten).<br>• Penyusunan dokumen audit teknis, benchmark performa (`docs/performa.md`), dan code review. |
+| 2 | **Falih Dzakwan**<br>`10241028` | `FalihDzakwan1` | 97 | Lead Backend Developer & Release Manager | • Desain arsitektur aplikasi Laravel, routing, model, dan kontroler utama.<br>• Implementasi sistem antrean asynchronous (Database Queue, Event, Listener, Notification).<br>• Otorisasi & pembatasan hak akses (Policies, Gates, pengamanan disk privat berkas submission).<br>• Manajemen branch repositori, review pull request, dan pemeliharaan suite automated testing (CI). |
+| 3 | **Elsya Nur Aulia Handayani**<br>`10241026` | `elsyanrr` | 74 | Database & DevOps / Worker Engineer | • Konfigurasi worker background process (`supervisord.conf`, `deploy.sh`) dan penanganan `failed_jobs`.<br>• Pengujian performa database (mendeteksi lazy loading / N+1 via `preventLazyLoading`).<br>• Antarmuka notifikasi in-app (lonceng notifikasi navbar dan mekanisme polling AJAX unread).<br>• Analisis kerentanan IDOR (`docs/security.md`) dan penyusunan catatan mingguan. |
+| 4 | **Fatika Rizki Syahada**<br>`10241030` | `Fatika` | 44 | Frontend UI/UX & Feature Developer | • Perancangan antarmuka pengguna berbasis Blade, styling CSS/Tailwind, dan kartu ringkasan dashboard.<br>• Implementasi fitur rekap nilai per mata kuliah (tampilan dosen dan riwayat mahasiswa).<br>• Logika pengumpulan tugas (`updateOrCreate` submission) serta validasi batas waktu deadline.<br>• Penambahan migration indeks database untuk optimasi performa query tabel riwayat. |
 ---
 
 ## Teknologi yang Digunakan
