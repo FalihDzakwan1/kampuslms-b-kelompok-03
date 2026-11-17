@@ -51,7 +51,12 @@
                                                 @if($ext === 'PDF') 📕 PDF @elseif(in_array($ext, ['PPTX', 'PPT'])) 📊 PPTX @elseif(in_array($ext, ['DOCX', 'DOC'])) 📝 DOCX @else 📄 {{ $ext ?: 'Berkas' }} @endif
                                             </span>
                                             @if($material->original_name)
-                                                <span class="text-[11px] text-gray-600 font-medium line-clamp-1 max-w-[220px]" title="{{ $material->original_name }}">{{ $material->original_name }}</span>
+                                                <a href="{{ route('materials.preview', $material) }}" target="_blank"
+                                                    class="text-[11px] text-gray-700 hover:text-purple-600 hover:underline font-medium line-clamp-1 max-w-[220px] inline-flex items-center gap-1 transition"
+                                                    title="Pratinjau berkas materi di tab baru">
+                                                    <span>{{ $material->original_name }}</span>
+                                                    <span class="text-[10px] text-purple-500">⛶</span>
+                                                </a>
                                             @endif
                                             @if($material->formatted_file_size)
                                                 <span class="text-[11px] text-gray-400">

@@ -404,6 +404,37 @@ class MaterialAssignmentAccessTest extends TestCase
         $this->actingAs($mhsB)->get(route('submissions.download', $submission))->assertForbidden();
     }
 
+    public function test_pemilik_dan_dosen_dapat_pratinjau_submission_tetapi_mahasiswa_lain_ditolak(): void
+    {
+        Storage::fake('local');
+        Storage::put('submissions/uji.pdf', '%PDF-1.4 test pdf content');
+
+        $dosen  = $this->makeUser('dosen');
+        $mhsA   = $this->makeUser('mahasiswa');
+        $mhsB   = $this->makeUser('mahasiswa');
+        $course = $this->makeCourse($dosen);
+        $this->enroll($course, $mhsA);
+        $this->enroll($course, $mhsB);
+        $submission = $this->makeSubmission($this->makeAssignment($course), $mhsA);
+
+        // Mahasiswa pemilik submission dapat melihat pratinjau (inline response 200)
+        $respMhs = $this->actingAs($mhsA)->get(route('submissions.preview', $submission));
+        $respMhs->assertOk();
+        $this->assertStringContainsString('inline', (string) $respMhs->headers->get('content-disposition'));
+
+        // Dosen pengampu MK dapat melihat pratinjau
+        $respDosen = $this->actingAs($dosen)->get(route('submissions.preview', $submission));
+        $respDosen->assertOk();
+        $this->assertStringContainsString('inline', (string) $respDosen->headers->get('content-disposition'));
+
+        // Mahasiswa lain ditolak dengan 403 Forbidden
+        $this->actingAs($mhsB)->get(route('submissions.preview', $submission))->assertForbidden();
+
+        // Tamu tanpa autentikasi diarahkan ke login
+        auth()->logout();
+        $this->get(route('submissions.preview', $submission))->assertRedirect(route('login'));
+    }
+
     public function test_materi_berkas_hanya_dapat_diunduh_oleh_yang_berhak(): void
     {
         Storage::fake('local');

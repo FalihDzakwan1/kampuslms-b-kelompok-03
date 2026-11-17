@@ -187,4 +187,36 @@ class SubmissionController extends Controller
 
         return Storage::disk('local')->download($submission->file_path, $submission->original_name);
     }
+
+    /**
+     * Pratinjau berkas jawaban mahasiswa secara langsung di peramban (inline response).
+     * Otorisasi sama dengan unduh berkas (SubmissionPolicy@view):
+     * - Admin ✅
+     * - Dosen pengampu MK ✅
+     * - Mahasiswa pemilik submission ✅
+     * - Mahasiswa lain / tamu ❌ (403 Forbidden / redirect)
+     */
+    public function preview(Submission $submission)
+    {
+        $submission->loadMissing('assignment.course');
+
+        Gate::authorize('view', $submission);
+
+        abort_unless(
+            $submission->file_path && Storage::disk('local')->exists($submission->file_path),
+            404,
+            'Berkas tugas tidak ditemukan di penyimpanan server.'
+        );
+
+        $mimeType = Storage::disk('local')->mimeType($submission->file_path) ?: 'application/pdf';
+
+        return Storage::disk('local')->response(
+            $submission->file_path,
+            $submission->original_name,
+            [
+                'Content-Type' => $mimeType,
+            ],
+            'inline'
+        );
+    }
 }

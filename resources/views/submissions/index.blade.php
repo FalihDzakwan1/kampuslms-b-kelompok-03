@@ -53,7 +53,10 @@
                                     </div>
                                     @if($sub->original_name)
                                         <div class="text-[11px] text-gray-500 mt-1 flex items-center gap-1.5">
-                                            <span>📄 {{ $sub->original_name }}</span>
+                                            <a href="{{ route('submissions.preview', $sub) }}" target="_blank" class="hover:text-blue-600 hover:underline flex items-center gap-1" title="Pratinjau berkas">
+                                                <span>📄 {{ $sub->original_name }}</span>
+                                                <span class="text-[10px] text-blue-500">⛶</span>
+                                            </a>
                                             @if($sub->formatted_file_size)
                                                 <span class="text-gray-400">({{ $sub->formatted_file_size }})</span>
                                             @endif

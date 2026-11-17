@@ -77,13 +77,15 @@
                                     $ext = strtoupper(pathinfo($material->original_name ?? '', PATHINFO_EXTENSION));
                                 @endphp
                                 <div class="flex items-start gap-3">
-                                    <span class="text-2xl mt-0.5">
-                                        @if($material->type === 'file')
+                                    @if($material->type === 'file')
+                                        <a href="{{ route('materials.preview', $material) }}" target="_blank"
+                                            title="Klik untuk pratinjau berkas di tab baru"
+                                            class="text-2xl mt-0.5 hover:scale-110 transition-transform inline-block">
                                             @if($ext === 'PDF') 📕 @elseif(in_array($ext, ['PPTX', 'PPT'])) 📊 @elseif(in_array($ext, ['DOCX', 'DOC'])) 📝 @else 📄 @endif
-                                        @else
-                                            🔗
-                                        @endif
-                                    </span>
+                                        </a>
+                                    @else
+                                        <span class="text-2xl mt-0.5">🔗</span>
+                                    @endif
                                     <div>
                                         <div class="flex items-center gap-1.5 flex-wrap">
                                             <h4 class="font-bold text-sm text-gray-900 line-clamp-1">{{ $material->title }}</h4>
@@ -95,9 +97,17 @@
                                         </div>
                                         <p class="text-xs text-gray-500 mt-0.5 line-clamp-2">{{ $material->description ?? 'Tidak ada deskripsi.' }}</p>
                                         @if($material->type === 'file' && $material->original_name)
-                                            <span class="text-[11px] text-gray-500 mt-1 block line-clamp-1" title="{{ $material->original_name }}">
-                                                {{ $material->original_name }}@if($material->formatted_file_size) · {{ $material->formatted_file_size }}@endif
-                                            </span>
+                                            <div class="mt-1">
+                                                <a href="{{ route('materials.preview', $material) }}" target="_blank"
+                                                    class="text-[11px] text-gray-600 hover:text-purple-600 hover:underline font-medium inline-flex items-center gap-1 line-clamp-1 transition"
+                                                    title="Pratinjau berkas di tab baru">
+                                                    <span>{{ $material->original_name }}</span>
+                                                    <span class="text-[10px] text-purple-500">⛶</span>
+                                                    @if($material->formatted_file_size)
+                                                        <span class="text-gray-400 font-normal">· {{ $material->formatted_file_size }}</span>
+                                                    @endif
+                                                </a>
+                                            </div>
                                         @endif
                                         <span class="text-[11px] text-gray-400 mt-1 block">Oleh: {{ $material->uploader->name ?? 'Dosen' }}</span>
                                     </div>
