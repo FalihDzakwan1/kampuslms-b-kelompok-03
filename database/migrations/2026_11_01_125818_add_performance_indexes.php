@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 
@@ -48,7 +49,16 @@ return new class extends Migration
         });
 
         Schema::table('materials', function (Blueprint $table) {
-            $table->dropIndex('idx_materials_course_created');
+            // Pada MySQL, index komposit yang memuat kolom foreign key (course_id)
+            // tidak dapat di-drop langsung jika menjadi tumpuan constraint.
+            // Lepas foreign key terlebih dahulu, drop index komposit, lalu pasang kembali foreign key.
+            if (DB::getDriverName() === 'sqlite') {
+                $table->dropIndex('idx_materials_course_created');
+            } else {
+                $table->dropForeign(['course_id']);
+                $table->dropIndex('idx_materials_course_created');
+                $table->foreign('course_id')->references('id')->on('courses')->cascadeOnDelete();
+            }
         });
     }
 };
