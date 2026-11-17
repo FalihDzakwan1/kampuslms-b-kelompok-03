@@ -27,7 +27,7 @@ Route::get('/login',
 
 Route::post('/login',
     [LoginController::class, 'login']
-);
+)->middleware('throttle:login');
 
 
 Route::post('/logout',
@@ -100,6 +100,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('materials/{material}/download', [MaterialController::class, 'download'])->name('materials.download');
     Route::get('materials/{material}/preview', [MaterialController::class, 'preview'])->name('materials.preview');
     Route::get('submissions/{submission}/download', [SubmissionController::class, 'download'])->name('submissions.download');
+    Route::get('submissions/{submission}/preview', [SubmissionController::class, 'preview'])->name('submissions.preview');
 
 
     /*
