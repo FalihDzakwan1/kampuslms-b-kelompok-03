@@ -157,7 +157,7 @@ Berkas-berkas berikut tidak mengalami perubahan langsung di PR #81 (merupakan ha
 +-------------------------------------------------------------------------+
 ```
 
-#### A. Keamanan — Tidak Ada Validasi Konsistensi Relasi `$assignment` terhadap `$course` pada Parameter URL
+#### A. Keamanan, Tidak Ada Validasi Konsistensi Relasi `$assignment` terhadap `$course` pada Parameter URL
 
 * **Lokasi:** `app/Http/Controllers/SubmissionController.php:212-217` dan `266-269` (`method store()`)
 * **Kode yang Diperiksa:**
@@ -186,7 +186,7 @@ Berkas-berkas berikut tidak mengalami perubahan langsung di PR #81 (merupakan ha
 
 ---
 
-#### B. Performa — Query `SELECT` Redundan dan Potensi Lazy Loading pada Proses Unggah
+#### B. Performa, Query `SELECT` Redundan dan Potensi Lazy Loading pada Proses Unggah
 
 * **Lokasi:** `app/Http/Controllers/SubmissionController.php:220-258` dan `266` (`method store()`)
 * **Kode yang Diperiksa:**
@@ -226,7 +226,7 @@ Berkas-berkas berikut tidak mengalami perubahan langsung di PR #81 (merupakan ha
 
 ---
 
-#### C. Struktur & Konsistensi Data — Risiko Berkas Hilang Akibat Alur Rollback `try-catch` yang Tidak Tepat dan Variabel `$isLate` Tidak Tersimpan
+#### C. Struktur dan Konsistensi Data, Risiko Berkas Hilang Akibat Alur Rollback `try-catch` yang Tidak Tepat dan Variabel `$isLate` Tidak Tersimpan
 
 * **Lokasi:** `app/Http/Controllers/SubmissionController.php:232-285` (`method store()`)
 * **Kode yang Diperiksa:**
@@ -284,26 +284,7 @@ Berkas-berkas berikut tidak mengalami perubahan langsung di PR #81 (merupakan ha
 
 ---
 
-### 4. Ringkasan Temuan & Komentar Siap Tempel di GitHub PR #81
-
-| No. | Kategori | Lokasi | Risiko Utama | Saran Konkret |
-|---:|---|---|---|---|
-| 1 | **Keamanan** | `SubmissionController.php:212-217, 266` | URL course mismatch tidak dicek, notifikasi bisa bocor ke dosen MK lain | Tambah `abort_unless((int) $assignment->course_id === (int) $course->id, 404);` atau `scopeBindings()` |
-| 2 | **Performa** | `SubmissionController.php:220-258, 266` | Query `SELECT` ganda (`first()` + `updateOrCreate()`) & potensi lazy loading | Pakai `withExists('grade')`, hindari `updateOrCreate()`, dan `loadMissing('course.lecturer')` |
-| 3 | **Struktur & Alur** | `SubmissionController.php:232, 244-285` | Jika notifikasi gagal, `catch` menghapus file baru padahal DB sudah ter-update | Gunakan `DB::transaction()`, pisahkan notify/hapus file lama ke luar blok `catch` file baru |
-
-**Teks Komentar untuk Ditempel di GitHub PR #81 (`Zweilior/kampuslms-kelompok-B4/pull/81`):**
-
-> Halo @Marchelinosk, terima kasih atas pembaruan fitur unggah tugas dan pengamanan kumpul ulangnya. Setelah saya clone dan tinjau berkas pada PR #81 (`app/Http/Controllers/SubmissionController.php`), berikut beberapa temuan teknis yang perlu diperhatikan:
->
-> 1. **[Keamanan] `app/Http/Controllers/SubmissionController.php:212-217, 266`:** Method `store()` menerima parameter `Course $course` dan `Assignment $assignment`, namun belum memverifikasi apakah `$assignment->course_id === $course->id`. Jika segmen `{course}` di URL diubah ke ID mata kuliah lain, otorisasi pada `$assignment` tetap lolos dan baris `266` (`$course->lecturer`) berisiko mengirimkan notifikasi pengumpulan tugas ke dosen mata kuliah yang salah. **Saran:** Tambahkan `abort_unless((int) $assignment->course_id === (int) $course->id, 404);` di awal method atau aktifkan `->scopeBindings()` pada rute di `routes/web.php`.
-> 2. **[Performa] `app/Http/Controllers/SubmissionController.php:220-258`:** Baris `220` sudah mengambil `$existingSubmission`, namun baris `225` melakukan query tambahan `$existingSubmission->grade()->exists()`, lalu baris `246` memanggil `Submission::updateOrCreate()` yang menjalankan query `SELECT` ulang untuk record yang sama. Selain itu `$course->lecturer` di baris `266` berisiko memicu lazy loading jika belum di-eager load. **Saran:** Gunakan `->withExists('grade')` pada query baris `220`, gunakan `$existingSubmission->update()` / `create()` langsung tanpa `updateOrCreate()`, dan panggil `$assignment->loadMissing('course.lecturer')`.
-> 3. **[Struktur & Konsistensi Data] `app/Http/Controllers/SubmissionController.php:244-285`:** Blok `try` mencakup penyimpanan DB (`246`), penghapusan file lama (`261`), dan pengiriman notifikasi (`268`). Apabila pengiriman notifikasi gagal melempar exception, blok `catch` (`278-284`) akan **menghapus `$newFilePath`** padahal record DB sudah telanjur menunjuk ke path baru dan `$oldFilePath` sudah terhapus — menyebabkan data menggantung/korup (berkas fisik hilang permanen). **Saran:** Bungkus operasi DB dengan `DB::transaction()` dan pindahkan penghapusan `$oldFilePath` serta pemanggilan `$lecturer->notify(...)` ke luar blok `catch` rollback file baru.
-
----
----
-
-## BAGIAN 4: KOLABORASI INTERNAL & TANGGAPAN REVIEW (KELOMPOK 03)
+## BAGIAN 4: KOLABORASI INTERNAL dan TANGGAPAN REVIEW (KELOMPOK 03)
 
 Selain peer review ke Kelompok 4, kelompok kami juga menjalankan rotasi review internal dan menanggapi temuan review yang masuk ke PR kami sendiri:
 
