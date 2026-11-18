@@ -20,6 +20,7 @@ class AssignmentController extends Controller
 
         // [ACCPT-PERF-PAGINATION] Paginasi daftar tugas untuk mencegah pemuatan seluruh tabel sekaligus
         $assignments = $course->assignments()
+            ->with('course')
             ->withCount('submissions')
             ->when(auth()->user()->role === 'mahasiswa', fn ($q) =>
                 $q->where('status', 'published')

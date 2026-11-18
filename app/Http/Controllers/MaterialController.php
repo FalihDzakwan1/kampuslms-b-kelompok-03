@@ -21,7 +21,7 @@ class MaterialController extends Controller
 
         // [ACCPT-PERF-PAGINATION] Paginasi daftar materi untuk mencegah pemuatan seluruh tabel sekaligus
         $materials = $course->materials()
-            ->with('uploader')
+            ->with(['uploader', 'course'])
             ->latest()
             ->paginate(15)
             ->withQueryString();
