@@ -130,7 +130,7 @@
                             <p class="text-xs text-gray-500 -mt-2">Mengunggah berkas baru akan menggantikan berkas pengumpulan Anda sebelumnya.</p>
                         @endif
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Unggah Berkas Tugas (PDF/DOC/DOCX, Maks 2MB)</label>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Unggah Berkas Tugas (PDF/DOC/DOCX, Maks 5MB)</label>
                             <input type="file" name="file" required class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
                             @error('file')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -211,9 +211,15 @@
                                         </td>
                                         <td class="py-3.5 px-4">
                                             @if($sub)
-                                                <a href="{{ route('submissions.download', $sub) }}" target="_blank" download class="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-800 font-semibold bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-md transition">
-                                                    ⬇ {{ $sub->original_name ?? 'Berkas' }}
-                                                </a>
+                                                <div class="flex items-center gap-1.5 flex-wrap">
+                                                    <a href="{{ route('submissions.preview', $sub) }}" target="_blank" class="inline-flex items-center gap-1 text-emerald-700 hover:text-emerald-900 font-semibold bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-md transition text-xs" title="Pratinjau berkas di tab baru">
+                                                        👁 Pratinjau
+                                                    </a>
+                                                    <a href="{{ route('submissions.download', $sub) }}" target="_blank" download class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-semibold bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded-md transition text-xs">
+                                                        ⬇ Unduh
+                                                    </a>
+                                                </div>
+                                                <span class="text-xs text-gray-700 font-medium block mt-1 truncate max-w-[180px]" title="{{ $sub->original_name }}">{{ $sub->original_name }}</span>
                                                 @if($sub->formatted_file_size)
                                                     <span class="text-[10px] text-gray-400 block mt-0.5">{{ $sub->formatted_file_size }}</span>
                                                 @endif

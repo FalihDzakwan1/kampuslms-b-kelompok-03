@@ -24,3 +24,8 @@ yarn-error.log
 /Modul
 .spesifikasi.md
 /storage/debugbar/
+
+# Database SQLite lokal (jangan di-commit)
+/kampus_db
+*.sqlite
+*.sqlite3

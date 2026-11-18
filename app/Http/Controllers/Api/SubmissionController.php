@@ -31,7 +31,7 @@ class SubmissionController extends Controller
         abort_unless($isEnrolled, 403, 'Anda tidak terdaftar di mata kuliah ini.');
 
         $validated = $request->validate([
-            'file' => ['required', 'file', 'mimes:pdf,doc,docx', 'max:2048'], // Max 2MB
+            'file' => ['required', 'file', 'mimes:pdf,doc,docx', 'max:5120'], // 5 MB (satuan max = KB)
             'note' => ['nullable', 'string', 'max:1000'],
         ]);
 

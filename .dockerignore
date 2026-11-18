@@ -12,3 +12,6 @@ storage/framework/sessions/*
 storage/framework/views/*
 
 .phpunit.result.cache
+kampus_db
+*.sqlite
+*.sqlite3

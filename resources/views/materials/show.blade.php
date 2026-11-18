@@ -68,14 +68,21 @@
                 @if($material->type === 'file' && $material->file_path)
                     <div class="flex items-center justify-between flex-wrap gap-4">
                         <div class="flex items-center gap-3">
-                            <span class="text-4xl">
+                            <a href="{{ route('materials.preview', $material) }}" target="_blank"
+                                title="Klik untuk pratinjau berkas di tab baru"
+                                class="text-4xl hover:scale-110 transition-transform duration-150 inline-block">
                                 @php
                                     $ext = strtoupper(pathinfo($material->original_name ?? '', PATHINFO_EXTENSION));
                                 @endphp
                                 @if($ext === 'PDF') 📕 @elseif(in_array($ext, ['PPTX', 'PPT'])) 📊 @elseif(in_array($ext, ['DOCX', 'DOC'])) 📝 @else 📄 @endif
-                            </span>
+                            </a>
                             <div>
-                                <h4 class="text-base font-bold text-gray-800">{{ $material->original_name ?? 'Berkas Materi Perkuliahan' }}</h4>
+                                <a href="{{ route('materials.preview', $material) }}" target="_blank"
+                                    class="text-base font-bold text-gray-800 hover:text-purple-600 hover:underline transition inline-flex items-center gap-1.5"
+                                    title="Klik untuk pratinjau berkas di tab baru">
+                                    <span>{{ $material->original_name ?? 'Berkas Materi Perkuliahan' }}</span>
+                                    <span class="text-xs text-purple-500 font-normal">⛶</span>
+                                </a>
                                 <div class="flex items-center gap-2 text-xs text-gray-500 mt-1">
                                     <span>
                                         {{ $material->formatted_file_size ?? 'Dokumen Perkuliahan' }}

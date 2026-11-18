@@ -32,7 +32,14 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          php-version: '8.4'
+
+      - name: Pastikan .env tidak ter-commit
+        run: |
+          if [ -n "$(git ls-files .env)" ]; then
+            echo "::error::.env ter-commit ke repository. Hapus dengan: git rm --cached .env"
+            exit 1
+          fi
 
       - name: Install Composer
         run: composer install --no-progress
@@ -44,10 +51,11 @@ jobs:
 
       - name: Configure Database
         run: |
-          sed -i 's/DB_HOST=.*/DB_HOST=127.0.0.1/' .env
-          sed -i 's/DB_DATABASE=.*/DB_DATABASE=laravel/' .env
-          sed -i 's/DB_USERNAME=.*/DB_USERNAME=root/' .env
-          sed -i 's/DB_PASSWORD=.*/DB_PASSWORD=password/' .env
+          sed -i 's/^#\? \?DB_CONNECTION=.*/DB_CONNECTION=mysql/' .env
+          sed -i 's/^#\? \?DB_HOST=.*/DB_HOST=127.0.0.1/' .env
+          sed -i 's/^#\? \?DB_DATABASE=.*/DB_DATABASE=laravel/' .env
+          sed -i 's/^#\? \?DB_USERNAME=.*/DB_USERNAME=root/' .env
+          sed -i 's/^#\? \?DB_PASSWORD=.*/DB_PASSWORD=password/' .env
 
       - name: Migrate Fresh Seed
         run: php artisan migrate:fresh --seed

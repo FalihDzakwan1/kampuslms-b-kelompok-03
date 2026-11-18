@@ -502,7 +502,7 @@ server: Apache/2.4.62 (Debian)
 
 ---
 
-## 8. Verifikasi Akun Demo pada Server Produksi (Deliverable 7)
+## 8. Verifikasi Akun Demo pada Server Produksi
 
 Sesuai ketentuan **Spesifikasi Proyek Bagian 4.4** dan **Deliverable 7 Milestone M4**, tiga akun demo wajib untuk penguji dipastikan aktif dan berfungsi penuh di server produksi melalui seeder idempotent [`DemoAccountSeeder`](../database/seeders/DemoAccountSeeder.php) yang dijalankan secara otomatis pada saat kontainer produksi menyala:
 
@@ -512,7 +512,7 @@ php artisan db:seed --class=DemoAccountSeeder --force
 
 ### Tabel Kredensial Akun Demo Produksi
 
-| Peran (`role`) | Nama Pengguna | Alamat Email | Kata Sandi | NIM / NIP | Status di Server Produksi |
+| `role` | Nama Pengguna | Alamat Email | Kata Sandi | NIM / NIP | Status di Server Produksi |
 |---|---|---|---|---|---|
 | **Admin** | Admin Utama | `admin@kampuslms.test` | `password` | `-` | 🟢 Aktif & Terverifikasi |
 | **Dosen** | Dosen 1 | `dosen@kampuslms.test` | `password` | `NIP001` | 🟢 Aktif & Terverifikasi |
@@ -600,19 +600,19 @@ Untuk memastikan aplikasi produksi benar-benar dapat diakses dari jaringan luar 
 
 ### Tabel Log Pengujian Lintas Perangkat (Smartphone Anggota Kelompok)
 
-| No | Penguji (NIM) | Perangkat & OS | Peramban (*Browser*) | Jaringan | Peran yang Diuji | Skenario yang Diuji di HP | Hasil & Catatan Responsivitas |
-|:---:|---|---|---|---|---|---|---|
-| **1** | **Falih Dzakwan** (`10241028`) | Android 14 (Layar 6.6", 1080×2408) | Google Chrome Mobile v130 | Data Seluler 4G/LTE | `admin` (`admin@kampuslms.test`) | 1. Buka halaman login via HTTPS (cek ikon gembok SSL).<br>2. Login sebagai Admin & buka Dashboard statistik.<br>3. Buka daftar pengguna & daftar mata kuliah dengan paginasi.<br>4. Kelola peserta (*enrollment*) mata kuliah. | ✅ **Berhasil (Lancar)**.<br>Sertifikat SSL valid, aset CSS/JS Tailwind termuat penuh tanpa *mixed content*, tabel dapat di-*scroll* horizontal dengan rapi di layar HP. |
-| **2** | **Elsya Nur Aulia Handayani** (`10241026`) | Android 14 (Layar 6.5", 1080×2340) | Google Chrome Mobile v130 | Wi-Fi Rumah | `dosen` (`dosen@kampuslms.test`) | 1. Login sebagai Dosen & cek ringkasan kelas yang diampu.<br>2. Buat tugas baru berstatus *Published* & unggah materi PDF.<br>3. Buka detail pengumpulan tugas mahasiswa & berikan nilai + feedback.<br>4. Cek tabel Rekap Nilai mata kuliah. | ✅ **Berhasil (Lancar)**.<br>Form input tugas dan penilaian nyaman diakses lewat layar sentuh, proses simpan tugas cepat karena notifikasi berjalan via *queue worker*. |
-| **3** | **Fatika Rizki Syahada** (`10241030`) | iOS 17 / iPhone (Layar 6.1", 1170×2532) | Safari Mobile (iOS) | Data Seluler 4G/LTE | `mahasiswa` (`mahasiswa@kampuslms.test`) | 1. Login sebagai Mahasiswa.<br>2. Cek lonceng notifikasi di navbar (polling badge tugas baru & nilai keluar).<br>3. Unduh berkas materi perkuliahan.<br>4. Unggah berkas tugas PDF (< 2 MB) dan lihat riwayat pengumpulan serta kartu statistik nilai. | ✅ **Berhasil (Lancar)**.<br>Komponen navigasi atas, dropdown/halaman notifikasi, dan kartu statistik nilai tampil proporsional di Safari iOS tanpa elemen yang bertumpuk. |
-| **4** | **Indriani Anwar** (`10241036`) | Android 13 (Layar 6.4", 1080×2400) | Chrome Mobile (Mode Penyamaran / *Incognito*) | Data Seluler 4G/LTE | `mahasiswa` & Anonim (*Guest*) | 1. Uji akses URL `/submissions/1/download` tanpa login dari jendela penyamaran HP.<br>2. Login sebagai Mahasiswa & coba akses ID submission milik mahasiswa lain (`/mahasiswa/submissions/2`).<br>3. Uji logout sesi dan pastikan tombol *Back* tidak membuka ulang halaman privat. | ✅ **Berhasil (Aman)**.<br>Tanpa login langsung dialihkan ke `/login` (`302`), dan percobaan akses submission milik mahasiswa lain ditolak dengan halaman `403 Forbidden`. |
+| No | Penguji (NIM) |  *Browser* | Jaringan | Peran yang Diuji | Skenario yang Diuji di HP | Hasil & Catatan Responsivitas |
+|:---:|---|---|---|---|---|---|
+| **1** | **Falih Dzakwan** (`10241028`) | Google Chrome Mobile | Data Seluler 4G/LTE | `admin` (`admin@kampuslms.test`) | 1. Buka halaman login via HTTPS (cek ikon gembok SSL).<br>2. Login sebagai Admin & buka Dashboard statistik.<br>3. Buka daftar pengguna & daftar mata kuliah dengan paginasi.<br>4. Kelola peserta (*enrollment*) mata kuliah. | ✅ **Berhasil (Lancar)**.<br>Sertifikat SSL valid, aset CSS/JS Tailwind termuat penuh tanpa *mixed content*, tabel dapat di-*scroll* horizontal dengan rapi di layar HP. |
+| **2** | **Elsya Nur Aulia Handayani** (`10241026`) | Google Chrome Mobile | Wi-Fi Rumah | `dosen` (`dosen@kampuslms.test`) | 1. Login sebagai Dosen & cek ringkasan kelas yang diampu.<br>2. Buat tugas baru berstatus *Published* & unggah materi PDF.<br>3. Buka detail pengumpulan tugas mahasiswa & berikan nilai + feedback.<br>4. Cek tabel Rekap Nilai mata kuliah. | ✅ **Berhasil (Lancar)**.<br>Form input tugas dan penilaian nyaman diakses lewat layar sentuh, proses simpan tugas cepat karena notifikasi berjalan via *queue worker*. |
+| **3** | **Fatika Rizki Syahada** (`10241030`) | Google Chrome Mobile | Data Seluler 4G/LTE | `mahasiswa` (`mahasiswa@kampuslms.test`) | 1. Login sebagai Mahasiswa.<br>2. Cek lonceng notifikasi di navbar (polling badge tugas baru & nilai keluar).<br>3. Unduh berkas materi perkuliahan.<br>4. Unggah berkas tugas PDF (< 2 MB) dan lihat riwayat pengumpulan serta kartu statistik nilai. | ✅ **Berhasil (Lancar)**.<br>Komponen navigasi atas, dropdown/halaman notifikasi, dan kartu statistik nilai tampil proporsional tanpa elemen yang bertumpuk. |
+| **4** | **Indriani Anwar** (`10241036`) | Google Chrome Mobile | Data Seluler 4G/LTE | `mahasiswa` (`mahasiswa@kampuslms.test`) | 1. Uji akses URL `/submissions/1/download` tanpa login dari jendela penyamaran HP.<br>2. Login sebagai Mahasiswa & coba akses ID submission milik mahasiswa lain (`/mahasiswa/submissions/2`).<br>3. Uji logout sesi dan pastikan tombol *Back* tidak membuka ulang halaman privat. | ✅ **Berhasil (Aman)**.<br>Tanpa login langsung dialihkan ke `/login` (`302`), dan percobaan akses submission milik mahasiswa lain ditolak dengan halaman `403 Forbidden`. |
 
 ### Ringkasan Temuan Pengujian di Perangkat HP:
-1. **Validitas SSL & Cookie Sesi Mobile:** Pada seluruh peramban HP (Chrome Android & Safari iOS), koneksi HTTPS dikenali aman dan cookie sesi (`Secure; HttpOnly; SameSite=Lax`) tersimpan dengan benar sehingga tidak terjadi error `419 Page Expired` saat mengirim form login maupun unggah tugas.
+1. **Validitas SSL & Cookie Sesi Mobile:** Pada seluruh browser HP, koneksi HTTPS dikenali aman dan cookie sesi (`Secure; HttpOnly; SameSite=Lax`) tersimpan dengan benar sehingga tidak terjadi error `419 Page Expired` saat mengirim form login maupun unggah tugas.
 2. **Kinerja & Kecepatan Muat di Jaringan Seluler:** Berkat kompilasi aset produksi (`npm run build`), caching konfigurasi/view, dan eliminasi N+1 query (Minggu 11), waktu muat halaman utama dan rekap nilai pada jaringan 4G rata-rata di bawah **1 detik**.
 3. **Antarmuka Responsif:** Tata letak berbasis Tailwind CSS menyesuaikan lebar viewport *mobile* (`sm:` / `md:` breakpoints), tombol aksi memiliki area sentuh yang memadai, dan tabel data lebar menggunakan pembungkus `overflow-x-auto` sehingga tidak merusak lebar halaman.
 
-*(Catatan: Apabila ingin melampirkan tangkapan layar tambahan dari HP, berkas gambar dapat disimpan di folder `docs/image/` dan ditautkan di bawah bagian ini).*
+
 
 ---
 

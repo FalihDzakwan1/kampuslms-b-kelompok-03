@@ -29,8 +29,10 @@ class GradeController extends Controller
             403, 'Anda tidak memiliki akses ke sumber daya ini.'
         );
 
+        $maxScore = $submission->assignment->max_score ?? 100;
+        
         $validated = $request->validate([
-            'score' => 'required|numeric|min:0',
+            'score' => 'required|numeric|min:0|max:' . $maxScore,
             'feedback' => 'nullable|string|max:2000',
         ]);
 

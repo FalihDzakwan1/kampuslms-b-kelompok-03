@@ -46,23 +46,69 @@
                 </div>
             </div>
 
+            @php
+                $ext = strtoupper(pathinfo($submission->original_name ?? '', PATHINFO_EXTENSION));
+                $isPdf = $ext === 'PDF';
+            @endphp
+
             {{-- Berkas yang Dikumpulkan --}}
             <div class="p-6 bg-blue-50/50 rounded-2xl border border-blue-100 mb-6 flex items-center justify-between flex-wrap gap-4">
                 <div class="flex items-center gap-3">
-                    <span class="text-3xl">📁</span>
+                    <a href="{{ route('submissions.preview', $submission) }}" target="_blank"
+                        title="Klik untuk pratinjau berkas di tab baru"
+                        class="text-3xl hover:scale-110 transition-transform duration-150 inline-block">
+                        @if($isPdf) 📕 @else 📁 @endif
+                    </a>
                     <div>
-                        <h4 class="text-sm font-bold text-gray-800">{{ $submission->original_name ?? 'Berkas Tugas' }}</h4>
-                        <p class="text-xs text-gray-500 mt-0.5">
-                            {{ $submission->formatted_file_size ?? 'Dokumen' }}
+                        <a href="{{ route('submissions.preview', $submission) }}" target="_blank"
+                            class="text-sm font-bold text-gray-800 hover:text-blue-600 hover:underline transition inline-flex items-center gap-1.5"
+                            title="Klik untuk pratinjau berkas di tab baru">
+                            <span>{{ $submission->original_name ?? 'Berkas Tugas' }}</span>
+                            <span class="text-xs text-blue-500 font-normal">⛶</span>
+                        </a>
+                        <p class="text-xs text-gray-500 mt-0.5 flex items-center gap-2">
+                            <span>{{ $submission->formatted_file_size ?? 'Dokumen' }}</span>
+                            <span>•</span>
+                            <span class="text-blue-700 font-medium">Tersimpan di Disk Privat KampusLMS</span>
                         </p>
                     </div>
                 </div>
 
-                <a href="{{ route('submissions.download', $submission) }}" target="_blank" download
-                    class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition flex items-center gap-2 shadow-sm">
-                    ⬇ Unduh Berkas Tugas
-                </a>
+                <div class="flex items-center gap-2">
+                    <a href="{{ route('submissions.preview', $submission) }}" target="_blank"
+                        class="px-4 py-2.5 rounded-xl bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 font-semibold text-xs transition flex items-center gap-1.5 shadow-sm">
+                        <span>👁 Pratinjau Berkas</span>
+                    </a>
+                    <a href="{{ route('submissions.download', $submission) }}" target="_blank" download
+                        class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition flex items-center gap-2 shadow-sm">
+                        <span>⬇ Unduh Berkas Tugas</span>
+                    </a>
+                </div>
             </div>
+
+            {{-- Viewer PDF Interaktif Jika Berkas Berformat PDF --}}
+            @if($isPdf && $submission->file_path)
+                <div class="mb-6 rounded-2xl overflow-hidden border border-gray-200 bg-gray-900 shadow-sm">
+                    <div class="p-3 bg-gray-800 text-gray-200 text-xs flex justify-between items-center px-4">
+                        <div class="flex items-center gap-2">
+                            <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                            <span class="font-medium text-gray-300">Pratinjau Jawaban Mahasiswa: {{ $submission->original_name }}</span>
+                            <span class="text-gray-400">({{ $submission->formatted_file_size ?? 'Dokumen PDF' }})</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-[11px] text-gray-400 hidden sm:inline">Disk Privat Terproteksi</span>
+                            <a href="{{ route('submissions.preview', $submission) }}" target="_blank"
+                                class="text-xs text-blue-300 hover:text-blue-100 font-medium underline flex items-center gap-1">
+                                <span>⛶ Buka Tab Penuh</span>
+                            </a>
+                        </div>
+                    </div>
+                    <iframe src="{{ route('submissions.preview', $submission) }}#toolbar=1"
+                        class="w-full h-[650px] border-0 bg-white"
+                        title="Pratinjau PDF {{ $submission->original_name }}">
+                    </iframe>
+                </div>
+            @endif
 
             {{-- Catatan Mahasiswa --}}
             @if($submission->note)
