@@ -4,7 +4,7 @@
 
 ---
 
-# PEER REVIEW — Pull Request #62
+# PEER REVIEW KELOMPOK SENDIRI — Pull Request #62
 
 ## 1. Informasi Pull Request
 
@@ -34,7 +34,6 @@
 
 ## 3. Hasil Pemeriksaan Kode
 
-Pemeriksaan dilakukan berdasarkan perubahan yang terlihat pada tab **Files changed** Pull Request #62. Temuan difokuskan pada kode yang berkaitan langsung dengan penambahan rekap nilai dan statistik submission.
 
 ### A. Keamanan — Pembatasan akses data rekap nilai
 
@@ -72,7 +71,6 @@ $this->authorize('view', $course);
 
 Aturan Policy harus memastikan dosen hanya dapat melihat mata kuliah yang menjadi kewenangannya, sedangkan mahasiswa hanya dapat mengakses mata kuliah sesuai aturan pendaftaran yang berlaku.
 
-**Catatan validitas :** Diff yang tersedia belum menunjukkan seluruh bagian awal method `show()` dan seluruh konfigurasi route/middleware. Karena itu, temuan ini perlu dikonfirmasi pada implementasi lengkap sebelum dinyatakan sebagai kerentanan yang terbukti. Jangan menyatakan bahwa akses tidak terlindungi apabila pemeriksaan tersebut sudah dilakukan melalui middleware atau Policy.
 
 ### B. Performa — Pengambilan seluruh submission tanpa pagination
 
@@ -216,5 +214,255 @@ Dari sisi performa, penggunaan `get()` pada daftar submission perlu diperhatikan
 Hasil review ini menjadi dasar pemberian masukan kepada author PR. Temuan yang disampaikan harus ditanggapi berdasarkan kondisi kode sebenarnya, dan minimal satu temuan perlu ditindaklanjuti melalui commit perbaikan.
 
 ---
+### Nama : Indriani Anwar
 
-**Catatan :** Dokumen ini disusun berdasarkan diff Pull Request #62 yang tersedia. Temuan keamanan masih memerlukan konfirmasi terhadap keseluruhan method, route, middleware, dan Policy yang digunakan. Jangan menandai temuan sebagai kerentanan terkonfirmasi sebelum pemeriksaan tersebut selesai. Status tanggapan dan commit perbaikan juga harus diperbarui setelah proses review benar-benar dilakukan.
+#### NIM : 10241036
+
+---
+
+# PEER REVIEW KELOMPOK LAIN — Pull Request #148
+
+## 1. Informasi Pull Request
+
+| Keterangan | Informasi |
+|---|---|
+| Repository | `Zweilior/kampuslms-kelompok-B4` |
+| Pull Request | `#148` |
+| Author | `@xcyltra` (Laudya Aprilia Khoirum) |
+| Reviewer | Indriani Anwar |
+| Branch sumber | `laudya-38` |
+| Branch tujuan | `main` |
+| Fokus perubahan | Penghapusan pagination pada enrollment dan pendaftaran beberapa mahasiswa sekaligus (*bulk enrollment*) |
+
+**Judul perubahan yang diperiksa :**
+
+`style(enrollment): menghapus pagination dan perubahan enroll`
+
+## 2. Berkas yang Diperiksa
+
+| No. | Berkas | Perubahan |
+|---:|---|---|
+| 1 | `app/Http/Controllers/CourseEnrollmentController.php` | Menghapus pagination pada daftar mahasiswa terdaftar dan mahasiswa yang tersedia, serta mengubah `dosenStore()` agar menerima array `student_ids[]`. |
+| 2 | `resources/views/dosen/courses/enrollments.blade.php` | Mengubah form menjadi multi-select dan menghapus tautan pagination. |
+| 3 | `resources/css/dosen/courses.css` | Menambahkan styling pada elemen pilihan multi-select. |
+| 4 | `tests/Feature/DosenCourseEnrollmentTest.php` | Menyesuaikan pengujian untuk daftar tanpa pagination dan pendaftaran beberapa mahasiswa sekaligus. |
+
+## 3. Hasil Pemeriksaan Kode
+
+Pemeriksaan dilakukan berdasarkan perubahan yang terlihat pada tab **Files changed** Pull Request #148. Temuan difokuskan pada perubahan penghapusan pagination dan perubahan proses pendaftaran beberapa mahasiswa sekaligus.
+
+### A. Keamanan — Pembatasan jumlah input pada array `student_ids`
+
+**Lokasi pemeriksaan :** `app/Http/Controllers/CourseEnrollmentController.php`, method `dosenStore()`, sekitar baris 78–88.
+
+**Kode yang diperiksa :**
+
+```php
+$validated = $request->validate([
+    'student_ids' => ['required', 'array', 'min:1'],
+    'student_ids.*' => [
+        'required',
+        Rule::exists('users', 'id')->where('role', 'mahasiswa'),
+    ],
+]);
+```
+
+**Temuan :**
+
+Validasi `student_ids` sudah memastikan bahwa input berbentuk array, berisi minimal satu data, dan setiap ID yang dikirim harus terdaftar sebagai pengguna dengan role `mahasiswa`. Namun, validasi tersebut belum menetapkan batas maksimum jumlah ID dalam satu permintaan. belum ada pembatasan jumlah mahasiswa yang dapat dikirim dalam satu kali request.
+
+**Risiko :**
+
+Request dengan jumlah ID yang sangat besar dapat menyebabkan proses validasi dan sinkronisasi relasi mahasiswa dengan mata kuliah membutuhkan sumber daya server lebih banyak. Semakin banyak ID yang dikirim dalam satu permintaan, semakin besar pula pekerjaan yang harus diproses oleh aplikasi. Kondisi ini berpotensi meningkatkan beban server apabila tidak ada batas jumlah input.
+
+**Saran perbaikan :**
+
+Tetapkan batas maksimum jumlah mahasiswa per satu kali pendaftaran sesuai kebijakan aplikasi. Sebagai contoh, apabila batas operasionalnya 50 mahasiswa per permintaan, validasi dapat ditulis sebagai berikut:
+
+```php
+$validated = $request->validate([
+    'student_ids' => ['required', 'array', 'min:1', 'max:50'],
+    'student_ids.*' => [
+        'required',
+        Rule::exists('users', 'id')->where('role', 'mahasiswa'),
+    ],
+]);
+```
+
+Aturan `max:50` merupakan contoh pembatasan jumlah mahasiswa dan perlu disesuaikan dengan kebutuhan serta kebijakan pendaftaran pada sistem.
+
+### B. Performa — Pengambilan seluruh mahasiswa terdaftar tanpa pagination
+
+**Lokasi pemeriksaan :** `app/Http/Controllers/CourseEnrollmentController.php`, method `dosenIndex()`, sekitar baris 57–61.
+
+**Kode yang diperiksa :**
+
+```php
+$students = $course->students()
+    ->where('users.role', 'mahasiswa')
+    ->orderBy('users.name')
+    ->get(['users.*']);
+```
+
+**Perubahan dari kode sebelumnya :**
+
+```php
+$students = $course->students()
+    ->where('users.role', 'mahasiswa')
+    ->orderBy('users.name')
+    ->paginate(15, ['users.*'], 'students_page')
+    ->withQueryString();
+```
+
+**Temuan :**
+
+Pada PR ini, pagination untuk daftar mahasiswa yang sudah terdaftar pada mata kuliah dihapus dan diganti dengan `get()`. Akibatnya, query mengambil seluruh mahasiswa yang terdaftar tanpa membatasi jumlah record per halaman.
+
+**Risiko :**
+
+Jika jumlah mahasiswa dalam suatu mata kuliah bertambah besar, aplikasi harus mengambil dan memuat seluruh data mahasiswa sekaligus. Hal tersebut dapat meningkatkan penggunaan memori dan waktu pemrosesan pada server. Daftar yang lebih panjang juga membutuhkan lebih banyak elemen HTML untuk ditampilkan pada browser.
+
+**Saran perbaikan :**
+
+Pertahankan pagination pada daftar mahasiswa yang sudah terdaftar, misalnya menggunakan `paginate(15)`. Dengan demikian, aplikasi hanya mengambil sejumlah data sesuai batas halaman dan pengguna tetap dapat berpindah halaman untuk melihat seluruh daftar.
+
+### C. Performa — Pengambilan seluruh mahasiswa yang belum terdaftar tanpa pagination
+
+**Lokasi pemeriksaan :** `app/Http/Controllers/CourseEnrollmentController.php`, method `dosenIndex()`, sekitar baris 62–68.
+
+**Kode yang diperiksa :**
+
+```php
+$availableStudents = User::query()
+    ->where('role', 'mahasiswa')
+    ->whereDoesntHave('courses', fn ($query) => $query->where('courses.id', $course->id))
+    ->orderBy('name')
+    ->get();
+```
+
+**Perubahan dari kode sebelumnya :**
+
+```php
+$availableStudents = User::query()
+    ->where('role', 'mahasiswa')
+    ->whereDoesntHave('courses', fn ($query) => $query->where('courses.id', $course->id))
+    ->orderBy('name')
+    ->paginate(15, ['*'], 'available_students_page')
+    ->withQueryString();
+```
+
+**Temuan :**
+
+Pagination pada daftar mahasiswa yang belum terdaftar juga dihapus dan diganti dengan `get()`. Query `whereDoesntHave()` tetap digunakan untuk mencari mahasiswa yang belum terhubung dengan mata kuliah, tetapi hasilnya sekarang diambil seluruhnya tanpa batas jumlah data.
+
+**Risiko :**
+
+Ketika jumlah mahasiswa semakin besar, server harus memuat seluruh hasil query ke memori. Selain itu, seluruh mahasiswa yang tersedia ditampilkan sebagai elemen `<option>` pada multi-select. Jika jumlahnya sangat banyak, ukuran halaman dan jumlah elemen DOM meningkat sehingga proses pemuatan serta interaksi pada browser dapat menjadi lebih lambat.
+
+**Saran perbaikan :**
+
+Gunakan pencarian dinamis (*search/autocomplete*) agar daftar mahasiswa diambil sesuai kata kunci dan kebutuhan pengguna. Alternatifnya, gunakan pagination atau pembatasan jumlah hasil pencarian. Jika kebutuhan dosen adalah memilih beberapa mahasiswa sekaligus, komponen pencarian perlu mempertahankan pilihan yang sudah dipilih meskipun pengguna melakukan pencarian baru.
+
+### D. Struktur dan Keterbacaan — Pemanggilan `array_map()` berulang di dalam perulangan Blade
+
+**Lokasi pemeriksaan :** `resources/views/dosen/courses/enrollments.blade.php`, sekitar baris 40–46.
+
+**Kode yang diperiksa :**
+
+```blade
+<select id="student_ids" name="student_ids[]" multiple required size="8">
+    @foreach ($availableStudents as $student)
+        <option
+            value="{{ $student->id }}"
+            @selected(in_array(
+                (string) $student->id,
+                array_map('strval', old('student_ids', [])),
+                true
+            ))
+        >
+            {{ $student->name }} · {{ $student->nim_nip }}
+        </option>
+    @endforeach
+</select>
+```
+
+**Temuan :**
+
+Pemanggilan `array_map('strval', old('student_ids', []))` berada di dalam `@foreach`. Akibatnya, proses konversi nilai lama menjadi string dilakukan berulang kali pada setiap mahasiswa, meskipun data yang dikonversi sama.
+
+**Dampak :**
+
+Pengulangan proses tersebut menambah pekerjaan yang sebenarnya dapat dilakukan satu kali sebelum perulangan. Ekspresi `@selected` juga menjadi lebih panjang sehingga template Blade kurang mudah dibaca dan dipelihara.
+
+**Saran perbaikan :**
+
+Siapkan data ID mahasiswa yang sebelumnya dipilih sebelum menjalankan perulangan. Agar pemeriksaan keanggotaan lebih efisien, data dapat diubah menjadi lookup array:
+
+```blade
+@php
+    $selectedStudentIds = array_fill_keys(
+        array_map('strval', old('student_ids', [])),
+        true
+    );
+@endphp
+
+@foreach ($availableStudents as $student)
+    <option
+        value="{{ $student->id }}"
+        @selected(isset($selectedStudentIds[(string) $student->id]))
+    >
+        {{ $student->name }} · {{ $student->nim_nip }}
+    </option>
+@endforeach
+```
+
+Dengan cara tersebut, normalisasi ID dilakukan satu kali di luar perulangan dan pemeriksaan pilihan menggunakan `isset()`.
+
+## 4. Ringkasan Temuan Review
+
+| No. | Kategori | Temuan | Rekomendasi |
+|---:|---|---|---|
+| 1 | Keamanan | Validasi `student_ids` belum memiliki batas maksimum jumlah mahasiswa dalam satu request. | Tambahkan aturan `max` sesuai kebijakan jumlah pendaftaran aplikasi. |
+| 2 | Performa | Pagination pada daftar `$students` dihapus dan diganti `get()`. | Pertahankan pagination pada daftar mahasiswa terdaftar. |
+| 3 | Performa | Pagination pada daftar `$availableStudents` dihapus dan diganti `get()`. | Gunakan pencarian dinamis, pagination, atau pembatasan hasil. |
+| 4 | Struktur/keterbacaan | `array_map()` dipanggil berulang di dalam loop Blade. | Siapkan lookup array sebelum perulangan. |
+
+
+## 5. Komentar untuk Pull Request GitHub
+
+### Komentar 1 — Keamanan
+
+**File :** `app/Http/Controllers/CourseEnrollmentController.php`
+
+Validasi `student_ids` saat ini sudah memastikan input berbentuk array, memiliki minimal satu data, dan setiap ID merupakan pengguna dengan role mahasiswa. Namun, belum terdapat batas maksimum jumlah ID dalam satu request. Jika request memuat jumlah ID yang sangat besar, proses validasi dan sinkronisasi relasi dapat membutuhkan sumber daya server lebih banyak. Sebaiknya tambahkan batas maksimum jumlah mahasiswa sesuai kebijakan pendaftaran, misalnya menggunakan aturan `max:50` apabila batas tersebut sesuai dengan kebutuhan aplikasi.
+
+### Komentar 2 — Performa: daftar mahasiswa terdaftar
+
+**File :** `app/Http/Controllers/CourseEnrollmentController.php`
+
+Pada query `$students`, pagination `paginate(15)` diubah menjadi `get()`. Perubahan ini menyebabkan seluruh mahasiswa yang sudah terdaftar pada mata kuliah diambil sekaligus. Jika jumlah mahasiswa bertambah, penggunaan memori dan waktu pemrosesan server dapat meningkat. Sebaiknya pagination tetap dipertahankan untuk daftar mahasiswa terdaftar agar data dimuat secara bertahap.
+
+### Komentar 3 — Performa: daftar mahasiswa yang tersedia
+
+**File :** `app/Http/Controllers/CourseEnrollmentController.php`
+
+Query `$availableStudents` juga mengalami perubahan dari `paginate(15)` menjadi `get()`. Karena hasil query digunakan sebagai pilihan pada elemen multi-select, seluruh mahasiswa yang belum terdaftar akan dimuat sekaligus ke dalam halaman. Pada jumlah data yang besar, hal ini dapat memperbesar ukuran halaman dan memperlambat interaksi browser. Sebaiknya gunakan pencarian dinamis (*autocomplete*) atau pembatasan hasil pencarian, dengan tetap mempertahankan pilihan mahasiswa yang sudah dipilih.
+
+### Komentar 4 — Struktur dan Keterbacaan
+
+**File :** `resources/views/dosen/courses/enrollments.blade.php`
+
+Di dalam `@foreach`, `array_map('strval', old('student_ids', []))` dipanggil berulang kali untuk setiap mahasiswa, padahal data yang dikonversi sama. Proses normalisasi tersebut sebaiknya dilakukan satu kali sebelum perulangan. Hasilnya dapat disimpan sebagai lookup array dan diperiksa menggunakan `isset()` pada atribut `@selected`. Dengan begitu, ekspresi Blade lebih ringkas dan tidak melakukan konversi array berulang.
+
+## 6. Kesimpulan
+
+Berdasarkan pemeriksaan Pull Request #148, perubahan yang diajukan berfokus pada penghapusan pagination dan penambahan kemampuan pendaftaran beberapa mahasiswa sekaligus (*bulk enrollment*).
+
+Dari sisi keamanan, validasi array `student_ids` belum menetapkan batas maksimum jumlah mahasiswa dalam satu request. Penambahan aturan `max` sesuai kebijakan pendaftaran dapat membatasi ukuran input sehingga aplikasi tidak menerima jumlah data yang terlalu besar dalam satu kali proses.
+
+Dari sisi performa, penghapusan pagination pada daftar mahasiswa yang sudah terdaftar dan mahasiswa yang belum terdaftar menyebabkan seluruh hasil query dimuat sekaligus. Kondisi ini berpotensi meningkatkan penggunaan memori server dan memperlambat pemuatan halaman ketika jumlah mahasiswa bertambah. Kedua query tersebut perlu ditangani sesuai kebutuhan tampilannya, yaitu dengan mempertahankan pagination atau menggunakan pencarian dinamis.
+
+Dari sisi struktur dan keterbacaan, pemanggilan `array_map()` di dalam perulangan Blade menyebabkan proses konversi data yang sama dilakukan berulang kali. Proses tersebut dapat dipindahkan ke luar perulangan agar kode lebih ringkas dan mudah dipelihara.
+
+Secara keseluruhan, review menghasilkan **empat temuan yang mencakup tiga kategori**, yaitu keamanan, performa, serta struktur dan keterbacaan. Setiap temuan dilengkapi lokasi kode, penjelasan risiko atau dampak, dan saran perbaikan yang dapat diterapkan. Hasil akhir tindak lanjut akan dilengkapi setelah author memberikan tanggapan dan bukti perbaikan.
+

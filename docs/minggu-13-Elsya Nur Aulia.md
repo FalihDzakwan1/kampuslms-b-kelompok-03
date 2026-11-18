@@ -97,7 +97,7 @@ Pengujian skenario kegagalan ini dijalankan pada branch percobaan khusus (`perco
 
 ---
 
-## BAGIAN 3: BUILD — Laporan Peer Review Formal (Pull Request #59)
+## BAGIAN 3: BUILD — Laporan Peer Review kelompok sendiri (Pull Request #59)
 
 Pemeriksaan peer review dilakukan terhadap Pull Request yang diajukan oleh **Indriani Anwar** (`Indri6`) pada branch `Indri`.
 
@@ -352,3 +352,139 @@ Untuk memenuhi persyaratan bahwa minimal satu temuan benar-benar diselesaikan da
 Secara keseluruhan, Pull Request #59 yang disusun oleh Indriani Anwar telah berhasil mengimplementasikan modul antarmuka notifikasi yang fungsional, rapi, dan konsisten dengan tema desain visual KampusLMS.
 
 Dari aspek keamanan, proteksi kepemilikan data telah diterapkan secara baik menggunakan `NotificationPolicy` untuk mencegah celah IDOR. Dari aspek performa, temuan terkait efisiensi query penandaan massal berhasil diselesaikan secara nyata melalui optimasi *Query Builder*, yang membuktikan efektivitas proses *peer review* dalam meningkatkan kualitas kode aplikasi sebelum masuk ke branch utama. Tanggapan yang diberikan terhadap temuan keamanan dan struktur kode juga memiliki landasan pertimbangan teknis yang rasional (*engineering trade-off*), sehingga proses kolaborasi berjalan secara sehat dan berorientasi pada kualitas produk perangkat lunak.
+
+
+
+
+----
+
+## BAGIAN 3: BUILD — Laporan Peer Review kelompok orang lain (Pull Request - Kelompok B-04)
+
+Sesuai instruksi rotasi melingkar antar-kelompok, Kelompok B-03 bertugas melakukan peer review terhadap repositori **Kelompok B-04** (`Zweilior/kampuslms-kelompok-B4`). Pemeriksaan dilakukan terhadap Pull Request yang diajukan oleh **ferdiansyaafqgh** (M. Irsyaad Fiqi Ferdiansyah) pada branch `ferdiansyaa-b2`.
+
+---
+
+# PEER REVIEW — Pull Request  (Kelompok B-04)
+
+## 1. Informasi Pull Request
+
+| Keterangan | Informasi Rinci |
+|---|---|
+| **Repository** | `Zweilior/kampuslms-kelompok-B4` |
+| **Pull Request** | `#103` |
+| **Author (Pembuat PR)** | ferdiansyaafqgh (M. Irsyaad Fiqi Ferdiansyah) |
+| **Reviewer (Pemeriksa)** | Elsya Nur Aulia Handayani (`elsyanrr` / NIM: 10241026 - Kelompok B-03) |
+| **Branch Sumber** | `ferdiansyaa-b2` |
+| **Branch Tujuan** | `main` |
+| **Fokus Perubahan** | Modul antarmuka notifikasi web, logika navigasi tujuan notifikasi (`urlFor`), dan perbaikan alur penyimpanan nilai akhir |
+
+**Judul Perubahan yang Diperiksa:**  
+`feat(notifications): penambahan notifikasi dan perbaikan penyimpanan nilai akhir`
+
+---
+
+## 2. Berkas yang Diperiksa
+
+| No. | Berkas Sumber | Cakupan Perubahan |
+|---:|---|---|
+| 1 | `app/Http/Controllers/NotificationController.php` | Penambahan method `open()` untuk membuka notifikasi dan method privat `urlFor()` untuk menentukan URL tujuan (baris 38–150). |
+| 2 | `resources/views/notifications/index.blade.php` | Antarmuka daftar notifikasi, penentuan ikon visual di view, dan eksekusi query count di Blade. |
+| 3 | `routes/web.php` | Pendaftaran rute web `Route::get('/{id}/open', ...)` (baris 156). |
+
+---
+
+## 3. Hasil Pemeriksaan Kode
+
+### A. Keamanan — Mutasi Status Data Menggunakan Method HTTP GET pada Rute Buka Notifikasi
+* **Lokasi Pemeriksaan :** `routes/web.php:156` dan `app/Http/Controllers/NotificationController.php:38-46` (method `open()`)
+* **Temuan :** Rute `notifications.open` didaftarkan menggunakan method HTTP `GET`. Di dalam method `open()`, kode menjalankan perintah `$notification->markAsRead()` yang mengubah status record di database.
+* **Risiko :** Berdasarkan standar HTTP (RFC 7231), method `GET` harus bersifat idempoten (*safe method*). Penggunaan `GET` untuk mengubah status berisiko terpanggil secara otomatis oleh fitur *browser pre-fetching* atau bot peramban web (*crawler*), yang mengakibatkan notifikasi tertandai sudah dibaca padahal pengguna belum secara sadar mengkliknya.
+* **Saran Perbaikan :** Gunakan method HTTP `POST` melalui form atau AJAX untuk aksi mutasi status dibaca. Jika method GET tetap dipertahankan demi kemudahan satu klik navigasi pengguna, pastikan URL tujuan divalidasi agar hanya mengarah ke rute internal aplikasi.
+
+---
+
+### B. Performa — Pemanggilan Query Database di Dalam View Blade & Query Fallback
+* **Lokasi Pemeriksaan :** `resources/views/notifications/index.blade.php:5-7` dan `app/Http/Controllers/NotificationController.php:84-98`
+* **Temuan :** Di dalam file Blade `index.blade.php`, terdapat eksekusi query database langsung: `@php $unreadCount = auth()->user()->unreadNotifications()->count(); @endphp`. Selain itu, method `urlFor()` di controller memanggil query pencarian fallback `Assignment::find()` dan `Submission::find()`.
+* **Risiko :** Menjalankan query di file tampilan menyalahi pemisahan MVC dan memperlambat render halaman. Query fallback di controller juga berisiko memicu masalah N+1 query jika nantinya dipanggil di dalam loop daftar notifikasi.
+* **Saran Perbaikan :** Pindahkan hitungan `$unreadCount` ke method `index()` controller lalu kirimkan ke view via `compact()`. Pastikan payload data notifikasi selalu menyertakan `course_id` dan `assignment_id` secara lengkap sejak awal agar tidak memerlukan query pencarian susulan.
+
+---
+
+### C. Struktur dan Keterbacaan — Penentuan Tipe Visual Berdasarkan Pencocokan Kalimat
+* **Lokasi Pemeriksaan :** `resources/views/notifications/index.blade.php:40-58` dan `app/Http/Controllers/NotificationController.php:110-140`
+* **Temuan :** Penentuan ikon, warna badge di Blade, dan penentuan rute di controller mengandalkan fungsi `str_contains(strtolower($message), '...')` untuk mencocokkan potongan kata teks secara manual.
+* **Risiko :** Kode menjadi rapuh (*brittle*). Jika sebuah tugas memiliki judul yang memuat kata `"tugas baru"` atau `"dinilai"`, sistem berpotensi salah mengidentifikasi jenis notifikasi dan salah mengarahkan rute halaman.
+* **Saran Perbaikan :** Gunakan field terstruktur pada JSON payload data (misalnya `$n->data['type']`) atau manfaatkan nama class resmi notifikasinya, hindari menebak tipe notifikasi dari pemindaian kata pada teks pesan.
+
+---
+
+## 4. Ringkasan Temuan Review
+
+| No. | Dimensi Evaluasi | Temuan Spesifik | Rekomendasi Solusi |
+|:---:|---|---|---|
+| **1** | **Keamanan** | Rute `open` memutasi status notifikasi melalui HTTP `GET` yang rentan terhadap browser pre-fetching dan web crawler. | Gunakan method `POST` untuk mutasi data atau validasi domain URL tujuan jika tetap memakai `GET`. |
+| **2** | **Performa** | Eksekusi query database count langsung di dalam file Blade dan adanya query fallback di method `urlFor`. | Pindahkan perhitungan count ke controller (`compact`) dan lengkapi ID referensi di payload notifikasi. |
+| **3** | **Struktur / Keterbacaan** | Penentuan jenis ikon dan rute navigasi mengandalkan pencocokan teks string (`str_contains`) manual. | Gunakan key terstruktur pada array data notifikasi atau polymorphic class type. |
+
+---
+
+## 5. Komentar untuk Pull Request GitHub
+
+Teks komentar berikut telah disalin dan dikirimkan pada kolom review Pull Request di antarmuka GitHub Kelompok B-4:
+
+```markdown
+Halo @ferdiansyaafqgh, berikut hasil peer review dari Kelompok B-03 untuk Pull Request :
+
+### 1. Keamanan — Mutasi State via Method HTTP GET pada Rute Buka Notifikasi
+* **Lokasi:** `routes/web.php:156` dan `app/Http/Controllers/NotificationController.php:38-46`
+* **Temuan:** Rute `notifications.open` didaftarkan menggunakan method HTTP `GET`, namun di dalamnya mengeksekusi perintah `$notification->markAsRead()` yang mengubah state data di database.
+* **Risiko:** Menurut standar HTTP, method GET harus idempoten (tidak mengubah data). Rute GET berisiko terpanggil otomatis oleh fitur browser pre-fetching atau bot web crawler, sehingga notifikasi dapat tertandai sudah dibaca padahal pengguna belum secara sadar mengkliknya.
+* **Saran:** Gunakan method HTTP `POST` melalui form atau AJAX untuk aksi mutasi status dibaca. Jika method GET tetap dipertahankan demi kemudahan satu klik navigasi pengguna, pastikan URL tujuan divalidasi agar hanya mengarah ke rute internal aplikasi.
+
+---
+
+### 2. Performa — Pemanggilan Query Database di Dalam View Blade & Query Fallback
+* **Lokasi:** `resources/views/notifications/index.blade.php:5-7` dan `app/Http/Controllers/NotificationController.php:84-98`
+* **Temuan:** Di dalam file Blade terdapat eksekusi query database langsung: `@php $unreadCount = auth()->user()->unreadNotifications()->count(); @endphp`. Selain itu, method `urlFor()` di controller memanggil query pencarian fallback `Assignment::find()` dan `Submission::find()`.
+* **Risiko:** Menjalankan query di file tampilan menyalahi pemisahan MVC dan memperlambat render halaman. Query fallback di controller juga berisiko memicu masalah N+1 query jika nantinya dipanggil di dalam loop daftar notifikasi.
+* **Saran:** Pindahkan hitungan `$unreadCount` ke controller lalu kirimkan ke view via `compact()`. Pastikan payload data notifikasi selalu menyertakan `course_id` dan `assignment_id` secara lengkap sejak awal agar tidak memerlukan query pencarian susulan.
+
+---
+
+### 3. Struktur dan Keterbacaan — Penentuan Tipe Visual Berdasarkan Pencocokan Kalimat
+* **Lokasi:** `resources/views/notifications/index.blade.php:40-58` dan `app/Http/Controllers/NotificationController.php:110-140`
+* **Temuan:** Penentuan ikon, warna badge di Blade, dan penentuan rute di controller mengandalkan fungsi `str_contains(strtolower($message), '...')` untuk mencocokkan potongan kata teks secara manual.
+* **Risiko:** Kode menjadi rapuh (brittle). Jika sebuah tugas memiliki judul yang memuat kata "tugas baru" atau "dinilai", sistem berpotensi salah mengidentifikasi jenis notifikasi dan salah mengarahkan rute halaman.
+* **Saran:** Gunakan field terstruktur pada JSON payload data (misalnya `$n->data['type']`) atau manfaatkan nama class resmi notifikasinya, hindari menebak tipe notifikasi dari pemindaian kata pada teks pesan.
+```
+
+---
+
+## 6. Tindak Lanjut Review
+
+| No. | Aspek Temuan | Tanggapan Author (ferdiansyaafqgh) | Status Keputusan | Bukti Tindak Lanjut / Catatan Teknis |
+|:---:|---|---|:---:|---|
+| **1** | **Keamanan**<br>(Method HTTP GET pada rute open notifikasi) | *"Temuan ditolak dengan penjelasan teknis: Rute `open` sengaja menggunakan method GET agar pengguna dapat membukanya secara langsung dari link notifikasi eksternal atau tab baru tanpa terhambat form submission (faktor kemudahan navigasi UX). Keamanan tetap terjamin karena query dibatasi oleh `$request->user()->notifications()->findOrFail($id)`, sehingga pengguna lain mustahil memanipulasi status notifikasi orang lain (bebas celah IDOR)."* | **Ditolak dengan Alasan yang Sah** | Proteksi kepemilikan data sudah aktif pada level Eloquent query scoping. Tidak memerlukan perubahan kode. |
+| **2** | **Performa**<br>(Eksekusi query count di Blade & query fallback) | *"Temuan diterima: Catatan ini sangat tepat. Menjalankan query count di Blade memang menyalahi prinsip MVC dan menambah beban rendering view. Kami telah memindahkan penghitungan `$unreadCount` ke method `index()` di controller dan mengirimkannya via `compact()`, serta memastikan payload notifikasi selalu memuat `course_id` secara lengkap."* | **Diterima dan Diperbaiki** | **Telah diperbaiki** melalui commit baru: `fix(notifications): kirim unreadCount dari controller dan optimasi penentuan url notifikasi`. |
+| **3** | **Struktur / Keterbacaan**<br>(Pencocokan string kata untuk ikon & badge) | *"Temuan ditolak dengan penjelasan teknis: Sistem LMS kami saat ini baru mengelola tiga jenis notifikasi spesifik (`TugasBaru`, `NilaiDiberikan`, dan `PengumpulanBaru`). Pengecekan substring sederhana ini dinilai masih sangat praktis dan mudah dibaca oleh anggota tim tanpa menambah lapisan abstraksi baru yang belum mendesak (menerapkan prinsip KISS dan YAGNI)."* | **Ditolak dengan Alasan yang Sah** | Menghindari abstraksi berlebih (*over-engineering*) pada skala aplikasi saat ini. Keputusan arsitektur logis dan beralasan kuat. |
+
+---
+
+### Bukti Commit Perbaikan (`fix:`)
+
+Untuk memenuhi persyaratan bahwa minimal satu temuan benar-benar diselesaikan dalam kode repositori, temuan nomor 2 (**Performa**) telah diselesaikan melalui commit perbaikan berikut:
+
+* **Pesan Commit :** `fix(notifications): kirim unreadCount dari controller dan optimasi penentuan url notifikasi`
+* **Berkas yang Diperbaiki :** `app/Http/Controllers/NotificationController.php` dan `resources/views/notifications/index.blade.php`
+* **Dampak Optimasi :**
+  1. Menghilangkan eksekusi query SQL `COUNT` dari dalam lapisan view Blade, sehingga proses rendering antarmuka menjadi lebih ringan dan mematuhi arsitektur MVC murni.
+  2. Mencegah potensi $N+1$ query pada pemanggilan rute tujuan notifikasi dengan melengkapi atribut referensi ID langsung di dalam JSON payload database.
+
+---
+
+## 7. Kesimpulan
+
+Secara keseluruhan, Pull Request yang disusun oleh ferdiansyaafqgh (Kelompok B-04) telah berhasil mengimplementasikan modul antarmuka notifikasi yang fungsional, responsif, dan rapi pada aplikasi KampusLMS.
+
+Dari aspek keamanan, proteksi kepemilikan notifikasi telah diterapkan secara baik menggunakan query scoping `$request->user()->notifications()`, mencegah celah IDOR. Dari aspek performa, temuan mengenai query di dalam view Blade berhasil diselesaikan secara nyata melalui pemindahan logika hitung ke controller, yang membuktikan efektivitas proses *peer review* dalam meningkatkan kualitas kode aplikasi sebelum masuk ke branch utama. Tanggapan yang diberikan terhadap temuan keamanan dan struktur kode juga memiliki landasan pertimbangan teknis yang rasional (*engineering trade-off*), sehingga proses kolaborasi berjalan secara sehat dan berorientasi pada kualitas produk perangkat lunak.
