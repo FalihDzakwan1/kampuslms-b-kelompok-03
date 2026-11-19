@@ -93,9 +93,27 @@ class AssignmentController extends Controller
 
         Gate::authorize('view', $assignment);
 
-        $assignment->load(['course.lecturer', 'course.students', 'submissions.student', 'submissions.grade']);
+        $user = auth()->user();
 
-        return view('assignments.show', compact('assignment'));
+        if ($user && $user->role === 'mahasiswa') {
+            // Mahasiswa hanya memuat pengajar dan submission miliknya sendiri
+            $assignment->load([
+                'course.lecturer',
+                'submissions' => fn ($q) => $q->where('user_id', $user->id)->with('grade'),
+            ]);
+            $submissionsMap = collect();
+        } else {
+            // Dosen dan Admin memuat seluruh mahasiswa terdaftar dan pengumpulan tugas
+            $assignment->load([
+                'course.lecturer',
+                'course.students',
+                'submissions.student',
+                'submissions.grade',
+            ]);
+            $submissionsMap = $assignment->submissions->keyBy('user_id');
+        }
+
+        return view('assignments.show', compact('assignment', 'submissionsMap'));
     }
 
     /**
