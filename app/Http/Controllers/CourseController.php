@@ -104,9 +104,12 @@ class CourseController extends Controller
             'lecturer',
             'materials.uploader',
             // No. 7: sertakan relasi grade sekaligus agar rekap tidak lazy-load
+            // Saring kueri agar mahasiswa HANYA memuat submission miliknya sendiri (mencegah information disclosure)
             'assignments' => fn ($q) =>
                 auth()->user()?->role === 'mahasiswa'
-                    ? $q->where('status', 'published')->with(['submissions.grade'])
+                    ? $q->where('status', 'published')->with([
+                        'submissions' => fn ($sq) => $sq->where('user_id', auth()->id())->with('grade')
+                    ])
                     : $q->with(['submissions.grade']),
         ]);
 
@@ -196,11 +199,14 @@ class CourseController extends Controller
             ->withQueryString();
 
         // Semua mahasiswa yang belum terdaftar (untuk form tambah)
+        // [ACCPT-PERF-ENROLL] Tambahkan filter pencarian dan batasi pemuatan data dengan paginasi
         $enrolledIds = $course->students()->pluck('users.id');
         $available = User::where('role', 'mahasiswa')
             ->whereNotIn('id', $enrolledIds)
+            ->when(request('search'), fn ($q, $search) => $q->where('name', 'like', "%{$search}%"))
             ->orderBy('name')
-            ->get();
+            ->paginate(20)
+            ->withQueryString();
 
         return view('courses.enrollments', compact('course', 'available', 'students'));
     }
