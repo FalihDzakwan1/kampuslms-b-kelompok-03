@@ -171,7 +171,7 @@
                         @foreach($course->assignments as $assignment)
                             @php
                                 $mySubmission = auth()->user()->role === 'mahasiswa' 
-                                    ? $assignment->submissions->where('user_id', auth()->id())->first() 
+                                    ? $assignment->submissions->first() 
                                     : null;
                             @endphp
                             <div class="p-4 rounded-xl border border-gray-100 bg-gray-50/60 hover:bg-gray-50 hover:border-blue-200 transition flex flex-wrap items-center justify-between gap-4">

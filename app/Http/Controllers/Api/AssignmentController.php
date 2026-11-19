@@ -74,7 +74,7 @@ class AssignmentController extends Controller
             'due_at' => 'nullable|date',
             'max_score' => 'nullable|integer|min:0',
             'allow_late' => 'nullable|boolean',
-            'status' => 'nullable|string|in:draft,published,archived',
+            'status' => 'nullable|string|in:draft,published',
         ]);
 
         $assignment->update($validated);

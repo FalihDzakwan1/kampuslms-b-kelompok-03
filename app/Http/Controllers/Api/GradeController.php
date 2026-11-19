@@ -36,8 +36,6 @@ class GradeController extends Controller
             'feedback' => 'nullable|string|max:2000',
         ]);
 
-        $exists = $submission->grade()->exists();
-
         $grade = Grade::updateOrCreate(
             ['submission_id' => $submission->id],
             [
@@ -48,10 +46,12 @@ class GradeController extends Controller
             ]
         );
 
-        // Beri tahu mahasiswa pemilik submission (diproses di latar lewat queue).
-        GradeGiven::dispatch($grade, isUpdate: $exists);
+        $isUpdate = ! $grade->wasRecentlyCreated;
 
-        $statusCode = $exists ? 200 : 201;
+        // Beri tahu mahasiswa pemilik submission (diproses di latar lewat queue).
+        GradeGiven::dispatch($grade, isUpdate: $isUpdate);
+
+        $statusCode = $isUpdate ? 200 : 201;
 
         return (new GradeResource($grade))
             ->response()

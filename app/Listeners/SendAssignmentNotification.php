@@ -30,15 +30,12 @@ class SendAssignmentNotification implements ShouldQueue
     {
         $assignment = $event->assignment->loadMissing('course');
 
-        // Satu query untuk seluruh penerima (tanpa N+1). Mahasiswa yang
-        // sudah di-soft-delete otomatis tidak ikut.
-        $students = $assignment->course->students()->get();
-
-        if ($students->isEmpty()) {
-            return;
-        }
-
-        Notification::send($students, new NewAssignmentNotification($assignment));
+        // Mengambil mahasiswa dan menyiarkan notifikasi secara bertahap (chunking)
+        // untuk mencegah lonjakan memori RAM worker jika jumlah mahasiswa besar.
+        $assignment->course->students()
+            ->chunk(100, function ($students) use ($assignment) {
+                Notification::send($students, new NewAssignmentNotification($assignment));
+            });
     }
 
     // [ACCPT-LISTENER-FAILED-LOG]
