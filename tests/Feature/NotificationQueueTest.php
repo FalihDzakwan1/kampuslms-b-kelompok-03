@@ -350,4 +350,72 @@ class NotificationQueueTest extends TestCase
             new RuntimeException('Boom')
         );
     }
+
+    // ------------------------------------------------------------------
+    // Rute Buka Notifikasi & Mitigasi Celah Open Redirect (PR #59)
+    // ------------------------------------------------------------------
+
+    public function test_buka_notifikasi_menandai_dibaca_dan_redirect_ke_url_internal(): void
+    {
+        $mhs = $this->makeUser('mahasiswa');
+        $notif = $mhs->notifications()->create([
+            'id'      => (string) \Illuminate\Support\Str::uuid(),
+            'type'    => NewAssignmentNotification::class,
+            'data'    => [
+                'title' => 'Tugas Uji',
+                'url'   => '/mahasiswa/courses',
+            ],
+            'read_at' => null,
+        ]);
+
+        $this->actingAs($mhs)
+            ->get(route('notifications.open', $notif->id))
+            ->assertRedirect('/mahasiswa/courses');
+
+        $this->assertNotNull($notif->fresh()->read_at);
+    }
+
+    public function test_buka_notifikasi_mencegah_celah_open_redirect_ke_domain_eksternal(): void
+    {
+        $mhs = $this->makeUser('mahasiswa');
+        $notif = $mhs->notifications()->create([
+            'id'      => (string) \Illuminate\Support\Str::uuid(),
+            'type'    => NewAssignmentNotification::class,
+            'data'    => [
+                'title' => 'Tugas Phishing Palsu',
+                'url'   => 'https://evil-phishing-site.test/login',
+            ],
+            'read_at' => null,
+        ]);
+
+        // URL eksternal berbahaya otomatis dinetralkan dan dialihkan ke dashboard
+        $this->actingAs($mhs)
+            ->get(route('notifications.open', $notif->id))
+            ->assertRedirect(route('dashboard'));
+
+        $this->assertNotNull($notif->fresh()->read_at);
+    }
+
+    public function test_buka_notifikasi_milik_orang_lain_ditolak_dengan_403(): void
+    {
+        $mhsA = $this->makeUser('mahasiswa');
+        $mhsB = $this->makeUser('mahasiswa');
+
+        $notifA = $mhsA->notifications()->create([
+            'id'      => (string) \Illuminate\Support\Str::uuid(),
+            'type'    => NewAssignmentNotification::class,
+            'data'    => [
+                'title' => 'Notif Mahasiswa A',
+                'url'   => '/mahasiswa/courses',
+            ],
+            'read_at' => null,
+        ]);
+
+        // Mahasiswa B mencoba membuka notifikasi Mahasiswa A -> ditolak 403 Forbidden
+        $this->actingAs($mhsB)
+            ->get(route('notifications.open', $notifA->id))
+            ->assertForbidden();
+
+        $this->assertNull($notifA->fresh()->read_at);
+    }
 }

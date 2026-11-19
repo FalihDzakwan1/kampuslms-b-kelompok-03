@@ -152,8 +152,8 @@ Berkas-berkas berikut tidak mengalami perubahan langsung di PR #81 (merupakan ha
 |                 $course->id (kebocoran notifikasi ke dosen MK lain)     |
 |  B. Performa  : Query SELECT duplikat (existingSubmission +             |
 |                 updateOrCreate) serta potensi lazy loading              |
-|  C. Struktur  : Risiko berkas hilang / data korup pada alur rollback          |
-|                 try-catch & variabel $isLate tidak tersimpan ke database   |
+|  C. Struktur  : Risiko berkas hilang / data korup pada alur rollback    |
+|                 try-catch & variabel $isLate tidak tersimpan ke database|
 +-------------------------------------------------------------------------+
 ```
 
