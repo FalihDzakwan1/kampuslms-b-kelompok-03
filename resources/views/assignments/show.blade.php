@@ -182,10 +182,6 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100 text-xs text-gray-700">
-                                @php
-                                    $submissionsMap = $assignment->submissions->keyBy('user_id');
-                                @endphp
-
                                 @foreach($assignment->course->students as $student)
                                     @php
                                         $sub = $submissionsMap->get($student->id);
