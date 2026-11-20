@@ -100,6 +100,25 @@ class NotificationController extends Controller
 
         $targetUrl = $notification->data['url'] ?? route('dashboard');
 
+        // Mitigasi Open Redirect: pastikan hanya redirect ke path internal atau host yang sama
+        $isSafe = false;
+        if (is_string($targetUrl)) {
+            if (str_starts_with($targetUrl, '/') && ! str_starts_with($targetUrl, '//')) {
+                $isSafe = true;
+            } elseif (filter_var($targetUrl, FILTER_VALIDATE_URL)) {
+                $targetHost = parse_url($targetUrl, PHP_URL_HOST);
+                $appHost = parse_url(config('app.url'), PHP_URL_HOST) ?: $request->getHost();
+
+                if ($targetHost === $appHost || $targetHost === $request->getHost()) {
+                    $isSafe = true;
+                }
+            }
+        }
+
+        if (! $isSafe) {
+            $targetUrl = route('dashboard');
+        }
+
         return redirect($targetUrl);
     }
 }
