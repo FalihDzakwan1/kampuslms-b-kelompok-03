@@ -454,8 +454,7 @@ class MaterialAssignmentAccessTest extends TestCase
         $this->actingAs($mhsOut)->get(route('materials.download', $material))->assertForbidden();
     }
 
-    /** @test */
-    public function unduh(): void
+    public function test_unduh_materi_dengan_header_attachment(): void
     {
         Storage::fake('local');
         Storage::put('materials/slide-kuliah.pptx', 'konten slide pptx');
@@ -502,8 +501,7 @@ class MaterialAssignmentAccessTest extends TestCase
         $this->get(route('materials.download', $material))->assertRedirect('/login');
     }
 
-    /** @test */
-    public function pratinjau(): void
+    public function test_pratinjau_materi_dengan_header_inline(): void
     {
         Storage::fake('local');
         Storage::put('materials/slide.pdf', 'dummy pdf content');

@@ -563,7 +563,7 @@ class CriticalFlowsTest extends TestCase
 
         $notifData = $mhs->notifications()->first()->data;
         $this->assertSame('grade_given', $notifData['type']);
-        $this->assertSame($assignment->title, $notifData['assignment_title']);
+        $this->assertSame($assignment->title, $notifData['title']);
     }
 
     // =========================================================================
