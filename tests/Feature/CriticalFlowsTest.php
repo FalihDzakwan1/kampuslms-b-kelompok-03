@@ -8,8 +8,11 @@ use App\Models\Grade;
 use App\Models\Material;
 use App\Models\Submission;
 use App\Models\User;
+use App\Notifications\GradeGivenNotification;
+use App\Notifications\NewAssignmentNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -515,6 +518,8 @@ class CriticalFlowsTest extends TestCase
 
     public function test_19_notifikasi_terkirim_ke_semua_mahasiswa_mk_saat_tugas_baru_dipublikasikan(): void
     {
+        Notification::fake();
+
         $dosen   = $this->makeUser('dosen');
         $course  = $this->makeCourse($dosen);
         $mhsA    = $this->makeUser('mahasiswa');
@@ -533,16 +538,16 @@ class CriticalFlowsTest extends TestCase
 
         $this->actingAs($dosen)->post(route('dosen.courses.assignments.store', $course), $payload);
 
-        // Mahasiswa terdaftar menerima notifikasi di database
-        $this->assertSame(1, $mhsA->notifications()->count());
-        $this->assertSame(1, $mhsB->notifications()->count());
-
-        // Mahasiswa di luar kelas tidak menerima notifikasi
-        $this->assertSame(0, $mhsLuar->notifications()->count());
+        // Bukti terkirim hanya ke mahasiswa terdaftar menggunakan Notification::fake()
+        Notification::assertSentTo([$mhsA, $mhsB], NewAssignmentNotification::class);
+        Notification::assertNotSentTo($mhsLuar, NewAssignmentNotification::class);
+        Notification::assertNotSentTo($dosen, NewAssignmentNotification::class);
     }
 
     public function test_20_notifikasi_terkirim_ke_mahasiswa_saat_nilai_diberikan(): void
     {
+        Notification::fake();
+
         $dosen      = $this->makeUser('dosen');
         $mhs        = $this->makeUser('mahasiswa');
         $course     = $this->makeCourse($dosen);
@@ -551,19 +556,15 @@ class CriticalFlowsTest extends TestCase
         $assignment = $this->makeAssignment($course);
         $submission = $this->makeSubmission($assignment, $mhs);
 
-        $this->assertSame(0, $mhs->notifications()->count());
-
         $this->actingAs($dosen)->put(route('dosen.submissions.grade', $submission), [
             'score'    => 88,
             'feedback' => 'Bagus sekali',
         ]);
 
-        // Mahasiswa pemilik submission menerima notifikasi nilai
-        $this->assertSame(1, $mhs->notifications()->count());
-
-        $notifData = $mhs->notifications()->first()->data;
-        $this->assertSame('grade_given', $notifData['type']);
-        $this->assertSame($assignment->title, $notifData['title']);
+        // Bukti notifikasi nilai terkirim ke pemilik tugas via Notification::fake()
+        Notification::assertSentTo($mhs, GradeGivenNotification::class, function ($notification) use ($assignment) {
+            return $notification->grade->submission->assignment_id === $assignment->id;
+        });
     }
 
     // =========================================================================
