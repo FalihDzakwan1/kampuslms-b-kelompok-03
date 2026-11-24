@@ -42,8 +42,8 @@ Berkas utama pengujian alur kritis terletak di **`tests/Feature/CriticalFlowsTes
 | | | Diizinkan untuk pemilik & dosen pengampu | `test_16_pemilik_submission_dan_dosen_pengampu_diizinkan_mengunduh_submission` | `assertOk()` (200 untuk Mhs A)<br>`assertOk()` (200 untuk Dosen) |
 | **7** | **Penilaian** | Sukses oleh dosen pengampu | `test_17_dosen_pengampu_sukses_memberikan_nilai_pada_submission` | `assertSessionHas('success')`<br>`assertDatabaseHas('grades', ...)` |
 | | | Ditolak untuk dosen lain | `test_18_dosen_lain_ditolak_memberikan_nilai_pada_submission_mata_kuliah_lain` | `assertForbidden()` (403)<br>`assertDatabaseMissing('grades')` |
-| **8** | **Notifikasi** | Terkirim saat tugas dibuat (published) | `test_19_notifikasi_terkirim_ke_semua_mahasiswa_mk_saat_tugas_baru_dipublikasikan` | `assertSame(1, $mhsA->notifications()->count())`<br>`assertSame(0, $mhsLuar->notifications()->count())` |
-| | | Terkirim saat nilai diberikan | `test_20_notifikasi_terkirim_ke_mahasiswa_saat_nilai_diberikan` | `assertSame(1, $mhs->notifications()->count())`<br>`assertSame('grade_given', $notifData['type'])` |
+| **8** | **Notifikasi** | Terkirim saat tugas dibuat (published) | `test_19_notifikasi_terkirim_ke_semua_mahasiswa_mk_saat_tugas_baru_dipublikasikan` | `Notification::assertSentTo([$mhsA, $mhsB], NewAssignmentNotification::class)`<br>`Notification::assertNotSentTo($mhsLuar, ...)` |
+| | | Terkirim saat nilai diberikan | `test_20_notifikasi_terkirim_ke_mahasiswa_saat_nilai_diberikan` | `Notification::assertSentTo($mhs, GradeGivenNotification::class, ...)` |
 | **+** | **Keamanan Tambahan** | Mahasiswa dilarang akses tugas draft | `test_21_mahasiswa_tidak_dapat_melihat_atau_mengumpulkan_tugas_berstatus_draft` | `assertForbidden()` (403)<br>`assertDatabaseMissing('submissions')` |
 | | | Mahasiswa dilarang hapus submission | `test_22_mahasiswa_tidak_dapat_menghapus_submission_miliknya` | `assertForbidden()` (403)<br>`assertDatabaseHas('submissions')` |
 
@@ -59,7 +59,7 @@ Setiap test dalam suite ini dirancang untuk memiliki nilai diagnostik nyata dan 
    * Setiap pengujian membuat data secara mandiri menggunakan `User::factory()`, `Course::factory()`, dan `Model::create()`, sehingga urutan eksekusi test tidak saling memengaruhi (*test isolation*).
 3. **Database Bersih (`RefreshDatabase`):**
    * Skema database dimigrasikan ulang dalam memori secara deterministik pada tiap test method.
-4. **Isolasi Storage Tanpa Efek Samping:**
-   * Seluruh pengujian unggah dan unduh berkas menggunakan `Storage::fake('local')` sehingga tidak menulis berkas fisik ke disk server saat CI dijalankan.
+4. **Isolasi Storage & Notifikasi Tanpa Efek Samping:**
+   * Seluruh pengujian unggah/unduh berkas menggunakan `Storage::fake('local')` dan pengujian notifikasi pada `CriticalFlowsTest` menggunakan `Notification::fake()` sehingga tidak menulis berkas fisik ataupun memicu pengiriman notifikasi riil saat CI dijalankan.
 5. **Verifikasi Dampak Database Nyata:**
    * Tidak ada pengujian yang hanya memeriksa status HTTP semata. Setiap mutasi data diverifikasi langsung melalui `assertDatabaseHas()` dan `assertDatabaseMissing()`.
