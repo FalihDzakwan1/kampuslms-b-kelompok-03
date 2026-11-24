@@ -256,6 +256,7 @@ class CourseController extends Controller
 
     public function create()
     {
+        Gate::authorize('create', Course::class);
 
         $lecturers = User::where(
             'role',
@@ -285,7 +286,7 @@ class CourseController extends Controller
         StoreCourseRequest $request
     )
     {
-
+        Gate::authorize('create', Course::class);
 
         Course::create(
             $request->validated()
